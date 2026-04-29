@@ -1,0 +1,138 @@
+<div class="p-4 space-y-3 md:p-6">
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="products()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    searchPlaceholder="Mã, tên sản phẩm..."
+    emptyIcon="@tui.package"
+    emptyText="Chưa có sản phẩm nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadProducts()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <ng-container tableToolbar>
+      @if (canManage()) {
+        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Thêm Sản Phẩm
+        </button>
+      }
+    </ng-container>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('code')) {
+        <td class="px-4 py-3 align-top">
+          <code class="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-700">{{
+            asProduct(item).productCode
+          }}</code>
+        </td>
+      }
+      @if (!isHidden('name')) {
+        <td class="px-4 py-3 align-top">
+          @if (canManage()) {
+            <p
+              class="text-sm font-medium text-primary cursor-pointer underline underline-offset-2 decoration-primary/50"
+              [tuiHint]="'Chỉnh sửa sản phẩm'"
+              tuiHintDirection="top"
+              (click)="openEditDialog(asProduct(item))"
+            >
+              {{ asProduct(item).productName }}
+            </p>
+          } @else {
+            <p class="text-sm font-medium text-gray-900">{{ asProduct(item).productName }}</p>
+          }
+          @if (asProduct(item).description) {
+            <p class="text-xs text-gray-400 mt-0.5">{{ asProduct(item).description }}</p>
+          }
+        </td>
+      }
+      @if (!isHidden('interest')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span class="text-sm font-semibold text-amber-600"
+            >{{ asProduct(item).interestRateMonthly }}%/tháng</span
+          >
+          @if (asProduct(item).qlkvRateMonthly) {
+            <p class="text-xs text-gray-400">QLKV: {{ asProduct(item).qlkvRateMonthly }}%</p>
+          }
+          @if (asProduct(item).qltsRateMonthly) {
+            <p class="text-xs text-gray-400">QLTS: {{ asProduct(item).qltsRateMonthly }}%</p>
+          }
+          @if ((asProduct(item).fixedMonthlyFeeAmount ?? 0) > 0) {
+            <p class="text-xs text-gray-400">
+              Phí cố định: {{ formatCurrency(asProduct(item).fixedMonthlyFeeAmount) }}/tháng
+            </p>
+          }
+        </td>
+      }
+      @if (!isHidden('amount')) {
+        <td class="px-4 py-3 text-sm align-top">
+          @if (asProduct(item).minPrincipalAmount || asProduct(item).maxPrincipalAmount) {
+            <span class="text-gray-700">
+              {{ formatCurrency(asProduct(item).minPrincipalAmount) }} —
+              {{ formatCurrency(asProduct(item).maxPrincipalAmount) }}
+            </span>
+          } @else {
+            <span class="text-gray-400">Không giới hạn</span>
+          }
+        </td>
+      }
+      @if (!isHidden('term')) {
+        <td class="px-4 py-3 text-center align-top text-sm text-gray-700">
+          @if (asProduct(item).minTermMonths || asProduct(item).maxTermMonths) {
+            {{ asProduct(item).minTermMonths }}–{{ asProduct(item).maxTermMonths }} tháng
+          } @else {
+            <span class="text-gray-400">-</span>
+          }
+        </td>
+      }
+      @if (!isHidden('status')) {
+        <td class="px-4 py-3 text-center align-top">
+          @if (asProduct(item).isActive) {
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200"
+              >Hoạt động</span
+            >
+          } @else {
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200"
+              >Đã tắt</span
+            >
+          }
+        </td>
+      }
+    </ng-template>
+
+    <ng-template #rowActions let-item>
+      @if (canManage()) {
+        <div class="flex items-center gap-0.5">
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            [tuiHint]="'Chỉnh sửa sản phẩm'"
+            tuiHintDirection="top"
+            (click)="openEditDialog(asProduct(item))"
+          >
+            <tui-icon icon="@tui.pencil" class="text-gray-500" />
+          </button>
+          @if (asProduct(item).isActive) {
+            <button
+              tuiButton
+              appearance="flat"
+              size="xs"
+              [tuiHint]="'Vô hiệu hóa sản phẩm'"
+              tuiHintDirection="top"
+              [disabled]="deleting()"
+              (click)="softDeleteProduct(asProduct(item))"
+            >
+              <tui-icon icon="@tui.trash-2" class="text-red-500" />
+            </button>
+          }
+        </div>
+      }
+    </ng-template>
+  </app-data-table>
+</div>

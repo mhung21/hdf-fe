@@ -1,0 +1,236 @@
+<div class="p-4 space-y-3 md:p-6">
+  <!-- ── Bộ lọc nhanh ──────────────────────────────────────── -->
+  <div
+    class="flex flex-wrap gap-3 items-center px-3 py-2.5 bg-white rounded-xl border border-gray-200 shadow-sm"
+  >
+    <!-- Nợ xấu -->
+    <div class="flex gap-1.5 items-center">
+      <!-- <span class="text-xs font-semibold text-gray-500 shrink-0">Nợ xấu:</span> -->
+      <button
+        tuiButton
+        [appearance]="badDebtFilter() === null ? 'primary' : 'outline'"
+        size="s"
+        (click)="setBadDebtFilter(null)"
+      >
+        Tất cả
+      </button>
+      <button
+        tuiButton
+        [appearance]="badDebtFilter() === true ? 'primary' : 'outline'"
+        size="s"
+        (click)="setBadDebtFilter(true)"
+      >
+        <tui-icon icon="@tui.triangle-alert" class="mr-1 text-xs" />
+        Có nợ xấu
+      </button>
+      <button
+        tuiButton
+        [appearance]="badDebtFilter() === false ? 'primary' : 'outline'"
+        size="s"
+        (click)="setBadDebtFilter(false)"
+      >
+        Không có
+      </button>
+    </div>
+
+    <div class="h-5 border-l border-gray-200"></div>
+
+    <!-- Đang vay -->
+    <!-- <div class="flex gap-1.5 items-center">
+      <span class="text-xs font-semibold text-gray-500 shrink-0">Hợp đồng:</span>
+      <button
+        tuiButton
+        [appearance]="activeLoanFilter() === null ? 'primary' : 'outline'"
+        size="s"
+        (click)="setActiveLoanFilter(null)"
+      >
+        Tất cả
+      </button>
+      <button
+        tuiButton
+        [appearance]="activeLoanFilter() === true ? 'primary' : 'outline'"
+        size="s"
+        (click)="setActiveLoanFilter(true)"
+      >
+        <tui-icon icon="@tui.file-text" class="mr-1 text-xs" />
+        Đang có hiệu lực
+      </button>
+      <button
+        tuiButton
+        [appearance]="activeLoanFilter() === false ? 'primary' : 'outline'"
+        size="s"
+        (click)="setActiveLoanFilter(false)"
+      >
+        Không có HĐ
+      </button>
+    </div> -->
+  </div>
+
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="customers()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    searchPlaceholder="Tên, CCCD, số điện thoại..."
+    emptyIcon="@tui.users"
+    emptyText="Không tìm thấy khách hàng nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadCustomers()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <ng-container tableToolbar>
+      @if (canPickStoreFilter()) {
+        <div class="flex gap-2 items-center">
+          <tui-textfield multi tuiChevron [stringify]="storeStringify" class="w-full md:w-60">
+            <input
+              tuiInputChip
+              tuiSelectLike
+              [ngModel]="selectedFilterStoreIds()"
+              (ngModelChange)="selectedFilterStoreIds.set($event)"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="selectedFilterStoreIds().length ? '' : 'Chọn chi nhánh'"
+            />
+            <tui-data-list-wrapper
+              *tuiTextfieldDropdown
+              new
+              tuiMultiSelectGroup
+              [items]="storeIdsForFilter()"
+            />
+          </tui-textfield>
+        </div>
+      }
+
+      @if (canCreate()) {
+        <button
+          tuiButton
+          appearance="primary"
+          size="m"
+          (click)="openCreateDialog()"
+          class="rounded-xl shadow-lg shadow-primary/20"
+        >
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Thêm Khách Hàng
+        </button>
+      }
+    </ng-container>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('code')) {
+        <td class="px-4 py-3 text-sm align-top">
+          @if (asCustomer(item).customerCode) {
+            <code class="px-2 py-0.5 font-mono text-xs text-gray-700 bg-gray-100 rounded">
+              {{ asCustomer(item).customerCode }}
+            </code>
+          } @else {
+            <span class="text-gray-400">-</span>
+          }
+        </td>
+      }
+      @if (!isHidden('name')) {
+        <td class="px-4 py-3 align-top">
+          <div class="flex gap-3 items-center">
+            <div
+              class="flex justify-center items-center w-9 h-9 bg-amber-100 rounded-full shrink-0"
+            >
+              <span class="text-sm font-bold text-amber-700">
+                {{ asCustomer(item).fullName.charAt(0).toUpperCase() }}
+              </span>
+            </div>
+            <div class="min-w-0">
+              @if (canEdit()) {
+                <p
+                  class="font-medium underline truncate cursor-pointer text-primary underline-offset-2 decoration-primary/50"
+                  [tuiHint]="'Chỉnh sửa thông tin khách hàng'"
+                  tuiHintDirection="top"
+                  (click)="openEditDialog(asCustomer(item))"
+                >
+                  {{ asCustomer(item).fullName }}
+                </p>
+              } @else {
+                <p class="font-medium text-gray-900 truncate">{{ asCustomer(item).fullName }}</p>
+              }
+            </div>
+          </div>
+        </td>
+      }
+      @if (!isHidden('phone')) {
+        <td class="px-4 py-3 text-sm text-gray-700 align-top">
+          {{ asCustomer(item).phone || '-' }}
+        </td>
+      }
+      @if (!isHidden('address')) {
+        <td class="px-4 py-3 text-sm text-gray-600 truncate align-top max-w-48">
+          {{ asCustomer(item).address || '-' }}
+        </td>
+      }
+      @if (!isHidden('loanStatus')) {
+        <td class="px-4 py-3 text-center align-top">
+          @if (asCustomer(item).hasActiveLoan) {
+            <span
+              class="inline-flex gap-1 items-center px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-full border border-blue-200"
+            >
+              <tui-icon icon="@tui.file-text" class="text-xs" />
+              Đang vay
+            </span>
+          } @else {
+            <span
+              class="inline-flex gap-1 items-center px-2 py-0.5 text-xs font-medium text-gray-500 bg-gray-50 rounded-full border border-gray-200"
+            >
+              Không
+            </span>
+          }
+        </td>
+      }
+      @if (!isHidden('badHistory')) {
+        <td class="px-4 py-3 text-center align-top">
+          @if (asCustomer(item).hasBadHistory) {
+            <span
+              class="inline-flex gap-1 items-center px-2 py-0.5 text-xs font-medium text-red-700 bg-red-50 rounded-full border border-red-200"
+            >
+              <tui-icon icon="@tui.alert-triangle" class="text-xs" />
+              Có nợ xấu
+            </span>
+          } @else {
+            <span
+              class="inline-flex gap-1 items-center px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 rounded-full border border-green-200"
+            >
+              <tui-icon icon="@tui.check" class="text-xs" />
+              Bình thường
+            </span>
+          }
+        </td>
+      }
+    </ng-template>
+
+    <ng-template #rowActions let-item>
+      <div class="flex gap-0.5 items-center">
+        @if (canEdit()) {
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            [tuiHint]="'Chỉnh sửa khách hàng'"
+            tuiHintDirection="top"
+            (click)="openEditDialog(asCustomer(item))"
+          >
+            <tui-icon icon="@tui.pencil" class="text-gray-500" />
+          </button>
+        }
+        @if (canReassign()) {
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            [tuiHint]="'Chuyển phụ trách'"
+            tuiHintDirection="top"
+            (click)="openReassignDialog(asCustomer(item))"
+          >
+            <tui-icon icon="@tui.user-round-check" class="text-indigo-500" />
+          </button>
+        }
+      </div>
+    </ng-template>
+  </app-data-table>
+</div>

@@ -1,0 +1,130 @@
+<div class="p-4 space-y-3 md:p-6">
+  <!-- Header card -->
+  <div class="flex items-start gap-3 p-4 mb-2 rounded-xl bg-blue-50 border border-blue-100">
+    <tui-icon icon="@tui.shield" class="text-blue-600 text-lg mt-0.5 shrink-0" />
+    <div>
+      <p class="font-semibold text-blue-800">Phân Quyền Người Dùng</p>
+      <p class="text-sm text-blue-600">
+        Quản lý vai trò và chi nhánh của từng tài khoản trong hệ thống.
+        Thay đổi vai trò có hiệu lực ngay sau khi người dùng đăng nhập lại.
+      </p>
+    </div>
+  </div>
+
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="users()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    searchPlaceholder="Tìm kiếm tên, tài khoản..."
+    emptyIcon="@tui.shield"
+    emptyText="Không tìm thấy người dùng nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadUsers()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <!-- Toolbar: bộ lọc vai trò -->
+    <ng-container tableToolbar>
+      <tui-textfield tuiChevron [stringify]="roleStringify" class="min-w-[180px]">
+        <input
+          tuiComboBox
+          [ngModel]="filterRole()"
+          (ngModelChange)="onRoleFilterChange($event)"
+          placeholder="Lọc theo vai trò"
+          [matcher]="matcherRole"
+        />
+        <tui-data-list *tuiTextfieldDropdown>
+          <button new tuiOption type="button" [value]="null">
+            Tất cả vai trò
+          </button>
+          @for (role of allRoles; track role) {
+            <button new tuiOption type="button" [value]="role">
+              {{ getRoleLabel(role) }}
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+    </ng-container>
+
+    <!-- Row cells -->
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('name')) {
+        <td class="px-4 py-3 align-top">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center bg-indigo-100 rounded-full w-9 h-9 shrink-0">
+              <span class="text-sm font-bold text-indigo-700">
+                {{ asUser(item).fullName.charAt(0).toUpperCase() }}
+              </span>
+            </div>
+            <div class="min-w-0">
+              <p class="font-medium text-gray-900 truncate">{{ asUser(item).fullName }}</p>
+              @if (asUser(item).email) {
+                <p class="text-xs text-gray-400 truncate">{{ asUser(item).email }}</p>
+              }
+            </div>
+          </div>
+        </td>
+      }
+      @if (!isHidden('username')) {
+        <td class="px-4 py-3 align-top">
+          <code class="text-sm bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-700">
+            {{ asUser(item).username }}
+          </code>
+        </td>
+      }
+      @if (!isHidden('role')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            [class]="getRoleBadgeClass(asUser(item).roleCode)"
+          >
+            {{ getRoleLabel(asUser(item).roleCode) }}
+          </span>
+        </td>
+      }
+      @if (!isHidden('branch')) {
+        <td class="px-4 py-3 text-sm text-gray-700 align-top">
+          @if (asUser(item).storeName) {
+            <div class="flex items-center gap-1.5">
+              <tui-icon icon="@tui.home" class="text-xs text-gray-400" />
+              {{ asUser(item).storeName }}
+            </div>
+          } @else {
+            <span class="text-gray-400">—</span>
+          }
+        </td>
+      }
+      @if (!isHidden('status')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            [class]="asUser(item).isActive
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-gray-100 text-gray-500 border border-gray-200'"
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full"
+              [class]="asUser(item).isActive ? 'bg-green-500' : 'bg-gray-400'"
+            ></span>
+            {{ asUser(item).isActive ? 'Hoạt động' : 'Vô hiệu' }}
+          </span>
+        </td>
+      }
+    </ng-template>
+
+    <!-- Row actions -->
+    <ng-template #rowActions let-item>
+      <button
+        tuiButton
+        appearance="ghost"
+        size="xs"
+        title="Phân quyền"
+        (click)="openEditDialog(asUser(item))"
+      >
+        <tui-icon icon="@tui.shield" />
+      </button>
+    </ng-template>
+  </app-data-table>
+</div>

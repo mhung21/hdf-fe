@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.20.0",
+    "generators": {
+      "angular-api": {
+        "generatorName": "typescript-angular",
+        "inputSpec": "http://localhost:5115/swagger/v1/swagger.json",
+        "output": "src/app/api",
+        "additionalProperties": {
+          "ngVersion": "21.0.0",
+          "providedInRoot": true,
+          "withInterfaces": true,
+          "stringEnums": true,
+          "fileNaming": "kebab-case",
+          "apiModulePrefix": "Api",
+          "serviceSuffix": "Provider",
+          "useSingleRequestParameter": true,
+          "sortParamsByRequiredFlag": true,
+          "enumPropertyNaming": "UPPERCASE"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+<div *ngIf="visible" class="notification-backdrop" (click)="onBackdropClick($event)">
+  <div class="notification-content">
+    <span>Đây là thông báo!</span>
+    <button class="close-btn" (click)="close.emit()">Đóng</button>
+  </div>
+</div>

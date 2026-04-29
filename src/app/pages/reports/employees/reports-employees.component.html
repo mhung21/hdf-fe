@@ -1,0 +1,142 @@
+<div class="p-4 space-y-4 md:p-6">
+  <!-- Header -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-gray-900">KPI Nhân Viên</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Thống kê hiệu suất theo từng nhân viên</p>
+    </div>
+    <button tuiButton appearance="primary" size="m" (click)="load()">
+      <tui-icon icon="@tui.refresh-cw" class="mr-1" />
+      Làm mới
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap gap-3 bg-white border border-gray-200 rounded-xl p-3">
+    <div class="flex flex-col gap-1 min-w-[220px]">
+      <label class="text-xs font-medium text-gray-500">Khoảng thời gian</label>
+      <tui-textfield>
+        <input tuiInputDateRange [formControl]="dateRangeControl" placeholder="Từ ngày – đến ngày" />
+        <tui-calendar-range *tuiTextfieldDropdown />
+      </tui-textfield>
+    </div>
+
+    @if (isAdmin()) {
+      <div class="flex flex-col gap-1 min-w-[200px]">
+        <label class="text-xs font-medium text-gray-500">Chi nhánh</label>
+        <tui-textfield tuiChevron [stringify]="storeStringify">
+          <input
+            tuiComboBox
+            [formControl]="storeControl"
+            placeholder="Tất cả chi nhánh"
+            [matcher]="matcherStore"
+          />
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (id of storeOptions(); track id) {
+              <button new tuiOption type="button" [value]="id">{{ storeStringify(id) }}</button>
+            }
+          </tui-data-list>
+        </tui-textfield>
+      </div>
+    }
+
+    <div class="flex items-end">
+      <button tuiButton appearance="secondary" size="m" (click)="load()">Lọc</button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  @if (summary()) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="text-2xl font-bold text-primary">{{ summary()!.totalEmployees ?? 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">Nhân viên</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="text-2xl font-bold text-blue-600">{{ summary()!.totalContractsCreated ?? 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">HĐ đã tạo</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="text-base font-bold text-green-600">{{ fmt(summary()!.totalDisbursed) }}</div>
+        <div class="text-xs text-gray-500 mt-1">Tổng giải ngân</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="text-base font-bold text-emerald-600">{{ fmt(summary()!.totalCollected) }}</div>
+        <div class="text-xs text-gray-500 mt-1">Tổng đã thu</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="text-2xl font-bold text-red-600">{{ summary()!.totalBadDebt ?? 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">HĐ nợ xấu</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <div class="text-2xl font-bold text-indigo-600">{{ summary()!.totalCustomersCreated ?? 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">KH mới tạo</div>
+      </div>
+    </div>
+  }
+
+  <!-- Employee Table -->
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold text-gray-600">Nhân viên</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-600">Chi nhánh</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">HĐ tạo</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">HĐ giải ngân</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">Tổng giải ngân</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">Tất toán</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">Nợ xấu</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">Tỷ lệ NX</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">KH mới</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">Phiếu thu</th>
+            <th class="px-4 py-3 text-right font-semibold text-gray-600">Tổng thu</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="border-b border-gray-100">
+                <td class="px-4 py-3" colspan="11">
+                  <div [tuiSkeleton]="true" class="h-4 rounded w-full"></div>
+                </td>
+              </tr>
+            }
+          } @else if (employees().length === 0) {
+            <tr>
+              <td class="px-4 py-8 text-center text-gray-400" colspan="11">
+                <tui-icon icon="@tui.users" class="text-3xl mb-2 block" />
+                Không có dữ liệu nhân viên
+              </td>
+            </tr>
+          } @else {
+            @for (emp of employees(); track emp.userId) {
+              <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-medium text-gray-900">{{ emp.fullName ?? '-' }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ emp.storeName ?? '-' }}</td>
+                <td class="px-4 py-3 text-right text-gray-700">{{ emp.contractsCreated ?? 0 }}</td>
+                <td class="px-4 py-3 text-right text-blue-700 font-medium">{{ emp.contractsDisbursed ?? 0 }}</td>
+                <td class="px-4 py-3 text-right text-green-700 font-medium">{{ fmt(emp.totalPrincipalDisbursed) }}</td>
+                <td class="px-4 py-3 text-right text-emerald-700">{{ emp.contractsSettled ?? 0 }}</td>
+                <td class="px-4 py-3 text-right">
+                  <span [class]="(emp.contractsBadDebt ?? 0) > 0 ? 'text-red-600 font-semibold' : 'text-gray-400'">
+                    {{ emp.contractsBadDebt ?? 0 }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                    [class]="(emp.badDebtRate ?? 0) >= 10 ? 'bg-red-100 text-red-700' : (emp.badDebtRate ?? 0) >= 5 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'"
+                  >{{ fmtPct(emp.badDebtRate) }}</span>
+                </td>
+                <td class="px-4 py-3 text-right text-indigo-700">{{ emp.customersCreated ?? 0 }}</td>
+                <td class="px-4 py-3 text-right text-gray-700">{{ emp.collectionsCount ?? 0 }}</td>
+                <td class="px-4 py-3 text-right text-emerald-700 font-medium">{{ fmt(emp.totalCollected) }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,137 @@
+<div class="p-4 space-y-3 md:p-6">
+  <!-- Warning Banner -->
+  <div class="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+    <tui-icon icon="@tui.alert-triangle" class="text-red-500 shrink-0" />
+    <div>
+      <p class="text-sm font-semibold text-red-800">Danh sách nợ xấu</p>
+      <p class="text-xs text-red-600 mt-0.5">
+        Các khoản quá hạn từ ngày thứ {{ badDebtStartDay() }} trở đi. Cần theo dõi và xử lý kịp
+        thời.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+      <p class="text-xs text-rose-600 uppercase tracking-wide">Tổng nợ xấu</p>
+      <p class="text-lg font-bold text-rose-700 mt-1">
+        {{ formatCurrency(totalOutstandingAmount()) }}
+      </p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white px-4 py-3">
+      <p class="text-xs text-gray-400 uppercase tracking-wide">Số hồ sơ</p>
+      <p class="text-lg font-bold text-gray-800 mt-1">{{ totalBadDebtCount() }}</p>
+    </div>
+  </div>
+
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="cases()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    [showActionsColumn]="false"
+    searchPlaceholder="Tên khách, mã hợp đồng, CCCD..."
+    emptyIcon="@tui.shield-check"
+    emptyText="Không có hồ sơ nợ xấu nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="refreshAll()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <ng-container tableToolbar>
+      @if (canManage()) {
+        <button tuiButton appearance="destructive" size="m" (click)="openTransferDialog()">
+          <tui-icon icon="@tui.arrow-right-circle" class="mr-1" />
+          Chuyển Nợ Xấu
+        </button>
+      }
+    </ng-container>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('customer')) {
+        <td
+          class="px-4 py-3 align-top cursor-pointer"
+          [tuiHint]="'Nhấn để xem chi tiết'"
+          tuiHintDirection="top"
+          (click)="openViewDialog(asCase(item))"
+        >
+          <p
+            class="text-sm font-medium text-primary underline underline-offset-2 decoration-primary/50"
+          >
+            {{ asCase(item).customerName || '-' }}
+          </p>
+        </td>
+      }
+      @if (!isHidden('contract')) {
+        <td class="px-4 py-3 align-top">
+          <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600">{{
+            displayContractCode(asCase(item))
+          }}</code>
+        </td>
+      }
+      @if (!isHidden('outstanding')) {
+        <td class="px-4 py-3 text-right align-top">
+          <span class="text-sm font-semibold text-red-700">{{
+            formatCurrency(remainingOutstandingAmount(asCase(item)))
+          }}</span>
+          @if (asCase(item).outstandingPrincipalAmount) {
+            <p class="text-xs text-gray-400">
+              Gốc: {{ formatCurrency(asCase(item).outstandingPrincipalAmount) }}
+            </p>
+          }
+          @if ((asCase(item).recoveredAmountTotal ?? 0) > 0) {
+            <p class="text-xs text-green-600">
+              Đã thu hồi: {{ formatCurrency(asCase(item).recoveredAmountTotal) }}
+            </p>
+          }
+        </td>
+      }
+      @if (!isHidden('recovered')) {
+        <td class="px-4 py-3 text-right align-top">
+          <span class="text-sm font-medium text-green-700">{{
+            formatCurrency(asCase(item).recoveredAmountTotal)
+          }}</span>
+          @if (canManage() && asCase(item).statusCode !== 'CLOSED') {
+            <div class="mt-1">
+              <button
+                tuiButton
+                appearance="success"
+                size="xs"
+                type="button"
+                (click)="openRecoveryDialog(asCase(item))"
+              >
+                Thu hồi
+              </button>
+            </div>
+          }
+        </td>
+      }
+      @if (!isHidden('status')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            [class]="getStatusClass(asCase(item).statusCode)"
+          >
+            {{ getStatusLabel(asCase(item).statusCode) }}
+          </span>
+        </td>
+      }
+      @if (!isHidden('transferDate')) {
+        <td class="px-4 py-3 text-sm text-gray-600 align-top">
+          {{ formatDate(asCase(item).transferDate) }}
+        </td>
+      }
+      @if (!isHidden('store')) {
+        <td class="px-4 py-3 text-sm text-gray-600 align-top">
+          {{ asCase(item).storeName || '-' }}
+        </td>
+      }
+      @if (!isHidden('transferredBy')) {
+        <td class="px-4 py-3 text-sm text-gray-600 align-top">
+          {{ asCase(item).transferredByName || '-' }}
+        </td>
+      }
+    </ng-template>
+  </app-data-table>
+</div>

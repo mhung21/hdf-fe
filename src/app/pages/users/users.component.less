@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td, th {
+  white-space: nowrap;
+}
+
+/* Allow fullName column to truncate */
+td[data-tui-cell='fullName'] {
+  max-width: 260px;
+}

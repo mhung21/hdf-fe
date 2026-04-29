@@ -1,0 +1,25 @@
+<form [formGroup]="form" (ngSubmit)="confirm()" class="p-1 space-y-4">
+  <div class="flex items-start gap-3 p-4 border border-red-200 rounded-lg bg-red-50">
+    <tui-icon icon="@tui.alert-triangle" class="text-red-500 mt-0.5 shrink-0" />
+    <p class="text-sm text-red-700">Hành động này không thể hoàn tác. Hợp đồng sẽ bị hủy vĩnh viễn.</p>
+  </div>
+  @if (context.data.contractNo) {
+    <p class="text-sm text-gray-600">Hợp đồng: <code class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-800">{{ context.data.contractNo }}</code></p>
+  }
+  <div>
+    <label tuiLabel>Lý do hủy <span class="text-red-500">*</span></label>
+    <tui-textfield>
+      <input tuiTextfield formControlName="note" placeholder="Nhập lý do hủy..." />
+    </tui-textfield>
+    @if (form.get('note')?.invalid && form.get('note')?.touched) {
+      <p class="mt-1 text-xs text-red-500">Vui lòng nhập lý do hủy</p>
+    }
+  </div>
+  <div class="flex justify-end gap-3">
+    <button tuiButton type="button" appearance="outline" size="m" (click)="context.$implicit.complete()">Không</button>
+    <button tuiButton type="submit" appearance="destructive" size="m" [disabled]="saving()">
+      @if (saving()) { <tui-icon icon="@tui.loader-2" class="mr-1" /> }
+      Xác Nhận Hủy
+    </button>
+  </div>
+</form>

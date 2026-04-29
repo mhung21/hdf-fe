@@ -1,0 +1,258 @@
+<div class="p-4 space-y-6 md:p-6">
+
+  <!-- ── Nguyên tắc vai trò & quyền ─────────────────────────────────────── -->
+  <div class="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex-1">
+        <p class="font-semibold">Nguyên tắc vai trò & quyền</p>
+        <p class="mt-1">
+          Các chức danh <strong>Quản trị hệ thống</strong>, <strong>Quản lý chi nhánh</strong>,
+          <strong>Nhân viên</strong> đã có bộ quyền mặc định.
+          Bạn có thể tạo vai trò bổ sung để gán thêm quyền cho từng người dùng.
+        </p>
+        <p class="mt-1 text-green-700">
+          Ví dụ: Nhân viên mặc định không có quyền <em>Khóa ngày</em>, nhưng nếu được gán thêm vai trò có quyền đó,
+          người dùng sẽ thấy menu <strong>Khóa ngày</strong> và có thể thao tác.
+        </p>
+      </div>
+      <button
+        tuiButton
+        appearance="outline"
+        size="s"
+        class="shrink-0 border-green-400 text-green-800 hover:bg-green-100"
+        (click)="openDefaultPermissionsDialog()"
+      >
+        <tui-icon icon="@tui.shield-check" class="mr-1 text-sm" />
+        Xem quyền mặc định
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Divider ────────────────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3">
+    <div class="flex-1 border-t border-gray-200"></div>
+    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Vai trò bổ sung</span>
+    <div class="flex-1 border-t border-gray-200"></div>
+  </div>
+
+  <!-- ── Custom Roles Management ────────────────────────────────────────── -->
+  <div class="space-y-3">
+    <!-- Header + Add button -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-semibold text-gray-800">Danh sách vai trò bổ sung</h3>
+        <p class="text-xs text-gray-500">
+          @if (isAdmin()) {
+            Quản lý vai trò toàn hệ thống và gán cho người dùng
+          } @else {
+            Vai trò bổ sung cho chi nhánh của bạn — gán cho nhân viên ở màn Quản lý Người dùng
+          }
+        </p>
+      </div>
+      @if (canManage()) {
+        <button tuiButton appearance="primary" size="s" (click)="openAddRoleDialog()">
+          <tui-icon icon="@tui.plus" class="mr-1 text-sm" />
+          Thêm vai trò
+        </button>
+      }
+    </div>
+
+    <!-- Loading -->
+    @if (customRolesLoading()) {
+      <div class="flex justify-center py-6">
+        <tui-icon icon="@tui.loader-2" class="animate-spin text-xl text-primary" />
+      </div>
+    }
+
+    <!-- Empty -->
+    @if (!customRolesLoading() && customRoles().length === 0) {
+      <div class="rounded-xl border border-dashed border-gray-200 py-10 text-center">
+        <tui-icon icon="@tui.shield-plus" class="mb-2 text-4xl text-gray-300" />
+        <p class="text-sm text-gray-400">Chưa có vai trò bổ sung nào</p>
+        @if (canManage()) {
+          <button tuiButton appearance="outline" size="s" class="mt-3" (click)="openAddRoleDialog()">
+            Tạo vai trò đầu tiên
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Role cards -->
+    @if (!customRolesLoading() && customRoles().length > 0) {
+      <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        @for (role of customRoles(); track role.customRoleId) {
+          <section
+            tuiCardLarge="compact"
+            [class.opacity-60]="!role.isActive"
+          >
+            <!-- Header: tên + badge vô hiệu -->
+            <header tuiHeader>
+              <hgroup tuiTitle>
+                <h3>{{ role.roleName }}</h3>
+                @if (role.description) {
+                  <p tuiSubtitle class="line-clamp-2">{{ role.description }}</p>
+                }
+              </hgroup>
+              @if (!role.isActive) {
+                <aside tuiAccessories>
+                  <tui-badge appearance="neutral" size="s">Vô hiệu</tui-badge>
+                </aside>
+              }
+            </header>
+
+            <!-- Scope badge -->
+            @if (!role.storeId) {
+              <tui-badge appearance="accent" size="s">
+                <tui-icon icon="@tui.globe" />
+                Toàn hệ thống
+              </tui-badge>
+            } @else {
+              <tui-badge appearance="positive" size="s">
+                <tui-icon icon="@tui.store" />
+                Chi nhánh
+              </tui-badge>
+            }
+
+            <!-- Stats -->
+            <div class="mt-2 flex gap-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1">
+                <tui-icon icon="@tui.shield" class="text-sm text-primary" />
+                {{ role.permissionCount }} quyền
+              </span>
+              <span class="flex items-center gap-1">
+                <tui-icon icon="@tui.users" class="text-sm text-blue-500" />
+                {{ role.userCount }} người dùng
+              </span>
+            </div>
+
+            <!-- Actions -->
+            @if (canManage()) {
+              <footer class="mt-3 flex gap-1.5 border-t border-gray-100 pt-3">
+                @if (canEditRole(role)) {
+                  <button
+                    tuiButton appearance="primary" size="xs"
+                    title="Sửa vai trò và quyền"
+                    (click)="openEditRoleDialog(role)"
+                  >
+                    <tui-icon icon="@tui.pencil" class="mr-1 text-xs" />
+                    Sửa
+                  </button>
+                } @else {
+                  <button
+                    tuiButton appearance="outline" size="xs"
+                    title="Quản lý quyền"
+                    (click)="openManagePermissionsDialog(role)"
+                  >
+                    <tui-icon icon="@tui.shield-check" class="mr-1 text-xs" />
+                    Quyền
+                  </button>
+                }
+                @if (canEditRole(role)) {
+                  <button
+                    tuiButton
+                    [appearance]="role.isActive ? 'destructive' : 'outline'"
+                    size="xs"
+                    [title]="role.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'"
+                    (click)="toggleRoleActive(role)"
+                  >
+                    <tui-icon [icon]="role.isActive ? '@tui.ban' : '@tui.check-circle'" />
+                  </button>
+                }
+              </footer>
+            }
+          </section>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── Divider ────────────────────────────────────────────────────────── -->
+  <!-- <div class="flex items-center gap-3">
+    <div class="flex-1 border-t border-gray-200"></div>
+    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Quyền mặc định theo chức danh</span>
+    <div class="flex-1 border-t border-gray-200"></div>
+  </div> -->
+
+  <!-- ── Built-in role permission viewer ───────────────────────────────── -->
+  <!-- <div class="space-y-4">
+    <div class="flex items-end gap-3">
+      <div class="flex-1 md:max-w-md">
+        <label class="mb-2 block text-sm font-medium text-gray-700">
+          Chọn vai trò để xem quyền mặc định
+        </label>
+        <tui-textfield tuiChevron [stringify]="roleStringify">
+          <input
+            tuiComboBox
+            [formControl]="roleControl"
+            placeholder="Chọn vai trò"
+            [matcher]="matcherRole"
+          />
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (role of availableRoles; track role) {
+              <button new tuiOption type="button" [value]="role">
+                {{ roleStringify(role) }}
+              </button>
+            }
+          </tui-data-list>
+        </tui-textfield>
+      </div>
+    </div>
+
+    @if (selectedRole()) {
+      <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+        <p class="text-sm text-blue-700">
+          <strong>{{ roleStringify(selectedRole()) }}</strong>
+          <br />
+          {{ ROLE_DESCRIPTIONS[selectedRole()] }}
+        </p>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="flex justify-center py-8">
+        <tui-icon icon="@tui.loader-2" class="animate-spin text-2xl text-primary" />
+      </div>
+    }
+
+    @if (!loading() && permissions().length > 0) {
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-gray-800">
+          Danh sách quyền mặc định ({{ permissions().length }} quyền)
+        </h3>
+
+        @for (group of groupedPermissions(); track group.resource) {
+          <div class="rounded-lg border bg-base-100 p-3">
+            <div class="mb-2 flex items-center gap-2">
+              <span class="rounded bg-base-200 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                {{ group.resource }}
+              </span>
+              <span class="text-xs text-gray-500">({{ group.permissions.length }} quyền)</span>
+            </div>
+            <div class="space-y-1">
+              @for (perm of group.permissions; track perm.permissionCode) {
+                <div class="flex items-start gap-2 text-sm">
+                  <span class="mt-0.5 font-bold text-green-600">✓</span>
+                  <div class="flex-1">
+                    <p class="font-medium text-gray-900">{{ perm.permissionName }}</p>
+                    @if (perm.description) {
+                      <p class="text-xs text-gray-500">{{ perm.description }}</p>
+                    }
+                    <p class="font-mono text-xs text-gray-400">{{ perm.permissionCode }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (!loading() && permissions().length === 0 && selectedRole()) {
+      <div class="py-8 text-center">
+        <tui-icon icon="@tui.lock" class="mb-2 text-4xl text-gray-300" />
+        <p class="text-gray-500">Không có quyền nào được gán cho vai trò này</p>
+      </div>
+    }
+  </div> -->
+
+</div>

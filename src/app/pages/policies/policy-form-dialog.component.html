@@ -1,0 +1,125 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="space-y-4 p-1">
+
+  <!-- ── Phạm vi áp dụng ── -->
+  <div>
+    <label tuiLabel class="mb-2">Phạm vi áp dụng <span class="text-red-500">*</span></label>
+    <div class="flex gap-4 mb-2">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="scopeType" [checked]="isGlobal()" (change)="toggleGlobal(true)" class="accent-primary" />
+        <span class="text-sm font-medium">Toàn hệ thống</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="scopeType" [checked]="!isGlobal()" (change)="toggleGlobal(false)" class="accent-primary" />
+        <span class="text-sm font-medium">Chọn chi nhánh cụ thể</span>
+      </label>
+    </div>
+
+    @if (!isGlobal()) {
+      <div class="border border-base-300 rounded-lg p-3 max-h-44 overflow-y-auto space-y-1">
+        @if (storeList().length === 0) {
+          <p class="text-sm text-base-content/50 italic">Chưa có chi nhánh nào.</p>
+        }
+        @for (store of storeList(); track store.storeId) {
+          <label class="flex items-center gap-2 cursor-pointer hover:bg-base-200 px-2 py-1 rounded">
+            <input
+              type="checkbox"
+              [checked]="isStoreSelected(store.storeId!)"
+              (change)="toggleStore(store.storeId!)"
+              class="accent-primary"
+            />
+            <span class="text-sm">{{ store.storeName }}</span>
+          </label>
+        }
+      </div>
+      @if (selectedStoreIds().size > 0) {
+        <p class="text-xs text-primary mt-1">Đã chọn {{ selectedStoreIds().size }} chi nhánh</p>
+      } @else {
+        <p class="text-xs text-warning mt-1">Vui lòng chọn ít nhất một chi nhánh</p>
+      }
+    }
+  </div>
+
+  <!-- ── Ngày hiệu lực ── -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label tuiLabel>Hiệu lực từ <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiInputDate formControlName="effectiveFrom" placeholder="dd/mm/yyyy" />
+        <tui-calendar *tuiTextfieldDropdown />
+      </tui-textfield>
+    </div>
+    <div>
+      <label tuiLabel>Hiệu lực đến</label>
+      <tui-textfield>
+        <input tuiInputDate formControlName="effectiveTo" placeholder="dd/mm/yyyy" />
+        <tui-calendar *tuiTextfieldDropdown />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">Để trống = không giới hạn ngày kết thúc</p>
+    </div>
+
+    <!-- ── Phí ── -->
+    <div>
+      <label tuiLabel>Phạt chậm nộp (%) <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield type="number" formControlName="latePaymentPenaltyRate" step="0.1" />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">Tính trên tổng tiền (gốc+lãi+phí)</p>
+    </div>
+    <div>
+      <label tuiLabel>Bắt đầu tính phạt (ngày thứ) <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield type="number" formControlName="latePaymentStartDay" />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">Mặc định: ngày thứ 4</p>
+    </div>
+    <div>
+      <label tuiLabel>Phạt tất toán sớm (%) <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield type="number" formControlName="earlySettlementPenaltyRate" step="0.1" />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">Tính trên dư nợ gốc còn lại</p>
+    </div>
+    <div>
+      <label tuiLabel>Chuyển nợ xấu (ngày thứ) <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield type="number" formControlName="badDebtStartDay" />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">Mặc định: ngày thứ 11</p>
+    </div>
+    <div class="md:col-span-2">
+      <label tuiLabel>Ngày cảnh báo (cách nhau bằng dấu phẩy)</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="warningDaysStr" placeholder="VD: 3,7,10" />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">Gửi cảnh báo vào các ngày này khi khách chưa trả. Để trống nếu không dùng.</p>
+    </div>
+    <div>
+      <label tuiLabel>Chiết khấu bảo hiểm (%) <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield type="number" formControlName="insuranceDiscountRate" step="0.1" min="0" max="100" />
+      </tui-textfield>
+      <p class="text-xs text-gray-400 mt-1">% công ty nhận lại từ nhà bảo hiểm trên phí bảo hiểm thu hộ</p>
+    </div>
+  </div>
+
+  <!-- ── Lưu ý trùng ngày ── -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+    <strong>Lưu ý xử lý trùng ngày:</strong> Khi có nhiều chính sách cùng hiệu lực, hệ thống ưu tiên theo thứ tự:
+    <ol class="list-decimal list-inside mt-1 space-y-0.5">
+      <li>Chính sách riêng của chi nhánh (effective_from gần nhất)</li>
+      <li>Chính sách toàn hệ thống (effective_from gần nhất)</li>
+    </ol>
+  </div>
+
+  <div class="flex justify-end gap-3 pt-2">
+    <button tuiButton type="button" appearance="outline" size="m" (click)="context.$implicit.complete()">
+      Hủy
+    </button>
+    <button tuiButton type="submit" appearance="primary" size="m" [disabled]="saving()">
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      {{ editingPolicy() ? 'Cập Nhật' : 'Thêm Mới' }}
+    </button>
+  </div>
+</form>

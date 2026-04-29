@@ -1,0 +1,183 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="space-y-4 p-1">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Store (Admin/Regional manager) -->
+    @if (canPickStore()) {
+      <div class="md:col-span-2">
+        <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
+        <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
+          <input
+            tuiComboBox
+            formControlName="storeId"
+            placeholder="Chọn chi nhánh..."
+            [matcher]="storeMatcher"
+          />
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (s of storeList(); track s.storeId) {
+              <button new tuiOption type="button" [value]="s.storeId">
+                <div class="flex flex-col min-w-0 py-0.5">
+                  <span class="font-medium text-sm leading-tight">{{ s.storeName }}</span>
+                  @if (s.storeCode) {
+                    <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
+                      {{ s.storeCode }}
+                    </span>
+                  }
+                </div>
+              </button>
+            }
+          </tui-data-list>
+        </tui-textfield>
+      </div>
+    }
+    <!-- Type -->
+    <div>
+      <label tuiLabel>Loại phiếu <span class="text-red-500">*</span></label>
+      <tui-textfield tuiChevron [stringify]="typeStringify">
+        <input
+          tuiComboBox
+          formControlName="voucherType"
+          placeholder="Chọn loại phiếu"
+          [matcher]="typeMatcher"
+        />
+        <tui-data-list *tuiTextfieldDropdown>
+          @for (t of voucherTypes; track t) {
+            <button new tuiOption type="button" [value]="t">{{ typeStringify(t) }}</button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+    </div>
+    <!-- Reason -->
+    <div>
+      <label tuiLabel>Lý do <span class="text-red-500">*</span></label>
+      <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="reasonStringify">
+        <input
+          tuiComboBox
+          formControlName="reasonCode"
+          placeholder="Chọn lý do"
+          [matcher]="reasonMatcher"
+        />
+        <tui-data-list *tuiTextfieldDropdown>
+          @for (r of filteredReasonCodes(); track r) {
+            <button new tuiOption type="button" [value]="r">
+              <div class="flex flex-col min-w-0 py-0.5">
+                <span class="font-medium text-sm leading-tight">{{ reasonStringify(r) }}</span>
+                <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">{{ r }}</span>
+              </div>
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+    </div>
+    <!-- Date -->
+    <div>
+      <label tuiLabel>Ngày nghiệp vụ <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiInputDate formControlName="businessDate" placeholder="dd/mm/yyyy" />
+        <tui-calendar *tuiTextfieldDropdown />
+      </tui-textfield>
+    </div>
+    <!-- Amount -->
+    <div>
+      <label tuiLabel>Số tiền (VNĐ) <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiInputNumber [tuiNumberFormat]="numberFormat" [postfix]="' VNĐ' | tuiCurrency"  formControlName="amount" placeholder="VD: 10.000.000 VNĐ" />
+      </tui-textfield>
+    </div>
+    <!-- Payer/Receiver Name -->
+    <div>
+      <label tuiLabel>Người nộp / nhận <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="payerReceiverName" placeholder="Họ tên người nộp/nhận" />
+      </tui-textfield>
+    </div>
+    <!-- Address -->
+    <div>
+      <label tuiLabel>Địa chỉ</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="payerReceiverAddress" placeholder="Địa chỉ" />
+      </tui-textfield>
+    </div>
+    <!-- Customer -->
+    <div>
+      <label tuiLabel>Khách hàng (tùy chọn)</label>
+      <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="customerStringify">
+        <input
+          tuiComboBox
+          formControlName="customerId"
+          placeholder="Liên kết khách hàng..."
+          [matcher]="customerMatcher"
+        />
+        <tui-data-list *tuiTextfieldDropdown>
+          @for (c of customers(); track c.customerId) {
+            <button new tuiOption type="button" [value]="c.customerId">
+              <div class="flex flex-col min-w-0 py-0.5">
+                <span class="font-medium text-sm leading-tight">{{ c.fullName }}</span>
+                @if (c.customerCode || c.nationalId) {
+                  <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
+                    {{ c.customerCode || c.nationalId }}
+                  </span>
+                }
+              </div>
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+    </div>
+    <!-- Loan Contract -->
+    <div>
+      <label tuiLabel>Hợp đồng (tùy chọn)</label>
+      <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="loanStringify">
+        <input
+          tuiComboBox
+          formControlName="loanContractId"
+          placeholder="Liên kết hợp đồng..."
+          [matcher]="loanMatcher"
+        />
+        <tui-data-list *tuiTextfieldDropdown>
+          @for (l of loanContracts(); track l.loanContractId) {
+            <button new tuiOption type="button" [value]="l.loanContractId">
+              <div class="flex flex-col min-w-0 py-0.5">
+                <span class="font-medium text-sm leading-tight">{{ l.contractNo }}</span>
+                @if (l.customerName) {
+                  <span class="text-[10px] leading-none text-gray-400 mt-0.5">
+                    {{ l.customerName }}
+                  </span>
+                }
+              </div>
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+    </div>
+    <!-- Description -->
+    <div class="md:col-span-2">
+      <label tuiLabel>Diễn giải <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="description" placeholder="Nội dung diễn giải phiếu..." />
+      </tui-textfield>
+    </div>
+    <!-- Document No -->
+    <div>
+      <label tuiLabel>Số chứng từ</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="documentNo" placeholder="Số hóa đơn / chứng từ" />
+      </tui-textfield>
+    </div>
+  </div>
+
+  <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700">
+    <tui-icon icon="@tui.info" class="mr-1" />
+    Phiếu thu chi sau khi tạo sẽ không thể sửa hoặc xóa. Nếu có sai sót, vui lòng lập phiếu điều chỉnh.
+  </div>
+
+  <div class="flex justify-end gap-3 pt-2">
+    <button tuiButton type="button" appearance="outline" size="m" (click)="context.$implicit.complete()">
+      Hủy
+    </button>
+    <button tuiButton type="submit" appearance="primary" size="m" [disabled]="saving()">
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      Tạo Phiếu
+    </button>
+  </div>
+</form>

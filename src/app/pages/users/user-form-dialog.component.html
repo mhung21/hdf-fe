@@ -1,0 +1,192 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="p-1 space-y-4">
+  <!-- ── Section 1: Thông tin cá nhân ──────────────────── -->
+  <div class="overflow-hidden border border-gray-200 rounded-xl bg-gray-50">
+    <div class="flex items-center gap-2 px-4 py-2.5 bg-white border-b border-gray-200">
+      <tui-icon icon="@tui.user" class="text-sm text-yellow-500" />
+      <span class="text-xs font-semibold tracking-wider text-gray-600 uppercase"
+        >Thông tin cá nhân</span
+      >
+    </div>
+    <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
+      <!-- Họ tên -->
+      <div class="sm:col-span-2">
+        <label tuiLabel>Họ và tên <span class="text-red-500">*</span></label>
+        <tui-textfield>
+          <input tuiTextfield formControlName="fullName" placeholder="Nguyễn Văn A" />
+        </tui-textfield>
+        @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
+          <p class="mt-1 text-xs text-red-500">Vui lòng nhập họ tên</p>
+        }
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label tuiLabel>Email</label>
+        <tui-textfield>
+          <input tuiTextfield formControlName="email" placeholder="name@example.com" />
+        </tui-textfield>
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <p class="mt-1 text-xs text-red-500">Email không hợp lệ</p>
+        }
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label tuiLabel>Số điện thoại</label>
+        <tui-textfield>
+          <input tuiTextfield formControlName="phone" placeholder="0901 234 567" />
+        </tui-textfield>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 2: Tài khoản & Phân quyền ─────────────── -->
+  <div class="overflow-hidden border border-gray-200 rounded-xl bg-gray-50">
+    <div class="flex items-center gap-2 px-4 py-2.5 bg-white border-b border-gray-200">
+      <tui-icon icon="@tui.shield" class="text-sm text-yellow-500" />
+      <span class="text-xs font-semibold tracking-wider text-gray-600 uppercase"
+        >Tài khoản &amp; Phân quyền</span
+      >
+    </div>
+    <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
+      <!-- Username -->
+      <div>
+        <label tuiLabel>Tài khoản <span class="text-red-500">*</span></label>
+        <tui-textfield>
+          <input
+            tuiTextfield
+            formControlName="username"
+            placeholder="username"
+            [attr.readonly]="editingUser() ? true : null"
+          />
+        </tui-textfield>
+        @if (form.get('username')?.invalid && form.get('username')?.touched) {
+          <p class="mt-1 text-xs text-red-500">Tài khoản tối thiểu 3 ký tự</p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label tuiLabel>
+          Mật khẩu
+          @if (!editingUser()) {
+            <span class="text-red-500">*</span>
+          }
+          @if (editingUser()) {
+            <span class="text-xs font-normal text-gray-400">(để trống = không đổi)</span>
+          }
+        </label>
+        <tui-textfield>
+          <input tuiTextfield type="password" formControlName="password" placeholder="••••••••" />
+        </tui-textfield>
+        @if (form.get('password')?.invalid && form.get('password')?.touched) {
+          <p class="mt-1 text-xs text-red-500">Mật khẩu tối thiểu 6 ký tự</p>
+        }
+      </div>
+
+      <!-- Vai trò (chỉ Admin mới chọn được) -->
+      @if (isAdmin()) {
+        <div>
+          <label tuiLabel>Vai trò <span class="text-red-500">*</span></label>
+          <tui-textfield tuiChevron [stringify]="roleStringify">
+            <input
+              tuiComboBox
+              formControlName="roleCode"
+              placeholder="Chọn vai trò"
+              [matcher]="matcherRole"
+            />
+            <tui-data-list *tuiTextfieldDropdown>
+              @for (role of availableRoles(); track role) {
+                <button new tuiOption type="button" [value]="role">
+                  {{ roleStringify(role) }}
+                </button>
+              }
+            </tui-data-list>
+          </tui-textfield>
+        </div>
+      }
+
+      <!-- Chi nhánh đơn (STORE_MANAGER / STAFF, chỉ Admin mới chọn được) -->
+      @if (showSingleStoreField()) {
+        <div>
+          <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
+          <tui-textfield tuiChevron [stringify]="storeStringify">
+            <input
+              tuiComboBox
+              formControlName="storeId"
+              placeholder="Chọn chi nhánh..."
+              [matcher]="matcherStore"
+            />
+            <tui-data-list *tuiTextfieldDropdown>
+              @for (store of storeList(); track store.storeId) {
+                <button new tuiOption type="button" [value]="store.storeId">
+                  {{ store.storeName }}
+                </button>
+              }
+            </tui-data-list>
+          </tui-textfield>
+        </div>
+      }
+
+      <!-- Nhiều chi nhánh (REGIONAL_MANAGER) -->
+      @if (showMultiStoreField()) {
+        <div class="sm:col-span-2">
+          <label tuiLabel>Chi nhánh phụ trách <span class="text-red-500">*</span></label>
+          <tui-textfield multi tuiChevron [stringify]="storeStringifyById">
+            <input
+              tuiInputChip
+              tuiSelectLike
+              placeholder="Chọn một hoặc nhiều chi nhánh"
+              [ngModel]="selectedStoreIds()"
+              (ngModelChange)="selectedStoreIds.set($event)"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <tui-data-list *tuiTextfieldDropdown>
+              @for (store of storeList(); track store.storeId) {
+                <button
+                  new
+                  tuiOption
+                  type="button"
+                  [value]="store.storeId"
+                >
+                  {{ store.storeName }}
+                </button>
+              }
+            </tui-data-list>
+          </tui-textfield>
+          @if (selectedStoreIds().length === 0) {
+            <p class="mt-1 text-xs text-gray-400">Quản lý vùng phải quản lý ít nhất 1 chi nhánh</p>
+          }
+        </div>
+      }
+
+      <!-- Yêu cầu đổi mật khẩu (chỉ khi tạo mới) -->
+      @if (!editingUser()) {
+        <div class="sm:col-span-2 flex items-center gap-2.5 pt-1">
+          <input
+            type="checkbox"
+            tuiCheckbox
+            id="mustChangePwd"
+            formControlName="mustChangePassword"
+          />
+          <label for="mustChangePwd" class="text-sm text-gray-700 cursor-pointer select-none">
+            Yêu cầu đổi mật khẩu lần đăng nhập đầu tiên
+          </label>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Dialog actions ──────────────────────────────────── -->
+  <div class="flex justify-end gap-2 pt-1">
+    <button tuiButton type="button" appearance="outline" size="m" (click)="context.completeWith()">
+      Huỷ
+    </button>
+    <button tuiButton type="submit" appearance="primary" size="m" [disabled]="saving()">
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      {{ editingUser() ? 'Cập nhật' : 'Tạo mới' }}
+    </button>
+  </div>
+</form>

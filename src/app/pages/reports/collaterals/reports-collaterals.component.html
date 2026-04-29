@@ -1,0 +1,198 @@
+<div class="p-4 space-y-4 md:p-6">
+  <!-- Header -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-gray-900">Thống Kê Tài Sản Đảm Bảo</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Tỷ lệ bể, giá trị trung bình và thu hồi theo thời gian</p>
+    </div>
+    <button tuiButton appearance="primary" size="m" (click)="load()">
+      <tui-icon icon="@tui.refresh-cw" class="mr-1" />
+      Làm mới
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap gap-3 bg-white border border-gray-200 rounded-xl p-3">
+    <div class="flex flex-col gap-1 min-w-[220px]">
+      <label class="text-xs font-medium text-gray-500">Khoảng thời gian</label>
+      <tui-textfield>
+        <input tuiInputDateRange [formControl]="dateRangeControl" placeholder="Từ ngày – đến ngày" />
+        <tui-calendar-range *tuiTextfieldDropdown />
+      </tui-textfield>
+    </div>
+
+    @if (isAdmin()) {
+      <div class="flex flex-col gap-1 min-w-[200px]">
+        <label class="text-xs font-medium text-gray-500">Chi nhánh</label>
+        <tui-textfield tuiChevron [stringify]="storeStringify">
+          <input
+            tuiComboBox
+            [formControl]="storeControl"
+            placeholder="Tất cả chi nhánh"
+            [matcher]="matcherStore"
+          />
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (id of storeOptions(); track id) {
+              <button new tuiOption type="button" [value]="id">{{ storeStringify(id) }}</button>
+            }
+          </tui-data-list>
+        </tui-textfield>
+      </div>
+    }
+
+    <div class="flex items-end">
+      <button tuiButton appearance="secondary" size="m" (click)="load()">Lọc</button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <!-- Skeleton Summary -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="bg-white rounded-xl border border-gray-200 p-4">
+          <div [tuiSkeleton]="true" class="h-7 w-16 rounded mx-auto mb-2"></div>
+          <div [tuiSkeleton]="true" class="h-3 w-24 rounded mx-auto"></div>
+        </div>
+      }
+    </div>
+  } @else if (result()) {
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-2xl font-bold text-gray-900">{{ result()!.totalCollaterals ?? 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">Tổng TSĐB</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-base font-bold text-blue-700">{{ fmt(result()!.totalEstimatedValue) }}</div>
+        <div class="text-xs text-gray-500 mt-1">Tổng giá trị</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="inline-flex items-center justify-center gap-1">
+          <span class="text-2xl font-bold" [class]="(result()!.overallBadDebtRate ?? 0) >= 10 ? 'text-red-600' : 'text-amber-600'">
+            {{ fmtPct(result()!.overallBadDebtRate) }}
+          </span>
+        </div>
+        <div class="text-xs text-gray-500 mt-1">Tỷ lệ bể ({{ result()!.totalBadDebt ?? 0 }} HĐ)</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-base font-bold text-emerald-700">{{ fmt(result()!.totalRecovered) }}</div>
+        <div class="text-xs text-gray-500 mt-1">Đã thu hồi</div>
+      </div>
+    </div>
+
+    <!-- By Type Table -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+        <tui-icon icon="@tui.package" class="text-gray-500 text-sm" />
+        <h2 class="font-semibold text-gray-700 text-sm">Thống kê theo Loại Tài Sản</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-gray-600">Loại tài sản</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-600">Số lượng</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-600">Tổng giá trị</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-600">Giá trị TB</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-600">HĐ nợ xấu</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-600">Tỷ lệ bể</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (byType().length === 0) {
+              <tr>
+                <td class="px-4 py-6 text-center text-gray-400" colspan="6">
+                  Không có dữ liệu
+                </td>
+              </tr>
+            } @else {
+              @for (row of byType(); track row.collateralType) {
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <td class="px-4 py-3 font-medium text-gray-900">{{ row.collateralType ?? 'Khác' }}</td>
+                  <td class="px-4 py-3 text-right text-gray-700">{{ row.totalCount ?? 0 }}</td>
+                  <td class="px-4 py-3 text-right text-blue-700">{{ fmt(row.totalValue) }}</td>
+                  <td class="px-4 py-3 text-right text-gray-600">{{ fmt(row.avgValue) }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <span [class]="(row.badDebtCount ?? 0) > 0 ? 'text-red-600 font-semibold' : 'text-gray-400'">
+                      {{ row.badDebtCount ?? 0 }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                      [class]="(row.badDebtRate ?? 0) >= 10 ? 'bg-red-100 text-red-700' : (row.badDebtRate ?? 0) >= 5 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'"
+                    >{{ fmtPct(row.badDebtRate) }}</span>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recovery Tables -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- By Month -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100">
+          <h2 class="font-semibold text-gray-700 text-sm">Thu Hồi Theo Tháng</h2>
+        </div>
+        <div class="overflow-x-auto max-h-[360px] overflow-y-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200 sticky top-0">
+              <tr>
+                <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tháng</th>
+                <th class="px-4 py-2.5 text-right font-semibold text-gray-600">Đã thu hồi</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (byMonth().length === 0) {
+                <tr>
+                  <td class="px-4 py-6 text-center text-gray-400" colspan="2">Không có dữ liệu</td>
+                </tr>
+              } @else {
+                @for (row of byMonth(); track row.yearMonth) {
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-4 py-2.5 text-gray-700">{{ fmtMonth(row.yearMonth) }}</td>
+                    <td class="px-4 py-2.5 text-right text-emerald-700 font-medium">{{ fmt(row.recoveredAmount) }}</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- By Year -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100">
+          <h2 class="font-semibold text-gray-700 text-sm">Thu Hồi Theo Năm</h2>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Năm</th>
+              <th class="px-4 py-2.5 text-right font-semibold text-gray-600">Tổng thu hồi</th>
+              <th class="px-4 py-2.5 text-right font-semibold text-gray-600">TB/tháng</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (byYear().length === 0) {
+              <tr>
+                <td class="px-4 py-6 text-center text-gray-400" colspan="3">Không có dữ liệu</td>
+              </tr>
+            } @else {
+              @for (row of byYear(); track row.year) {
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-2.5 font-medium text-gray-900">{{ row.year }}</td>
+                  <td class="px-4 py-2.5 text-right text-emerald-700 font-medium">{{ fmt(row.recoveredAmount) }}</td>
+                  <td class="px-4 py-2.5 text-right text-gray-600">{{ fmt(row.avgPerMonth) }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

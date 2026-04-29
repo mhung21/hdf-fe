@@ -1,0 +1,54 @@
+.container {
+  &.tui-enter,
+  &.tui-leave {
+    animation-name: tuiSlide;
+    // animation-duration: 0.3s;
+  }
+}
+
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Smooth scrolling */
+main {
+  scroll-behavior: smooth;
+}
+
+main::-webkit-scrollbar {
+  width: 8px;
+}
+
+main::-webkit-scrollbar-track {
+  background: hsl(var(--b2));
+}
+
+main::-webkit-scrollbar-thumb {
+  background: hsl(var(--bc) / 0.2);
+  border-radius: 4px;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--bc) / 0.3);
+}
+
+/* Mobile drawer animation */
+.drawer-side {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Header sticky shadow on scroll */
+header {
+  box-shadow: 0 1px 0 0 hsl(var(--bc) / 0.05);
+}

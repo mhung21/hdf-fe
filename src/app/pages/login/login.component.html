@@ -1,0 +1,166 @@
+<div class="relative min-h-screen flex items-center justify-center p-5 overflow-hidden">
+  <!-- Animated background -->
+  <div class="fixed inset-0 z-0" aria-hidden="true">
+    <div class="bg-gradient-layer"></div>
+    <div class="bg-noise"></div>
+    <div class="floating-orb orb-1"></div>
+    <div class="floating-orb orb-2"></div>
+    <div class="floating-orb orb-3"></div>
+    <div class="floating-orb orb-4"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Main card -->
+  <section class="transform-gpu animate-fadeIn relative z-10 w-full max-w-230">
+    <div class="login-layout">
+
+      <!-- Left: Brand showcase -->
+      <div class="relative overflow-hidden max-md:hidden">
+        <div class="brand-panel-inner">
+          <div class="brand-glow" aria-hidden="true"></div>
+
+          <div class="relative z-1 flex flex-col items-center text-center gap-7">
+            <div class="logo-ring">
+              <img
+                src="/images/main_logo.png"
+                alt="HD Finance"
+                class="object-contain w-20 h-20"
+              />
+            </div>
+
+            <div class="text-center">
+              <h1 class="m-0 text-2xl font-extrabold tracking-tight text-white">
+                HD Finance
+              </h1>
+              <p class="m-0 mt-1 text-sm font-medium tracking-wide text-emerald-200/80">
+                Thân thiện – Tận tâm – Trung thực
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-3 w-full">
+              <div class="flex items-center gap-3 px-4 py-3 rounded-[14px] bg-white/6 border border-white/8 backdrop-blur-sm transition-colors duration-300 hover:bg-white/10 hover:border-emerald-300/25">
+                <div class="shrink-0 size-9 flex items-center justify-center rounded-[10px] bg-linear-to-br from-emerald-500/25 to-emerald-600/15 text-emerald-300">
+                  <tui-icon icon="@tui.chart-line"></tui-icon>
+                </div>
+                <div>
+                  <p class="m-0 text-sm font-semibold text-white">Theo dõi realtime</p>
+                  <p class="m-0 text-xs text-emerald-300/70">Hợp đồng & giao dịch</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 px-4 py-3 rounded-[14px] bg-white/6 border border-white/8 backdrop-blur-sm transition-colors duration-300 hover:bg-white/10 hover:border-emerald-300/25">
+                <div class="shrink-0 size-9 flex items-center justify-center rounded-[10px] bg-linear-to-br from-emerald-500/25 to-emerald-600/15 text-emerald-300">
+                  <tui-icon icon="@tui.shield-check"></tui-icon>
+                </div>
+                <div>
+                  <p class="m-0 text-sm font-semibold text-white">Bảo mật đa lớp</p>
+                  <p class="m-0 text-xs text-emerald-300/70">Phân quyền theo vai trò</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 px-4 py-3 rounded-[14px] bg-white/6 border border-white/8 backdrop-blur-sm transition-colors duration-300 hover:bg-white/10 hover:border-emerald-300/25">
+                <div class="shrink-0 size-9 flex items-center justify-center rounded-[10px] bg-linear-to-br from-emerald-500/25 to-emerald-600/15 text-emerald-300">
+                  <tui-icon icon="@tui.bar-chart-3"></tui-icon>
+                </div>
+                <div>
+                  <p class="m-0 text-sm font-semibold text-white">Báo cáo thông minh</p>
+                  <p class="m-0 text-xs text-emerald-300/70">Đối soát tập trung</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Login form -->
+      <div class="form-panel">
+        <div class="flex flex-col justify-center min-h-full px-8 py-10">
+          <!-- Mobile logo -->
+          <div class="flex justify-center mb-6 md:hidden">
+            <div class="logo-ring logo-ring-sm">
+              <img src="/images/main_logo.png" alt="HD Finance" class="object-contain w-12 h-12" />
+            </div>
+          </div>
+
+          <header class="mb-6">
+            <h2 class="m-0 text-xl font-bold text-white">Đăng nhập</h2>
+            <p class="m-0 mt-1 text-sm text-white/55">Chào mừng bạn quay lại 👋</p>
+          </header>
+
+          @if (errorMessage()) {
+            <div
+              class="flex items-center gap-2 px-4 py-3 mb-4 text-sm text-red-800 bg-red-100/80 border border-red-300/40 rounded-xl animate-slideDown"
+              role="alert"
+              aria-live="assertive"
+            >
+              <tui-icon icon="@tui.circle-alert"></tui-icon>
+              <span class="font-medium">{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="grid gap-5" novalidate>
+            <div class="grid gap-1.5">
+              <label for="usernameInput" class="text-xs font-semibold text-white/75 tracking-[0.01em]">Tên đăng nhập</label>
+              <tui-textfield class="field-control">
+                <input
+                  id="usernameInput"
+                  tuiTextfield
+                  type="text"
+                  name="username"
+                  placeholder="Nhập tên đăng nhập"
+                  [ngModel]="username()"
+                  (ngModelChange)="username.set($event)"
+                  [disabled]="isLoading()"
+                  required
+                  autocomplete="username"
+                />
+                <tui-icon icon="@tui.user" tuiTextfieldIconLeft></tui-icon>
+              </tui-textfield>
+            </div>
+
+            <div class="grid gap-1.5">
+              <label for="passwordInput" class="text-xs font-semibold text-white/75 tracking-[0.01em]">Mật khẩu</label>
+              <tui-textfield class="field-control">
+                <input
+                  id="passwordInput"
+                  tuiTextfield
+                  name="password"
+                  placeholder="Nhập mật khẩu"
+                  type="password"
+                  [ngModel]="password()"
+                  (ngModelChange)="password.set($event)"
+                  [disabled]="isLoading()"
+                  required
+                  autocomplete="current-password"
+                />
+                <tui-icon icon="@tui.lock" tuiTextfieldIconLeft></tui-icon>
+              </tui-textfield>
+            </div>
+
+            <button
+              tuiButton
+              type="submit"
+              appearance="primary"
+              size="l"
+              class="w-full login-submit"
+              [disabled]="isLoading() || !loginForm.valid"
+            >
+              @if (isLoading()) {
+                <span class="login-spinner"></span>
+                Đang đăng nhập...
+              } @else {
+                <tui-icon icon="@tui.log-in"></tui-icon>
+                Đăng nhập
+              }
+            </button>
+          </form>
+
+          <footer class="mt-6 text-center">
+            <p class="m-0 text-[11px] text-white/35">
+              © 2026 Công ty TNHH HD Finance
+            </p>
+          </footer>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>

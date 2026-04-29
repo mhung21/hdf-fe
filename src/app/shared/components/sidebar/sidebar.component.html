@@ -1,0 +1,120 @@
+<aside class="sidebar-shell" [class.collapsed]="isCollapsed()">
+  <div class="sidebar-glow" aria-hidden="true"></div>
+
+  <header class="sidebar-header relative z-[1] flex items-center justify-center gap-2 py-4 px-3 border-b border-green-600/[.16]">
+    <a routerLink="/dashboard" class="flex flex-col items-center gap-[0.4rem] w-full min-w-0" aria-label="Về trang tổng quan">
+      <img
+        src="/images/main_logo.png"
+        alt="HD Finance"
+        class="object-contain w-full"
+        [class.h-16]="!isCollapsed()"
+        [class.h-12]="isCollapsed()"
+      />
+
+      @if (!isCollapsed()) {
+        <div class="flex flex-col items-center text-center min-w-0">
+          <span class="text-sm font-semibold tracking-[0.01em] whitespace-nowrap overflow-hidden text-ellipsis text-gray-600">Thân thiện - Tận tâm - Trung thực</span>
+        </div>
+      }
+    </a>
+
+    <!-- <button
+      type="button"
+      class="collapse-btn"
+      (click)="isCollapsed.set(!isCollapsed())"
+      [attr.aria-label]="isCollapsed() ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
+      [attr.aria-expanded]="!isCollapsed()"
+    >
+      <tui-icon [icon]="isCollapsed() ? '@tui.panel-left-open' : '@tui.panel-left-close'"></tui-icon>
+    </button> -->
+  </header>
+
+  <!-- @if (currentUser(); as user) {
+    <section class="profile-card">
+      <div class="profile-avatar-wrap">
+        @if (user.avatar) {
+          <img [src]="user.avatar" alt="Avatar người dùng" class="profile-avatar" />
+        } @else {
+          <div class="profile-avatar initials">
+            {{ user.fullName.split(' ').map(n => n.charAt(0).toUpperCase()).join('') }}
+          </div>
+        }
+      </div>
+
+      @if (!isCollapsed()) {
+        <div class="profile-content">
+          <p class="profile-name">{{ user.fullName }}</p>
+          <p class="profile-role">{{ user.role }}</p>
+        </div>
+      }
+    </section>
+  } -->
+
+  <nav class="sidebar-nav relative z-[1] flex-1 overflow-auto py-1 px-[0.7rem] pb-[0.8rem]" aria-label="Điều hướng chính">
+    <ul class="grid gap-1 m-0 p-0 list-none">
+      @for (item of visibleMenuItems(); track item.label) {
+        <li>
+          @if (item.children && item.children.length > 0) {
+            <details class="menu-group">
+              <summary class="menu-link menu-summary" [attr.data-tip]="isCollapsed() ? item.label : null">
+                <span class="menu-icon-wrap">
+                  <tui-icon [icon]="item.icon" class="text-base"></tui-icon>
+                </span>
+
+                @if (!isCollapsed()) {
+                  <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+                }
+
+                @if (!isCollapsed() && item.badge) {
+                  <span class="menu-badge">{{ item.badge }}</span>
+                }
+
+                @if (!isCollapsed() && hasAccessibleChildren(item, currentUser()?.role || '')) {
+                  <tui-icon icon="@tui.chevron-right" class="menu-chevron"></tui-icon>
+                }
+              </summary>
+
+              @if (!isCollapsed()) {
+                <ul class="submenu-list">
+                  @for (child of item.children; track child.label) {
+                    @if (hasAccess(child, currentUser()?.role || '')) {
+                      <li>
+                        <a [routerLink]="child.route" routerLinkActive="active" class="submenu-link">
+                          <span class="submenu-dot"></span>
+                          <span class="min-w-0 flex-1 truncate">{{ child.label }}</span>
+                          @if (child.badge) {
+                            <span class="menu-badge">{{ child.badge }}</span>
+                          }
+                        </a>
+                      </li>
+                    }
+                  }
+                </ul>
+              }
+            </details>
+          } @else {
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              class="menu-link"
+              [attr.data-tip]="isCollapsed() ? item.label : null"
+            >
+              <span class="menu-icon-wrap">
+                <tui-icon [icon]="item.icon" class="text-base"></tui-icon>
+              </span>
+
+              @if (!isCollapsed()) {
+                <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+              }
+
+              @if (!isCollapsed() && item.badge) {
+                <span class="menu-badge">{{ item.badge }}</span>
+              }
+            </a>
+          }
+        </li>
+      }
+    </ul>
+  </nav>
+
+</aside>

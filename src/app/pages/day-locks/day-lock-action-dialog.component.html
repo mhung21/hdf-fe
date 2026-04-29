@@ -1,0 +1,60 @@
+<form [formGroup]="form" (ngSubmit)="confirm()" class="p-1 space-y-4">
+  @if (action() === 'lock') {
+    <div class="flex items-start gap-3 p-4 border rounded-lg bg-amber-50 border-amber-200">
+      <tui-icon icon="@tui.lock" class="text-amber-500 mt-0.5 shrink-0" />
+      <p class="text-sm text-amber-700">
+        Sau khi khóa ngày, không thể thêm hoặc sửa phiếu thu chi cho ngày này.
+      </p>
+    </div>
+  } @else {
+    <div class="flex items-start gap-3 p-4 border border-blue-200 rounded-lg bg-blue-50">
+      <tui-icon icon="@tui.unlock" class="text-blue-500 mt-0.5 shrink-0" />
+      <p class="text-sm text-blue-700">
+        Mở khóa sẽ cho phép chỉnh sửa dữ liệu ngày đã chọn. Chỉ dùng khi cần điều chỉnh.
+      </p>
+    </div>
+  }
+
+  <div>
+    <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
+    <tui-textfield tuiChevron [stringify]="storeStringify">
+      <input
+        tuiComboBox
+        formControlName="storeId"
+        placeholder="Chọn chi nhánh..."
+        [matcher]="storeMatcher"
+      />
+      <tui-data-list *tuiTextfieldDropdown>
+        @for (s of stores(); track s.storeId) {
+          <button new tuiOption type="button" [value]="s.storeId">{{ s.storeName }}</button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+  </div>
+
+  <div>
+    <label tuiLabel>Ngày nghiệp vụ <span class="text-red-500">*</span></label>
+    <tui-textfield>
+      <input tuiInputDate formControlName="businessDate" placeholder="dd/mm/yyyy" />
+      <tui-calendar *tuiTextfieldDropdown />
+    </tui-textfield>
+  </div>
+
+  <div class="flex justify-end gap-3 pt-2">
+    <button tuiButton type="button" appearance="outline" size="m" (click)="context.$implicit.complete()">
+      Hủy
+    </button>
+    <button
+      tuiButton
+      type="submit"
+      [appearance]="action() === 'lock' ? 'primary' : 'outline'"
+      size="m"
+      [disabled]="saving()"
+    >
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      {{ action() === 'lock' ? 'Khóa Ngày' : 'Mở Khóa' }}
+    </button>
+  </div>
+</form>

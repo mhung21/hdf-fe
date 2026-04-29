@@ -1,0 +1,72 @@
+<div class="p-4 space-y-6 md:p-6">
+  <!-- Header -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-lg font-bold text-gray-900">Khóa Ngày</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Khóa / mở khóa ngày nghiệp vụ cho từng chi nhánh</p>
+    </div>
+    @if (canManage()) {
+      <div class="flex items-center gap-3">
+        <button tuiButton appearance="primary" size="m" (click)="openLockDialog()">
+          <tui-icon icon="@tui.lock" class="mr-1" />
+          Khóa Ngày
+        </button>
+        <button tuiButton appearance="outline" size="m" (click)="openUnlockDialog()">
+          <tui-icon icon="@tui.unlock" class="mr-1" />
+          Mở Khóa
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Info Card -->
+  <div class="p-5 border bg-amber-50 border-amber-200 rounded-xl">
+    <div class="flex items-start gap-3">
+      <tui-icon icon="@tui.info" class="text-amber-500 shrink-0 mt-0.5" />
+      <div>
+        <p class="mb-2 text-sm font-semibold text-amber-800">Quy trình khóa ngày</p>
+        <ul class="space-y-1 text-xs text-amber-700">
+          <li>• Cuối mỗi ngày nghiệp vụ, quản lý cần khóa ngày để xác nhận dữ liệu</li>
+          <li>• Sau khi khóa, không thể thêm/sửa phiếu thu chi cho ngày đó</li>
+          <li>• Admin có thể mở khóa khi cần điều chỉnh</li>
+          <li>• Nhân viên: không được nhập sau ngày hôm sau</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Store List -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-16">
+      <tui-icon icon="@tui.loader-2" class="mr-3 text-2xl text-gray-400 animate-spin" />
+      <span class="text-gray-500">Đang tải...</span>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      @for (store of stores(); track store.storeId) {
+        <div class="p-5 transition-colors bg-white border border-gray-200 rounded-xl hover:border-gray-300">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-semibold text-gray-900">{{ store.storeName }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ store.storeCode }}</p>
+            </div>
+            @if (store.isActive) {
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">Hoạt động</span>
+            } @else {
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">Đã đóng</span>
+            }
+          </div>
+          @if (store.address) {
+            <p class="mt-2 text-xs text-gray-500">{{ store.address }}</p>
+          }
+        </div>
+      }
+      @if (stores().length === 0) {
+        <div class="py-12 text-center text-gray-400 md:col-span-3">
+          <tui-icon icon="@tui.store" class="mb-2 text-3xl" />
+          <p class="text-sm">Không có chi nhánh nào</p>
+        </div>
+      }
+    </div>
+  }
+</div>

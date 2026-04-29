@@ -1,0 +1,61 @@
+<form [formGroup]="form" (ngSubmit)="confirm()" class="p-1 space-y-4">
+  <!-- Thông báo -->
+  <div class="flex items-start gap-3 p-4 border border-amber-200 rounded-lg bg-amber-50">
+    <tui-icon icon="@tui.user-check" class="text-amber-600 mt-0.5 shrink-0" />
+    <div>
+      <p class="text-sm font-medium text-amber-800">Chuyển giao phụ trách khách hàng</p>
+      <p class="text-sm text-amber-700 mt-1">
+        Toàn bộ hợp đồng của khách hàng này cũng sẽ được chuyển sang nhân viên mới.
+      </p>
+    </div>
+  </div>
+
+  <p class="text-sm text-gray-700">
+    Khách hàng: <strong class="text-gray-900">{{ context.data.customerName }}</strong>
+  </p>
+
+  <!-- Chọn nhân viên -->
+  <div>
+    <label tuiLabel class="mb-1">Nhân viên tiếp nhận <span class="text-red-500">*</span></label>
+    <tui-textfield tuiChevron [stringify]="userStringify">
+      <input
+        tuiComboBox
+        formControlName="targetUserId"
+        placeholder="Tìm theo tên hoặc tên đăng nhập..."
+        [matcher]="userMatcher"
+      />
+      <tui-data-list *tuiTextfieldDropdown>
+        @for (user of users(); track user.userId) {
+          <button new tuiOption type="button" [value]="user.userId">
+            {{ user.fullName }}
+            @if (user.username) {
+              <span class="text-xs text-gray-400 ml-1">({{ user.username }})</span>
+            }
+          </button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+    @if (form.get('targetUserId')?.invalid && form.get('targetUserId')?.touched) {
+      <p class="mt-1 text-xs text-red-500">Vui lòng chọn nhân viên tiếp nhận</p>
+    }
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-end gap-3 pt-1">
+    <button
+      tuiButton
+      type="button"
+      appearance="outline"
+      size="m"
+      (click)="context.$implicit.complete()"
+    >
+      Hủy
+    </button>
+    <button tuiButton type="submit" appearance="primary" size="m" [disabled]="saving()">
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      Xác Nhận Chuyển Giao
+    </button>
+  </div>
+</form>

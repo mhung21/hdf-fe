@@ -1,0 +1,401 @@
+<form
+  [formGroup]="form"
+  (ngSubmit)="save()"
+  class="flex h-[min(90dvh,48rem)] max-h-[calc(100dvh-1.5rem)] min-h-0 flex-col overflow-hidden p-1"
+>
+  <div class="overflow-y-auto overflow-x-hidden flex-1 pr-1 min-h-0">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <!-- CCCD -->
+      <div>
+        <label tuiLabel>CCCD / CMND <span class="text-red-500">*</span></label>
+        @if (!editingCustomer()) {
+          <tui-textfield>
+            <input
+              tuiTextfield
+              formControlName="nationalId"
+              placeholder="Nhập 12 số CCCD..."
+              maxlength="12"
+            />
+            <button
+              tuiTextfieldAction
+              type="button"
+              appearance="flat"
+              size="xs"
+              [tuiHint]="'Kiểm tra CCCD'"
+              [disabled]="checkingNationalId() || !!form.get('nationalId')?.invalid"
+              (click)="checkNationalId()"
+              class="cursor-pointer"
+            >
+              @if (checkingNationalId()) {
+                <tui-icon icon="@tui.loader-2" class="animate-spin text-primary" />
+              } @else {
+                <tui-icon icon="@tui.search" class="text-primary" />
+              }
+            </button>
+          </tui-textfield>
+        } @else {
+          <tui-textfield>
+            <input
+              tuiTextfield
+              formControlName="nationalId"
+              placeholder="12 chữ số"
+              maxlength="12"
+            />
+          </tui-textfield>
+        }
+        @if (form.get('nationalId')?.errors?.['required'] && form.get('nationalId')?.touched) {
+          <p class="mt-1 text-xs text-red-500">Vui lòng nhập CCCD</p>
+        }
+        @if (form.get('nationalId')?.errors?.['pattern'] && form.get('nationalId')?.touched) {
+          <p class="mt-1 text-xs text-red-500">CCCD phải đúng 12 chữ số</p>
+        }
+        @if (nationalIdCheckStatus() === 'found') {
+          <p class="flex gap-1 items-center mt-1 text-xs text-red-600">
+            <tui-icon icon="@tui.x-circle" class="text-xs" />
+            Khách hàng đã tồn tại — không thể tạo mới
+          </p>
+        }
+        @if (nationalIdCheckStatus() === 'none' && !editingCustomer()) {
+          <p class="mt-1 text-xs italic font-medium text-gray-400">
+            <tui-icon icon="@tui.info" class="text-[10px] mr-0.5" />
+            Vui lòng bấm kính lúp để kiểm tra trước khi tạo
+          </p>
+        }
+        @if (nationalIdCheckStatus() === 'not-found') {
+          <p class="flex gap-1 items-center mt-1 text-xs text-green-600">
+            <tui-icon icon="@tui.check" class="text-xs" />
+            CCCD chưa có trong hệ thống
+          </p>
+        }
+      </div>
+
+      <!-- Họ tên -->
+      <div>
+        <label tuiLabel>Họ và tên <span class="text-red-500">*</span></label>
+        <tui-textfield>
+          <input tuiTextfield formControlName="fullName" placeholder="Nguyễn Văn A" />
+        </tui-textfield>
+        @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
+          <p class="mt-1 text-xs text-red-500">Vui lòng nhập họ tên</p>
+        }
+      </div>
+
+      <!-- Ngày sinh -->
+      <div>
+        <label tuiLabel>Ngày sinh</label>
+        <tui-textfield>
+          <input tuiInputDate formControlName="dateOfBirth" placeholder="dd/mm/yyyy" />
+          <tui-calendar *tuiTextfieldDropdown />
+        </tui-textfield>
+      </div>
+
+      <!-- Giới tính -->
+      <div>
+        <label tuiLabel>Giới tính</label>
+        <tui-textfield tuiChevron [stringify]="stringifyGender">
+          <input tuiComboBox formControlName="gender" placeholder="Chọn giới tính" />
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (id of genderIds; track id) {
+              <button new tuiOption type="button" [value]="id">
+                {{ stringifyGender(id) }}
+              </button>
+            }
+          </tui-data-list>
+        </tui-textfield>
+      </div>
+
+      <!-- SĐT -->
+      <div>
+        <label tuiLabel>Số điện thoại <span class="text-red-500">*</span></label>
+        <tui-textfield>
+          <input tuiTextfield formControlName="phone" placeholder="0901 234 567" maxlength="12" />
+        </tui-textfield>
+      </div>
+
+      <!-- Địa chỉ -->
+      <div>
+        <label tuiLabel>Địa chỉ</label>
+        <tui-textfield>
+          <input tuiTextfield formControlName="address" placeholder="123 Nguyễn Huệ..." />
+        </tui-textfield>
+      </div>
+
+      <!-- Chi nhánh (chỉ Admin mới chọn được; non-Admin tự động theo chi nhánh) -->
+      @if (canPickStore()) {
+        <div>
+          <label tuiLabel>Chi nhánh tiếp nhận</label>
+          <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="stringifyStore">
+            <input
+              tuiComboBox
+              formControlName="firstStoreId"
+              placeholder="Chọn chi nhánh..."
+              [matcher]="matcherStore"
+            />
+            <tui-data-list *tuiTextfieldDropdown>
+              @for (store of storeList(); track store.storeId) {
+                <button new tuiOption type="button" [value]="store.storeId">
+                  {{ store.storeName }}
+                </button>
+              }
+            </tui-data-list>
+          </tui-textfield>
+        </div>
+      }
+
+      <!-- Nợ xấu (chỉ khi edit và có quyền — Admin / STORE_MANAGER) -->
+      @if (editingCustomer() && canEditBadHistory()) {
+        <div class="flex gap-2 items-center sm:col-span-2">
+          <input
+            type="checkbox"
+            id="hasBadHistory"
+            formControlName="hasBadHistory"
+            class="w-4 h-4 rounded border-gray-300"
+          />
+          <label for="hasBadHistory" class="text-sm text-gray-700 cursor-pointer"
+            >Khách có lịch sử nợ xấu</label
+          >
+        </div>
+        @if (form.get('hasBadHistory')?.value) {
+          <div class="sm:col-span-2">
+            <label tuiLabel>Ghi chú nợ xấu</label>
+            <tui-textfield>
+              <input tuiTextfield formControlName="badHistoryNote" placeholder="Mô tả lịch sử..." />
+            </tui-textfield>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ── Ảnh CCCD / Upload (Tạo mới) hoặc Xem (Edit — chỉ Admin/Manager) ── -->
+    <div class="pt-4 space-y-3 border-t border-gray-100">
+      <p
+        class="flex gap-1.5 items-center text-xs font-semibold tracking-wide text-gray-500 uppercase"
+      >
+        <tui-icon icon="@tui.id-card" class="text-[10px]" />Ảnh CCCD / CMND
+      </p>
+
+      @if (!editingCustomer()) {
+        <!-- Tạo mới: bắt buộc upload ảnh CCCD -->
+        <p class="text-xs text-gray-400">
+          Tải lên ảnh CCCD <span class="font-medium text-red-500">*</span> — bắt buộc cả 2 mặt trước
+          khi tạo khách hàng.
+        </p>
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Mặt trước -->
+          <div>
+            <p class="mb-1.5 text-xs text-gray-400">Mặt trước</p>
+            @if (pendingCccd1(); as c1) {
+              <div
+                class="overflow-hidden relative bg-gray-50 rounded-lg border border-violet-200 group aspect-video"
+              >
+                <img
+                  [src]="c1.previewUrl"
+                  alt="CCCD mặt trước"
+                  class="object-cover w-full h-full"
+                />
+                <div
+                  class="flex absolute inset-0 justify-center items-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40"
+                >
+                  <button
+                    tuiButton
+                    type="button"
+                    size="xs"
+                    appearance="destructive"
+                    (click)="removePendingCccd1()"
+                  >
+                    <tui-icon icon="@tui.trash-2" />
+                  </button>
+                </div>
+                <div
+                  class="flex absolute right-1 bottom-1 left-1 gap-1 items-center px-1.5 py-0.5 rounded bg-white/80"
+                >
+                  <tui-icon icon="@tui.check-circle" class="text-xs text-green-600" />
+                  <span class="text-[10px] text-gray-600 truncate">{{ c1.file.name }}</span>
+                </div>
+              </div>
+            } @else {
+              <label class="block cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="hidden"
+                  (change)="onCccd1Selected($event)"
+                />
+                <div
+                  class="flex flex-col gap-1 justify-center items-center rounded-lg border-2 border-gray-200 border-dashed transition-colors aspect-video hover:border-violet-300 hover:bg-violet-50"
+                >
+                  <tui-icon icon="@tui.upload" class="text-lg text-gray-300" />
+                  <span class="text-xs text-gray-400">Tải lên mặt trước</span>
+                </div>
+              </label>
+            }
+          </div>
+          <!-- Mặt sau -->
+          <div>
+            <p class="mb-1.5 text-xs text-gray-400">Mặt sau</p>
+            @if (pendingCccd2(); as c2) {
+              <div
+                class="overflow-hidden relative bg-gray-50 rounded-lg border border-violet-200 group aspect-video"
+              >
+                <img [src]="c2.previewUrl" alt="CCCD mặt sau" class="object-cover w-full h-full" />
+                <div
+                  class="flex absolute inset-0 justify-center items-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40"
+                >
+                  <button
+                    tuiButton
+                    type="button"
+                    size="xs"
+                    appearance="destructive"
+                    (click)="removePendingCccd2()"
+                  >
+                    <tui-icon icon="@tui.trash-2" />
+                  </button>
+                </div>
+                <div
+                  class="flex absolute right-1 bottom-1 left-1 gap-1 items-center px-1.5 py-0.5 rounded bg-white/80"
+                >
+                  <tui-icon icon="@tui.check-circle" class="text-xs text-green-600" />
+                  <span class="text-[10px] text-gray-600 truncate">{{ c2.file.name }}</span>
+                </div>
+              </div>
+            } @else {
+              <label class="block cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="hidden"
+                  (change)="onCccd2Selected($event)"
+                />
+                <div
+                  class="flex flex-col gap-1 justify-center items-center rounded-lg border-2 border-gray-200 border-dashed transition-colors aspect-video hover:border-violet-300 hover:bg-violet-50"
+                >
+                  <tui-icon icon="@tui.upload" class="text-lg text-gray-300" />
+                  <span class="text-xs text-gray-400">Tải lên mặt sau</span>
+                </div>
+              </label>
+            }
+          </div>
+        </div>
+      } @else if (canViewCccd()) {
+        <!-- Chỉnh sửa & Admin/Manager: hiển thị ảnh CCCD đã lưu, cho phép upload lại -->
+        <p class="text-xs text-gray-400">Click vào ô để tải lên hoặc thay thế ảnh CCCD.</p>
+        @if (loadingDocs() || uploadingCccd()) {
+          <div class="grid grid-cols-2 gap-3">
+            <div [tuiSkeleton]="true" class="rounded-lg aspect-video"></div>
+            <div [tuiSkeleton]="true" class="rounded-lg aspect-video"></div>
+          </div>
+        } @else {
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Slot mặt trước -->
+            <div>
+              <p class="mb-1.5 text-xs text-gray-400">Mặt trước</p>
+              <label class="block cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="hidden"
+                  (change)="onEditCccdSelected($event, 'ID_FRONT')"
+                />
+                @if (existingCccd1(); as doc) {
+                  <div
+                    class="overflow-hidden relative bg-gray-50 rounded-lg border border-gray-200 group aspect-video"
+                  >
+                    @if (docBlobUrls()[doc.documentId]; as blobUrl) {
+                      <img
+                        [src]="blobUrl"
+                        alt="CCCD mặt trước"
+                        class="object-contain w-full h-full"
+                      />
+                    } @else {
+                      <div [tuiSkeleton]="true" class="w-full h-full"></div>
+                    }
+                    <div
+                      class="flex absolute inset-0 flex-col gap-1 justify-center items-center rounded-lg opacity-0 transition-opacity group-hover:opacity-100 bg-black/50"
+                    >
+                      <tui-icon icon="@tui.refresh-cw" class="text-lg text-white" />
+                      <span class="text-xs text-white">Click để thay thế</span>
+                    </div>
+                  </div>
+                } @else {
+                  <div
+                    class="flex flex-col gap-1 justify-center items-center rounded-lg border-2 border-gray-200 border-dashed transition-colors aspect-video hover:border-violet-300 hover:bg-violet-50"
+                  >
+                    <tui-icon icon="@tui.upload" class="text-lg text-gray-300" />
+                    <span class="text-xs text-gray-400">Tải lên mặt trước</span>
+                  </div>
+                }
+              </label>
+            </div>
+            <!-- Slot mặt sau -->
+            <div>
+              <p class="mb-1.5 text-xs text-gray-400">Mặt sau</p>
+              <label class="block cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="hidden"
+                  (change)="onEditCccdSelected($event, 'ID_BACK')"
+                />
+                @if (existingCccd2(); as doc) {
+                  <div
+                    class="overflow-hidden relative bg-gray-50 rounded-lg border border-gray-200 group aspect-video"
+                  >
+                    @if (docBlobUrls()[doc.documentId]; as blobUrl) {
+                      <img
+                        [src]="blobUrl"
+                        alt="CCCD mặt sau"
+                        class="object-contain w-full h-full"
+                      />
+                    } @else {
+                      <div [tuiSkeleton]="true" class="w-full h-full"></div>
+                    }
+                    <div
+                      class="flex absolute inset-0 flex-col gap-1 justify-center items-center rounded-lg opacity-0 transition-opacity group-hover:opacity-100 bg-black/50"
+                    >
+                      <tui-icon icon="@tui.refresh-cw" class="text-lg text-white" />
+                      <span class="text-xs text-white">Click để thay thế</span>
+                    </div>
+                  </div>
+                } @else {
+                  <div
+                    class="flex flex-col gap-1 justify-center items-center rounded-lg border-2 border-gray-200 border-dashed transition-colors aspect-video hover:border-violet-300 hover:bg-violet-50"
+                  >
+                    <tui-icon icon="@tui.upload" class="text-lg text-gray-300" />
+                    <span class="text-xs text-gray-400">Tải lên mặt sau</span>
+                  </div>
+                }
+              </label>
+            </div>
+          </div>
+        }
+      } @else {
+        <!-- Nhân viên xem trang edit: ẩn CCCD -->
+        <p class="text-xs italic text-gray-400">Chỉ quản lý / admin mới được xem ảnh CCCD.</p>
+      }
+    </div>
+  </div>
+
+  <div class="flex gap-2 justify-end pt-2 border-t border-gray-100 shrink-0">
+    <button
+      tuiButton
+      type="button"
+      appearance="outline"
+      size="m"
+      (click)="context.$implicit.complete()"
+    >
+      Huỷ
+    </button>
+    <button
+      tuiButton
+      type="submit"
+      appearance="primary"
+      size="m"
+      [disabled]="saving() || !canSubmit()"
+    >
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      {{ editingCustomer() ? 'Cập nhật' : 'Tạo mới' }}
+    </button>
+  </div>
+</form>

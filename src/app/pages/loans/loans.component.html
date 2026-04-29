@@ -1,0 +1,462 @@
+<div class="p-4 space-y-4 md:p-6">
+  <!-- ── Header: Group Tabs & Main Actions ──────────────────────── -->
+  <div class="flex flex-wrap gap-4 justify-between items-center">
+    <!-- Nhóm Lọc Hợp đồng (Active vs Settled vs Cancelled) -->
+    <div
+      class="flex items-center p-1 bg-gray-100 rounded-2xl border shadow-inner backdrop-blur-sm border-gray-200/50"
+    >
+      <button
+        type="button"
+        (click)="setContractGroup('ACTIVE')"
+        [class]="
+          contractGroup() === 'ACTIVE'
+            ? 'bg-white shadow-sm text-primary ring-1 ring-black/5'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/40'
+        "
+        class="px-4 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5"
+      >
+        <tui-icon
+          icon="@tui.zap"
+          class="text-[10px]"
+          [class.text-primary]="contractGroup() === 'ACTIVE'"
+        />
+        Đang hoạt động
+      </button>
+      <button
+        type="button"
+        (click)="setContractGroup('SETTLED')"
+        [class]="
+          contractGroup() === 'SETTLED'
+            ? 'bg-white shadow-sm text-green-700 ring-1 ring-black/5'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/40'
+        "
+        class="px-4 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5"
+      >
+        <tui-icon
+          icon="@tui.check-circle"
+          class="text-[10px]"
+          [class.text-green-600]="contractGroup() === 'SETTLED'"
+        />
+        Đã tất toán
+      </button>
+      <button
+        type="button"
+        (click)="setContractGroup('CANCELLED')"
+        [class]="
+          contractGroup() === 'CANCELLED'
+            ? 'bg-white shadow-sm text-red-700 ring-1 ring-black/5'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/40'
+        "
+        class="px-4 py-1.5 text-[11px] font-bold rounded-xl transition-all flex items-center gap-1.5"
+      >
+        <tui-icon
+          icon="@tui.circle-x"
+          class="text-[10px]"
+          [class.text-red-600]="contractGroup() === 'CANCELLED'"
+        />
+        Đã hủy
+      </button>
+    </div>
+
+    <!-- Nhóm nút hành động chính -->
+    <div class="flex gap-2 items-center ml-auto">
+      <!-- Nút xóa filter -->
+      @if (hasActiveFilters) {
+        <button
+          tuiButton
+          appearance="flat"
+          size="m"
+          (click)="clearFilters()"
+          class="text-gray-500 rounded-xl hover:text-red-500"
+          [tuiHint]="'Xóa tất cả bộ lọc'"
+        >
+          <tui-icon icon="@tui.circle-slash" />
+        </button>
+      }
+
+      <button
+        tuiButton
+        appearance="outline"
+        size="m"
+        [tuiHint]="'Làm mới dữ liệu'"
+        (click)="loadLoans()"
+        class="bg-white rounded-xl border-gray-200 hover:bg-gray-50"
+      >
+        <tui-icon icon="@tui.refresh-cw" />
+      </button>
+
+      @if (canCreate()) {
+        <button
+          tuiButton
+          appearance="primary"
+          size="m"
+          (click)="openCreateDialog()"
+          class="rounded-xl shadow-lg shadow-primary/20"
+        >
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Lập hợp đồng mới
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Filter Toolbar ────────────────────────── -->
+  <div
+    class="flex flex-wrap gap-3 items-center p-4 bg-white rounded-2xl border border-gray-200 shadow-sm"
+    [formGroup]="filterForm"
+  >
+    <!-- Tìm kiếm -->
+    <tui-textfield class="w-full md:w-72">
+      <input
+        tuiTextfield
+        placeholder="Tên khách, mã HĐ, CCCD..."
+        [ngModel]="searchInput"
+        (ngModelChange)="onSearchInputChange($event)"
+        [ngModelOptions]="{ standalone: true }"
+      />
+      <tui-icon icon="@tui.search" />
+    </tui-textfield>
+
+    <!-- Trạng thái (multi-select) -->
+    <tui-textfield multi tuiChevron [stringify]="statusStringify" class="w-full md:w-52">
+      <input
+        tuiInputChip
+        tuiSelectLike
+        [ngModel]="selectedStatusCodes()"
+        (ngModelChange)="selectedStatusCodes.set($event)"
+        [ngModelOptions]="{ standalone: true }"
+        [placeholder]="selectedStatusCodes().length ? '' : 'Tất cả trạng thái'"
+      />
+      <tui-data-list-wrapper
+        *tuiTextfieldDropdown
+        new
+        tuiMultiSelectGroup
+        [items]="statusValues()"
+        [itemContent]="statusItemTpl"
+      />
+      <ng-template #statusItemTpl let-item>
+        {{ statusStringify(item) }}
+      </ng-template>
+    </tui-textfield>
+
+    <!-- Lọc chi nhánh (Admin/Regional manager, multi-select) -->
+    @if (canPickStoreFilter()) {
+      <tui-textfield multi tuiChevron [stringify]="storeStringify" class="w-full md:w-60">
+        <input
+          tuiInputChip
+          tuiSelectLike
+          [ngModel]="selectedFilterStoreIds()"
+          (ngModelChange)="selectedFilterStoreIds.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [placeholder]="selectedFilterStoreIds().length ? '' : 'Chọn chi nhánh'"
+        />
+        <tui-data-list-wrapper
+          *tuiTextfieldDropdown
+          new
+          tuiMultiSelectGroup
+          [items]="storeIdsForFilter()"
+        />
+      </tui-textfield>
+    }
+
+    <!-- Loại ngày -->
+    <tui-textfield tuiChevron [stringify]="dateTypeStringify" class="w-full md:w-40 shrink-0">
+      <input
+        tuiComboBox
+        formControlName="dateFilterType"
+        placeholder="Loại ngày"
+        [matcher]="matcherDateType"
+      />
+      <tui-data-list *tuiTextfieldDropdown>
+        @for (opt of dateTypeOptions; track opt.value) {
+          <button new tuiOption type="button" [value]="opt.value">
+            {{ dateTypeStringify(opt.value) }}
+          </button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+
+    <!-- Khoảng ngày -->
+    <tui-textfield class="w-full md:w-72 shrink-0">
+      <input tuiInputDateRange formControlName="dateRange" placeholder="Từ ngày - Đến ngày" />
+      <tui-calendar-range *tuiTextfieldDropdown />
+    </tui-textfield>
+
+    <!-- Nhóm nút hành động -->
+  </div>
+
+  <!-- ── Table ──────────────────────────────────────────────── -->
+  <div class="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
+    <table class="w-full text-sm border-collapse loans-table">
+      <thead>
+        <tr
+          class="text-xs tracking-wide text-gray-500 uppercase bg-gray-50 border-b border-gray-200"
+        >
+          <th class="px-3 py-3 w-36 font-semibold text-left">Mã HĐ</th>
+          <th class="px-3 py-3 w-64 font-semibold text-left max-w-64">Khách hàng</th>
+          @if (canPickStoreFilter()) {
+            <th class="px-3 py-3 w-36 font-semibold text-left">Chi nhánh</th>
+          }
+          <th class="px-3 py-3 w-36 font-semibold text-right">Gốc</th>
+          <th class="px-3 py-3 w-28 font-semibold text-right">Bảo hiểm</th>
+          <th class="px-3 py-3 w-28 font-semibold text-center">Loại HĐ</th>
+          <th class="px-3 py-3 w-28 font-semibold text-center">Ngày tạo</th>
+          <th class="px-3 py-3 w-28 font-semibold text-center">Ngày GN</th>
+          <th class="px-3 py-3 w-28 font-semibold text-center">Trạng thái</th>
+          <th class="px-3 py-3 w-32 font-semibold text-center">Thao tác</th>
+        </tr>
+        <!-- Dòng tổng đầu bảng -->
+        @if (showTotals() && !loading() && filteredTotal() > 0) {
+          <tr class="text-xs border-b border-green-200 totals-row">
+            <td
+              class="px-3 py-2 font-bold text-green-700"
+              [attr.colspan]="canPickStoreFilter() ? 3 : 2"
+            >
+              <tui-icon icon="@tui.sigma" class="mr-1 text-xs" />
+              Tổng {{ pagedLoans().length }} / {{ filteredTotal() }} hợp đồng
+            </td>
+            <td class="px-3 py-2 text-right text-green-700">
+              {{ formatCurrency(totalPrincipal()) }}
+            </td>
+            <td class="px-3 py-2 text-right text-green-700">
+              {{ formatCurrency(totalInsurance()) }}
+            </td>
+            <td class="px-3 py-2 text-center text-green-700">—</td>
+            <td class="px-3 py-2" colspan="4"></td>
+          </tr>
+        }
+      </thead>
+
+      <tbody>
+        <!-- Loading skeleton -->
+        @if (loading()) {
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+            <tr class="border-b border-gray-100 skeleton-row">
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              @if (canPickStoreFilter()) {
+                <td class="px-3 py-2"></td>
+              }
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+            </tr>
+          }
+
+          <!-- Empty state -->
+        } @else if (filteredTotal() === 0) {
+          <tr>
+            <td
+              [attr.colspan]="canPickStoreFilter() ? 10 : 9"
+              class="py-16 text-center text-gray-400"
+            >
+              <tui-icon icon="@tui.file-text" class="block mx-auto mb-2 text-4xl text-gray-300" />
+              Không có hợp đồng nào
+            </td>
+          </tr>
+
+          <!-- Data rows -->
+        } @else {
+          @for (loan of pagedLoans(); track loan.loanContractId) {
+            @let overdueInfo = getOverdueInfo(loan.loanContractId);
+            <tr
+              class="border-b border-gray-100 transition-colors"
+              (click)="openDetailDialog(loan)"
+              style="cursor: pointer"
+            >
+              <!-- Mã HĐ -->
+              <td class="px-3 py-2.5">
+                @if (loan.contractNo) {
+                  <span class="contract-stamp">{{ loan.contractNo }}</span>
+                } @else {
+                  <span class="text-xs italic text-gray-400">Chưa có mã</span>
+                }
+              </td>
+
+              <!-- Khách hàng -->
+              <td class="px-3 py-2.5">
+                <p class="font-semibold leading-tight text-gray-900">
+                  {{ loan.customerName || '—' }}
+                </p>
+                <div class="flex gap-2 mt-0.5 text-xs text-gray-400">
+                  @if (loan.customerCode) {
+                    <span>{{ loan.customerCode }}</span>
+                  }
+                </div>
+                <!-- Overdue badge inline -->
+                @if (
+                  (loan.statusCode === LoanContractStatus.DISBURSED ||
+                    loan.statusCode === LoanContractStatus.BAD_DEBT) &&
+                  overdueInfo
+                ) {
+                  @if (
+                    overdueInfo.riskLevel === 'HIGH' ||
+                    loan.statusCode === LoanContractStatus.BAD_DEBT
+                  ) {
+                    <span class="mt-1 text-red-700 bg-red-50 border border-red-200 overdue-badge">
+                      <tui-icon icon="@tui.triangle-alert" class="text-xs" />
+                      Quá hạn {{ overdueInfo.maxDaysOverdue }}N
+                    </span>
+                  } @else if (overdueInfo.riskLevel === 'MEDIUM') {
+                    <span
+                      class="mt-1 text-amber-700 bg-amber-50 border border-amber-200 overdue-badge"
+                    >
+                      <tui-icon icon="@tui.clock" class="text-xs" />
+                      Trễ {{ overdueInfo.maxDaysOverdue }}N
+                    </span>
+                  } @else {
+                    <span
+                      class="mt-1 text-orange-700 bg-orange-50 border border-orange-200 overdue-badge"
+                    >
+                      <tui-icon icon="@tui.circle-alert" class="text-xs" />
+                      {{ overdueInfo.overdueCount }} kỳ trễ
+                    </span>
+                  }
+                }
+              </td>
+
+              <!-- Chi nhánh (Admin/Regional manager) -->
+              @if (canPickStoreFilter()) {
+                <td class="px-3 py-2.5 text-xs text-gray-600">{{ loan.storeName || '—' }}</td>
+              }
+
+              <!-- Gốc vay -->
+              <td class="px-3 py-2.5 font-semibold text-right text-green-700 whitespace-nowrap">
+                {{ formatCurrency(loan.principalAmount) }}
+              </td>
+
+              <!-- Bảo hiểm -->
+              <td class="px-3 py-2.5 text-right text-gray-600 whitespace-nowrap">
+                {{
+                  (loan.insuranceAmountSnapshot ?? 0) > 0
+                    ? formatCurrency(loan.insuranceAmountSnapshot)
+                    : '—'
+                }}
+              </td>
+
+              <!-- Loại hợp đồng -->
+              <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full"
+                  [class]="getContractTypeClass(loan.contractType)"
+                >
+                  {{ getContractTypeLabel(loan.contractType) }}
+                </span>
+              </td>
+
+              <!-- Ngày tạo -->
+              <td class="px-3 py-2.5 text-center text-gray-500 whitespace-nowrap">
+                {{ formatDate(loan.applicationDate) }}
+              </td>
+
+              <!-- Ngày GN -->
+              <td class="px-3 py-2.5 text-center text-gray-500 whitespace-nowrap">
+                {{ loan.disbursedDate ? formatDate(loan.disbursedDate) : '—' }}
+              </td>
+
+              <!-- Trạng thái -->
+              <td class="px-3 py-2.5 text-center">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap rounded-full"
+                  [class]="getStatusClass(loan.statusCode)"
+                  >{{ getStatusLabel(loan.statusCode) }}</span
+                >
+              </td>
+
+              <!-- Thao tác -->
+              <td class="px-2 py-2 text-center" (click)="$event.stopPropagation()">
+                <div class="flex gap-1 justify-center items-center">
+                  @let quickActions = getQuickStatusActions(loan);
+                  @for (action of quickActions; track action.toStatus) {
+                    <button
+                      tuiButton
+                      [appearance]="action.appearance"
+                      size="xs"
+                      [tuiHint]="action.label"
+                      tuiHintDirection="left"
+                      (click)="openStatusActionFromTable(loan, action, $event)"
+                    >
+                      <tui-icon [icon]="action.icon" />
+                    </button>
+                  }
+                  @if (
+                    canCancelLoan() &&
+                    loan.statusCode !== LoanContractStatus.CANCELLED &&
+                    loan.statusCode !== LoanContractStatus.SETTLED &&
+                    loan.statusCode !== LoanContractStatus.CLOSED &&
+                    loan.statusCode !== LoanContractStatus.BAD_DEBT_CLOSED
+                  ) {
+                    <button
+                      tuiButton
+                      appearance="outline"
+                      size="xs"
+                      [tuiHint]="'Hủy hợp đồng'"
+                      tuiHintDirection="left"
+                      (click)="openCancelDialog(loan, $event)"
+                    >
+                      <tui-icon icon="@tui.x" />
+                    </button>
+                  }
+                  @if (canReassignLoan()) {
+                    <button
+                      tuiButton
+                      appearance="ghost"
+                      size="xs"
+                      [tuiHint]="'Chuyển phụ trách'"
+                      tuiHintDirection="left"
+                      (click)="openReassignDialog(loan, $event)"
+                    >
+                      <tui-icon icon="@tui.user-round-check" />
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+
+      <!-- Dòng tổng cuối bảng -->
+      @if (showTotals() && !loading() && filteredTotal() > 0) {
+        <tfoot>
+          <tr class="border-t-2 totals-row">
+            <td
+              class="px-3 py-2 font-bold text-green-700"
+              [attr.colspan]="canPickStoreFilter() ? 3 : 2"
+            >
+              <tui-icon icon="@tui.sigma" class="mr-1 text-xs" />
+              Tổng cộng
+            </td>
+            <td class="px-3 py-2 text-right text-green-700">
+              {{ formatCurrency(totalPrincipal()) }}
+            </td>
+            <td class="px-3 py-2 text-right text-green-700">
+              {{ formatCurrency(totalInsurance()) }}
+            </td>
+            <td class="px-3 py-2 text-right text-green-700">
+              {{ formatCurrency(totalFileFee()) }}
+            </td>
+            <td class="px-3 py-2" colspan="4"></td>
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+
+  <!-- ── Pagination ─────────────────────────────────────────── -->
+  @if (filteredTotal() > 0) {
+    <div class="flex justify-end px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+      <tui-table-pagination
+        [total]="filteredTotal()"
+        [items]="pageSizeItems"
+        [page]="page()"
+        [size]="size()"
+        (paginationChange)="onPaginationChange($event)"
+      />
+    </div>
+  }
+</div>

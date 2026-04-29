@@ -1,0 +1,1697 @@
+@if (loan(); as l) {
+  <div class="flex flex-col min-h-0" style="min-width: 680px">
+    <!-- ╔══ HEADER ════════════════════════════════════════════════════════╗ -->
+    <div class="flex justify-between items-center px-1 pb-3 mb-1 border-b border-gray-100">
+      <div class="flex gap-3 items-center">
+        <div>
+          <p class="font-mono text-sm font-bold text-gray-900">{{ l.contractNo || '-' }}</p>
+          <p class="text-xs text-gray-400">
+            {{ l.customerName }} · {{ l.customerPhone }} · {{ l.customerCode }}
+          </p>
+        </div>
+        <span
+          class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
+          [class]="getStatusClass(statusCode())"
+        >
+          {{ getStatusLabel(statusCode()) }}
+        </span>
+        <span
+          class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border"
+          [class]="
+            isPawnContract()
+              ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
+              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          "
+        >
+          {{ isPawnContract() ? 'Cầm đồ' : 'Cầm cố/Thuê lại' }}
+        </span>
+      </div>
+      <div class="flex gap-1 items-center">
+        <span class="text-xs text-gray-500">{{
+          formatCurrency((l.principalAmount ?? 0) + (l.insuranceAmountSnapshot ?? 0))
+        }}</span>
+        @if ((l.insuranceAmountSnapshot ?? 0) > 0) {
+          <tui-icon
+            icon="@tui.info"
+            class="text-[10px] text-gray-400 cursor-help"
+            [tuiHint]="principalBreakdownHeader"
+            tuiHintDirection="bottom"
+          />
+          <ng-template #principalBreakdownHeader>
+            {{ formatCurrency(l.principalAmount ?? 0) }} (Gốc) +
+            {{ formatCurrency(l.insuranceAmountSnapshot ?? 0) }} (Bảo hiểm)
+          </ng-template>
+        }
+        <span class="text-xs text-gray-300">/</span>
+        <span class="text-xs text-gray-500">{{ l.termMonths }} tháng</span>
+      </div>
+    </div>
+
+    @if (availableStatusActions().length > 0) {
+      @let banner = actionBanner();
+      <div
+        class="overflow-hidden mb-3 rounded-lg border border-gray-200"
+        [class]="banner?.wrapperClass ?? 'border-l-4 border-gray-400 bg-gray-50'"
+      >
+        <!-- ── Banner header ── -->
+        <div class="flex gap-3 justify-between items-center px-4 py-3">
+          <div class="flex gap-3 items-center min-w-0">
+            @if (banner) {
+              <tui-icon [icon]="banner.icon" class="text-xl shrink-0" [class]="banner.iconClass" />
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-900">{{ banner.title }}</p>
+                <p class="mt-0.5 text-xs leading-snug text-gray-500">{{ banner.desc }}</p>
+              </div>
+            }
+          </div>
+
+          <!-- Primary action is size="m", secondary/destructive are size="s" -->
+          <div class="flex gap-2 items-center shrink-0">
+            @for (action of availableStatusActions(); track action.toStatus) {
+              <button
+                tuiButton
+                type="button"
+                [size]="action.appearance === 'primary' ? 'm' : 's'"
+                [appearance]="getActionTriggerAppearance(action)"
+                [disabled]="statusChanging()"
+                (click)="openStatusActionDialog(action)"
+              >
+                @if (isNegativeAction(action)) {
+                  <tui-icon icon="@tui.triangle-alert" class="mr-1" />
+                }
+                {{ action.label }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ╔══ TAB BAR ═══════════════════════════════════════════════════════╗ -->
+    <div class="overflow-x-auto pb-3 border-b border-gray-100">
+      <tui-tabs
+        class="min-w-max"
+        [activeItemIndex]="activeItemIndex()"
+        (activeItemIndexChange)="setActiveItemIndex($event)"
+      >
+        @for (tab of tabs; track tab.key) {
+          <button tuiTab type="button">
+            <span class="inline-flex gap-1.5 items-center text-xs font-medium whitespace-nowrap">
+              <tui-icon [icon]="tab.icon" class="text-[10px]" />
+              {{ tab.label }}
+            </span>
+          </button>
+        }
+      </tui-tabs>
+    </div>
+    <!-- ╔══ TAB CONTENT ════════════════════════════════════════════════════╗ -->
+    <div class="overflow-y-auto flex-1 pt-4 min-h-0" style="max-height: 520px">
+      <!-- ── Tab: Thông tin ─────────────────────────────────────────────── -->
+      @if (activeTab() === 'info') {
+        <div class="space-y-4">
+          <!-- Thông tin cơ bản -->
+          <div class="grid grid-cols-2 gap-y-3 gap-x-4 md:grid-cols-3">
+            <div>
+              <p class="text-xs tracking-wide text-gray-400 uppercase">
+                {{ isPawnContract() ? 'Số tiền cầm đồ' : 'Số tiền' }}
+              </p>
+              <div class="flex gap-1 items-center mt-1">
+                <p class="text-sm font-semibold text-gray-900">
+                  {{ formatCurrency((l.principalAmount ?? 0) + (l.insuranceAmountSnapshot ?? 0)) }}
+                </p>
+                @if ((l.insuranceAmountSnapshot ?? 0) > 0) {
+                  <tui-icon
+                    icon="@tui.info"
+                    class="text-gray-400 cursor-help"
+                    [tuiHint]="principalInfoBreakdown"
+                    tuiHintDirection="right"
+                    [style.block-size.rem]="0.75"
+                  />
+                  <ng-template #principalInfoBreakdown>
+                    {{ formatCurrency(l.principalAmount ?? 0) }} (Gốc) +
+                    {{ formatCurrency(l.insuranceAmountSnapshot ?? 0) }} (Bảo hiểm)
+                  </ng-template>
+                }
+              </div>
+            </div>
+            <div>
+              <p class="text-xs tracking-wide text-gray-400 uppercase">
+                {{ isPawnContract() ? 'Số kỳ / số ngày' : 'Kỳ hạn' }}
+              </p>
+              <p class="mt-1 text-sm text-gray-900">
+                @if (isPawnContract()) {
+                  {{ l.termMonths }} kỳ · {{ l.pawnPeriodDaysSnapshot ?? 10 }} ngày/kỳ
+                } @else {
+                  {{ l.termMonths }} tháng
+                }
+              </p>
+            </div>
+            @if (isPawnContract()) {
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Lãi</p>
+                <p class="mt-1 text-sm text-gray-900">
+                  {{ l.pawnInterestAmountPerMillionPerDaySnapshot ?? 0 }} VNĐ / 1tr / ngày
+                </p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Phí QLTS</p>
+                <p class="mt-1 text-sm text-gray-900">
+                  {{ l.pawnFeeAmountPerMillionPerDaySnapshot ?? 0 }} VNĐ / 1tr / ngày
+                </p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Ngày lập</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatDate(l.applicationDate) }}</p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Ngày giải ngân</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatDate(disbursedDate()) }}</p>
+              </div>
+              @if (l.storeName) {
+                <div class="md:col-span-3">
+                  <p class="text-xs tracking-wide text-gray-400 uppercase">Chi nhánh</p>
+                  <p class="mt-1 text-sm text-gray-900">{{ l.storeName }}</p>
+                </div>
+              }
+              @if (l.customerSourceName) {
+                <div class="md:col-span-3">
+                  <p class="text-xs tracking-wide text-gray-400 uppercase">Luồng khách</p>
+                  <p class="mt-1 text-sm text-gray-900">{{ l.customerSourceName }}</p>
+                </div>
+              }
+            } @else {
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Lãi suất</p>
+                <p class="mt-1 text-sm text-gray-900">{{ l.interestRateMonthlySnapshot }}%/tháng</p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">QLKV</p>
+                <p class="mt-1 text-sm text-gray-900">
+                  {{ l.qlkvRateMonthlySnapshot ?? 0 }}%/tháng
+                </p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">QLTS</p>
+                <p class="mt-1 text-sm text-gray-900">
+                  {{ l.qltsRateMonthlySnapshot ?? 0 }}%/tháng
+                </p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Phí hồ sơ</p>
+                <p class="mt-1 text-sm text-gray-900">
+                  {{ formatCurrency(l.fileFeeAmountSnapshot) }}
+                </p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Bảo hiểm</p>
+                <p class="mt-1 text-sm text-gray-900">
+                  {{ formatCurrency(l.insuranceAmountSnapshot) }}
+                </p>
+              </div>
+              @if (isAdmin() && (l.insuranceDiscountRateSnapshot ?? 0) > 0) {
+                <div class="pl-3 border-l-2 border-amber-400">
+                  <p class="text-xs tracking-wide text-amber-600 uppercase">
+                    CK Bảo hiểm ({{ l.insuranceDiscountRateSnapshot }}%)
+                  </p>
+                  <p class="mt-1 text-sm font-semibold text-amber-700">
+                    {{ formatCurrency(insuranceDiscountAmount()) }}
+                  </p>
+                </div>
+              }
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Ngày lập</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatDate(l.applicationDate) }}</p>
+              </div>
+              <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Ngày giải ngân</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatDate(disbursedDate()) }}</p>
+              </div>
+              <!-- <div>
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Ngày đáo hạn</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatDate(maturityDate()) }}</p>
+              </div> -->
+              @if (l.storeName) {
+                <div class="md:col-span-3">
+                  <p class="text-xs tracking-wide text-gray-400 uppercase">Chi nhánh</p>
+                  <p class="mt-1 text-sm text-gray-900">{{ l.storeName }}</p>
+                </div>
+              }
+              @if (l.customerSourceName) {
+                <div class="md:col-span-3">
+                  <p class="text-xs tracking-wide text-gray-400 uppercase">Luồng khách</p>
+                  <p class="mt-1 text-sm text-gray-900">{{ l.customerSourceName }}</p>
+                </div>
+              }
+            }
+          </div>
+
+          @if (l.note) {
+            <div
+              class="px-4 py-3 text-sm text-amber-800 bg-amber-50 rounded-lg border border-amber-200"
+            >
+              <tui-icon icon="@tui.info" class="mr-1 text-xs" />{{ l.note }}
+            </div>
+          }
+
+          <!-- Sức khỏe khoản vay – hiển thị khi đã có financial summary -->
+          @if (financialSummary(); as fs) {
+            <div class="pt-3 space-y-3 border-t border-gray-100">
+              <p
+                class="flex gap-1.5 items-center text-xs font-semibold tracking-wide text-gray-400 uppercase"
+              >
+                <tui-icon icon="@tui.heart-pulse" class="text-[10px]" />
+                Tổng quan hợp đồng
+              </p>
+
+              <!-- 4 chỉ số tổng hợp -->
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div class="p-2 text-center bg-gray-50 rounded-lg">
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ formatCurrency(fs.principalAmount) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-gray-400">Tổng giải ngân</p>
+                </div>
+                <div class="p-2 text-center bg-green-50 rounded-lg">
+                  <p class="text-sm font-semibold text-green-700">
+                    {{ formatCurrency(fs.totalCollected) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-green-500">Đã thu</p>
+                </div>
+                <div class="p-2 text-center bg-amber-50 rounded-lg">
+                  <p class="text-sm font-semibold text-amber-700">
+                    {{ formatCurrency(fs.totalDueRemaining) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-amber-500">Còn phải thu</p>
+                </div>
+                <div class="p-2 text-center bg-blue-50 rounded-lg">
+                  <p class="text-sm font-semibold text-blue-700">
+                    {{ formatCurrency(fs.totalIncomeCollected) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-blue-500">Thu nhập (lãi+phí)</p>
+                </div>
+              </div>
+
+              <!-- Chi tiết đã thu -->
+              <div class="flex flex-wrap gap-y-1 gap-x-4 px-1 text-xs text-gray-400">
+                <span
+                  >Đã trả:
+                  <b class="text-gray-700">{{ fs.paidPeriods }}/{{ fs.totalPeriods }}</b> kỳ</span
+                >
+                @if ((fs.overduePeriods ?? 0) > 0) {
+                  <span class="text-red-500"
+                    >Quá hạn: <b>{{ fs.overduePeriods }}</b> kỳ</span
+                  >
+                }
+                <span
+                  >Lãi đã thu:
+                  <b class="text-amber-600">{{ formatCurrency(fs.paidInterest) }}</b></span
+                >
+                <span
+                  >Phí định kỳ:
+                  <b class="text-blue-600">{{ formatCurrency(fs.paidPeriodicFee) }}</b></span
+                >
+                @if ((fs.paidLatePenalty ?? 0) > 0) {
+                  <span class="text-red-500"
+                    >Phạt chậm: <b>{{ formatCurrency(fs.paidLatePenalty) }}</b></span
+                  >
+                }
+                @if ((fs.earlySettlementPenalty ?? 0) > 0) {
+                  <span class="text-orange-500"
+                    >Phạt tất toán: <b>{{ formatCurrency(fs.earlySettlementPenalty) }}</b></span
+                  >
+                }
+              </div>
+
+              <!-- Progress bars -->
+              <div class="space-y-2">
+                <div class="flex gap-2 items-center">
+                  <span class="w-24 text-xs text-gray-500 shrink-0">Tiến độ kỳ</span>
+                  <div class="overflow-hidden flex-1 h-1.5 bg-gray-200 rounded-full">
+                    <div
+                      class="h-1.5 rounded-full transition-all duration-500"
+                      [class]="healthProgressColor()"
+                      [style.width.%]="periodProgressPct()"
+                    ></div>
+                  </div>
+                  <span class="w-16 text-xs font-semibold text-right text-gray-700 shrink-0">
+                    {{ fs.paidPeriods }}/{{ fs.totalPeriods }} kỳ
+                  </span>
+                </div>
+                <div class="flex gap-2 items-center">
+                  <span class="w-24 text-xs text-gray-500 shrink-0">Gốc đã trả</span>
+                  <div class="overflow-hidden flex-1 h-1.5 bg-gray-200 rounded-full">
+                    <div
+                      class="h-1.5 bg-blue-500 rounded-full transition-all duration-500"
+                      [style.width.%]="principalProgressPct()"
+                    ></div>
+                  </div>
+                  <span class="w-16 text-xs font-semibold text-right text-gray-700 shrink-0">
+                    {{ principalProgressPct() }}%
+                  </span>
+                </div>
+              </div>
+
+              <!-- Cảnh báo quá hạn -->
+              @if ((fs.overduePeriods ?? 0) > 0 || overdueDetails().length > 0) {
+                @let overdueCount =
+                  (fs.overduePeriods ?? 0) >= overdueDetails().length
+                    ? (fs.overduePeriods ?? 0)
+                    : overdueDetails().length;
+                @let badDebtDay = loan().badDebtStartDaySnapshot ?? 11;
+                @let lateDay = loan().latePaymentStartDaySnapshot ?? 4;
+                <div
+                  class="flex gap-2.5 items-start px-3 py-2.5 rounded-lg"
+                  [class]="
+                    maxDaysOverdue() >= badDebtDay
+                      ? 'bg-red-50 border border-red-200'
+                      : maxDaysOverdue() >= lateDay
+                        ? 'bg-amber-50 border border-amber-200'
+                        : 'bg-orange-50 border border-orange-200'
+                  "
+                >
+                  <tui-icon
+                    icon="@tui.triangle-alert"
+                    class="mt-0.5 text-base shrink-0"
+                    [class]="maxDaysOverdue() >= badDebtDay ? 'text-red-500' : 'text-amber-500'"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="text-xs font-semibold"
+                      [class]="maxDaysOverdue() >= badDebtDay ? 'text-red-700' : 'text-amber-700'"
+                    >
+                      {{ overdueCount }} kỳ quá hạn
+                      @if (maxDaysOverdue() > 0) {
+                        · Lâu nhất <b>{{ maxDaysOverdue() }}</b> ngày
+                      }
+                    </p>
+                    @if (maxDaysOverdue() >= (loan().badDebtStartDaySnapshot ?? 11)) {
+                      <p class="mt-0.5 text-xs text-red-500">
+                        Đã vượt ngưỡng nợ xấu ({{ loan().badDebtStartDaySnapshot ?? 11 }} ngày). Cần
+                        chuyển nợ xấu hoặc xử lý ngay.
+                      </p>
+                    } @else if (maxDaysOverdue() >= (loan().latePaymentStartDaySnapshot ?? 4)) {
+                      <p class="mt-0.5 text-xs text-amber-600">
+                        Đang tính phạt chậm nộp {{ loan().latePaymentPenaltyRateSnapshot ?? 8 }}%.
+                        Còn
+                        <b>{{ (loan().badDebtStartDaySnapshot ?? 11) - maxDaysOverdue() }}</b> ngày
+                        đến ngưỡng nợ xấu.
+                      </p>
+                    } @else if (maxDaysOverdue() > 0) {
+                      <p class="mt-0.5 text-xs text-orange-600">
+                        Còn
+                        <b>{{ (loan().latePaymentStartDaySnapshot ?? 4) - maxDaysOverdue() }}</b>
+                        ngày đến khi bắt đầu tính phạt chậm nộp.
+                      </p>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- 4 box chi tiết gốc/lãi/kỳ -->
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div class="p-3 text-center bg-blue-50 rounded-lg border border-blue-100">
+                  <p class="text-sm font-bold text-blue-700">
+                    {{ formatCurrency(fs.paidPrincipal) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-blue-500">Gốc đã trả</p>
+                </div>
+                <div class="p-3 text-center bg-gray-50 rounded-lg border border-gray-200">
+                  <p class="text-sm font-bold text-gray-700">
+                    {{ formatCurrency(fs.remainingPrincipal) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-gray-400">Gốc còn lại</p>
+                </div>
+                <div class="p-3 text-center bg-amber-50 rounded-lg border border-amber-100">
+                  <p class="text-sm font-bold text-amber-700">
+                    {{ formatCurrency(fs.paidInterest) }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-amber-500">Lãi đã thu</p>
+                </div>
+                <div
+                  class="p-3 text-center rounded-lg"
+                  [class]="
+                    (fs.overduePeriods ?? 0) > 0
+                      ? 'bg-red-50 border border-red-100'
+                      : 'bg-green-50 border border-green-100'
+                  "
+                >
+                  <p
+                    class="text-sm font-bold"
+                    [class]="(fs.overduePeriods ?? 0) > 0 ? 'text-red-700' : 'text-green-700'"
+                  >
+                    {{ fs.paidPeriods }}/{{ fs.totalPeriods }} kỳ
+                  </p>
+                  <p
+                    class="mt-0.5 text-xs"
+                    [class]="(fs.overduePeriods ?? 0) > 0 ? 'text-red-500' : 'text-green-500'"
+                  >
+                    @if ((fs.overduePeriods ?? 0) > 0) {
+                      {{ fs.overduePeriods }} kỳ quá hạn
+                    } @else {
+                      Đúng hạn
+                    }
+                  </p>
+                </div>
+              </div>
+
+              <!-- Chi tiết từng kỳ quá hạn -->
+              @if (overdueDetails().length > 0) {
+                <div class="space-y-1.5">
+                  <p class="text-xs font-medium text-red-600">Chi tiết kỳ quá hạn:</p>
+                  @for (od of overdueDetails(); track od.periodNo) {
+                    <div
+                      class="flex justify-between items-center px-3 py-1.5 text-xs bg-red-50 rounded-lg border border-red-100"
+                    >
+                      <span class="font-medium text-red-700"
+                        >Kỳ {{ od.periodNo }} · Hạn {{ formatDate(od.dueDate) }}</span
+                      >
+                      <div class="flex gap-3 items-center">
+                        <span class="text-red-500">{{ od.daysOverdue }} ngày quá hạn</span>
+                        @if ((od.paidPrincipalAmount ?? 0) + (od.paidInterestAmount ?? 0) > 0) {
+                          <span class="text-gray-400"
+                            >Đã trả: {{ formatCurrency(totalPaid(od)) }}</span
+                          >
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Tab: Lịch trả nợ ──────────────────────────────────────────── -->
+      @if (activeTab() === 'schedule') {
+        @if (scheduleLoading()) {
+          <p class="py-10 text-sm text-center text-gray-400">Đang tải lịch trả nợ…</p>
+        } @else if (repaymentSchedule().length === 0) {
+          <p class="py-10 text-sm text-center text-gray-400">Chưa có lịch trả nợ.</p>
+        } @else {
+          @if (statusCode() === LoanContractStatus.SETTLED) {
+            <div
+              class="flex gap-3 items-center p-4 mb-4 bg-green-50 rounded-xl border border-green-200 shadow-sm duration-500 animate-in fade-in slide-in-from-top-2"
+            >
+              <div
+                class="flex justify-center items-center w-10 h-10 text-green-600 bg-green-100 rounded-full shrink-0"
+              >
+                <tui-icon icon="@tui.circle-check" class="text-2xl" />
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-sm font-bold text-green-800">Hợp đồng đã tất toán</h4>
+                <p class="text-xs leading-snug text-green-600/80">
+                  Tất cả các khoản nợ đã được thanh toán đầy đủ. Lịch trả nợ hiện tại chỉ dùng để
+                  đối soát.
+                </p>
+              </div>
+            </div>
+          }
+
+          <div
+            class="overflow-hidden rounded-lg border border-gray-200 transition-all duration-500"
+            [class.opacity-60]="statusCode() === LoanContractStatus.SETTLED"
+            [class.pointer-events-none]="statusCode() === LoanContractStatus.SETTLED"
+            [class.grayscale-[0.3]]="statusCode() === LoanContractStatus.SETTLED"
+            [class.blur-[0.5px]]="statusCode() === LoanContractStatus.SETTLED"
+          >
+            <div class="overflow-x-auto overflow-y-auto max-h-96">
+              <table class="w-full text-xs">
+                @if (isPawnContract()) {
+                  <!-- ╔══ TABLE HEAD: PAWN ══════════════════════════════════════════════════╗ -->
+                  <thead class="sticky top-0 bg-gray-50">
+                    <tr>
+                      <th class="px-2 py-2 text-center text-gray-500">TT</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Số ngày</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Ngày đóng tiền</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Lãi</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Phí QLTS</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Tổng TT hàng kỳ</th>
+                      <th class="px-2 py-2 text-left text-gray-500">Trạng thái</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Đã trả</th>
+                    </tr>
+                  </thead>
+                  <!-- ╔══ TABLE BODY: PAWN ══════════════════════════════════════════════════╗ -->
+                  <tbody class="divide-y divide-gray-100">
+                    @for (row of repaymentSchedule(); track row.periodNo) {
+                      @let badge = getScheduleStatusBadge(row.statusCode);
+                      @let isPayable =
+                        row.statusCode !== 'PAID' &&
+                        row.dueDate != null &&
+                        row.dueDate <= todayIso() &&
+                        (statusCode() === LoanContractStatus.DISBURSED ||
+                          statusCode() === LoanContractStatus.BAD_DEBT);
+                      <tr
+                        [class]="
+                          row.statusCode === 'OVERDUE'
+                            ? 'bg-red-50'
+                            : row.statusCode === 'PAID'
+                              ? 'bg-green-50'
+                              : ''
+                        "
+                        [class.cursor-pointer]="isPayable"
+                        [class.group]="isPayable"
+                        (click)="isPayable ? payPeriodFromSchedule(row) : null"
+                      >
+                        <td class="px-2 py-2 font-medium text-center">
+                          @if (isPayable) {
+                            <tui-icon
+                              icon="@tui.circle-dollar-sign"
+                              class="mr-0.5 text-primary"
+                              style="font-size: 10px"
+                            />
+                          }
+                          {{ row.periodNo }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-gray-500">
+                          {{ row.actualDayCount ?? '-' }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-gray-500">
+                          {{ formatDate(row.dueDate) }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-amber-600">
+                          {{ formatCurrency(row.dueInterestAmount) }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-cyan-600">
+                          {{ formatCurrency(row.dueQltsAmount) }}
+                        </td>
+                        <td class="px-2 py-2 font-semibold text-right">
+                          {{ formatCurrency(row.installmentAmount) }}
+                        </td>
+                        <td class="px-2 py-2">
+                          <span
+                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors"
+                            [class]="getScheduleRowBadgeClass(badge.css, isPayable)"
+                            [tuiHint]="isPayable ? 'Bấm để thanh toán kỳ này' : null"
+                            tuiHintDirection="top"
+                            >{{ badge.label }}</span
+                          >
+                        </td>
+                        <td
+                          class="px-2 py-2 font-semibold text-right"
+                          [class]="totalPaid(row) > 0 ? 'text-green-700' : 'text-gray-300'"
+                        >
+                          {{ formatCurrency(totalPaid(row)) }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                  <!-- ╔══ TABLE FOOTER: PAWN ════════════════════════════════════════════════╗ -->
+                  <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                    <tr class="text-xs font-semibold">
+                      <td class="px-2 py-2 text-center text-gray-600" colspan="3">Tổng</td>
+                      <td class="px-2 py-2 text-right text-amber-600">
+                        {{ formatCurrency(scheduleDetailTotals().dueInterestAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right text-cyan-600">
+                        {{ formatCurrency(scheduleDetailTotals().dueQltsAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right">
+                        {{ formatCurrency(scheduleDetailTotals().installmentAmount) }}
+                      </td>
+                      <td class="px-2 py-2"></td>
+                      <td class="px-2 py-2 text-right text-green-700">
+                        {{ formatCurrency(scheduleDetailTotals().totalPaid) }}
+                      </td>
+                    </tr>
+                  </tfoot>
+                } @else {
+                  <!-- ╔══ TABLE HEAD: INSTALLMENT ═══════════════════════════════════════════╗ -->
+                  <thead class="sticky top-0 bg-gray-50">
+                    <tr>
+                      <th class="px-2 py-2 text-center text-gray-500">TT</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Số ngày</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Ngày đóng tiền</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Tiền TT hàng kỳ</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Tiền gốc</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Tiền lãi</th>
+                      <th class="px-2 py-2 text-right text-emerald-700 bg-emerald-50">
+                        Tổng cầm đồ
+                      </th>
+                      <th class="px-2 py-2 text-right text-gray-500">Phí phần mềm</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Phí hao mòn</th>
+                      <th class="px-2 py-2 text-right text-cyan-700 bg-cyan-50">Tổng cho thuê</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Nợ gốc còn lại</th>
+                      <th class="px-2 py-2 text-left text-gray-500">Trạng thái</th>
+                      <th class="px-2 py-2 text-right text-gray-500">Đã trả</th>
+                    </tr>
+                  </thead>
+                  <!-- ╔══ TABLE BODY: INSTALLMENT ═══════════════════════════════════════════╗ -->
+                  <tbody class="divide-y divide-gray-100">
+                    @for (row of repaymentSchedule(); track row.periodNo) {
+                      @let badge = getScheduleStatusBadge(row.statusCode);
+                      @let isPayable =
+                        row.statusCode !== 'PAID' &&
+                        row.dueDate != null &&
+                        row.dueDate <= todayIso() &&
+                        (statusCode() === LoanContractStatus.DISBURSED ||
+                          statusCode() === LoanContractStatus.BAD_DEBT);
+                      <tr
+                        [class]="
+                          row.statusCode === 'OVERDUE'
+                            ? 'bg-red-50'
+                            : row.statusCode === 'PAID'
+                              ? 'bg-green-50'
+                              : ''
+                        "
+                        [class.cursor-pointer]="isPayable"
+                        [class.group]="isPayable"
+                        (click)="isPayable ? payPeriodFromSchedule(row) : null"
+                      >
+                        <td class="px-2 py-2 font-medium text-center">
+                          @if (isPayable) {
+                            <tui-icon
+                              icon="@tui.circle-dollar-sign"
+                              class="mr-0.5 text-primary"
+                              style="font-size: 10px"
+                            />
+                          }
+                          {{ row.periodNo }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-gray-500">
+                          {{ row.actualDayCount ?? '-' }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-gray-500">
+                          {{ formatDate(row.dueDate) }}
+                        </td>
+                        <td class="px-2 py-2 font-semibold text-right">
+                          {{ formatCurrency(row.installmentAmount) }}
+                        </td>
+                        <td class="px-2 py-2 text-right">
+                          {{ formatCurrency(row.duePrincipalAmount) }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-amber-600">
+                          {{ formatCurrency(row.dueInterestAmount) }}
+                        </td>
+                        <td
+                          class="px-2 py-2 font-semibold text-right text-emerald-700 bg-emerald-50"
+                        >
+                          {{
+                            formatCurrency(
+                              (row.duePrincipalAmount ?? 0) + (row.dueInterestAmount ?? 0)
+                            )
+                          }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-blue-600">
+                          {{ formatCurrency(row.dueQlkvAmount) }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-cyan-600">
+                          {{ formatCurrency(row.dueQltsAmount) }}
+                        </td>
+                        <td class="px-2 py-2 font-semibold text-right text-cyan-700 bg-cyan-50">
+                          {{ formatCurrency((row.dueQlkvAmount ?? 0) + (row.dueQltsAmount ?? 0)) }}
+                        </td>
+                        <td class="px-2 py-2 text-right text-gray-500">
+                          {{ formatCurrency(row.closingPrincipalAmount) }}
+                        </td>
+                        <td class="px-2 py-2">
+                          <span
+                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors"
+                            [class]="getScheduleRowBadgeClass(badge.css, isPayable)"
+                            [tuiHint]="isPayable ? 'Bấm để thanh toán kỳ này' : null"
+                            tuiHintDirection="top"
+                            >{{ badge.label }}</span
+                          >
+                        </td>
+                        <td
+                          class="px-2 py-2 font-semibold text-right"
+                          [class]="totalPaid(row) > 0 ? 'text-green-700' : 'text-gray-300'"
+                        >
+                          {{ formatCurrency(totalPaid(row)) }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                  <!-- ╔══ TABLE FOOTER: INSTALLMENT ═════════════════════════════════════════╗ -->
+                  <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                    <tr class="text-xs font-semibold">
+                      <td class="px-2 py-2 text-center text-gray-600" colspan="3">Tổng</td>
+                      <td class="px-2 py-2 text-right">
+                        {{ formatCurrency(scheduleDetailTotals().installmentAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right">
+                        {{ formatCurrency(scheduleDetailTotals().duePrincipalAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right text-amber-600">
+                        {{ formatCurrency(scheduleDetailTotals().dueInterestAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right text-emerald-700 bg-emerald-50">
+                        {{ formatCurrency(scheduleDetailTotals().duePawnTotal) }}
+                      </td>
+                      <td class="px-2 py-2 text-right text-blue-600">
+                        {{ formatCurrency(scheduleDetailTotals().dueQlkvAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right text-cyan-600">
+                        {{ formatCurrency(scheduleDetailTotals().dueQltsAmount) }}
+                      </td>
+                      <td class="px-2 py-2 text-right text-cyan-700 bg-cyan-50">
+                        {{ formatCurrency(scheduleDetailTotals().dueRentTotal) }}
+                      </td>
+                      <td class="px-2 py-2"></td>
+                      <td class="px-2 py-2"></td>
+                      <td class="px-2 py-2 text-right text-green-700">
+                        {{ formatCurrency(scheduleDetailTotals().totalPaid) }}
+                      </td>
+                    </tr>
+                  </tfoot>
+                }
+              </table>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- ── Tab: Lịch sử thu tiền ──────────────────────────────────────── -->
+      @if (activeTab() === 'payments') {
+        <div class="space-y-4">
+          @if (canCreateReceipt()) {
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div class="flex justify-between items-center mb-3">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                  Tạo phiếu thu cho hợp đồng
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <label tuiLabel>Thu cho khoản gì?</label>
+                  <tui-textfield multi tuiChevron [stringify]="receiptPurposeStringify">
+                    <input
+                      tuiInputChip
+                      tuiSelectLike
+                      [ngModel]="selectedReceiptPurposes()"
+                      (ngModelChange)="onPurposesChange($event)"
+                      [ngModelOptions]="{ standalone: true }"
+                      [placeholder]="
+                        selectedReceiptPurposes().length ? '' : 'Chọn một hoặc nhiều khoản thu'
+                      "
+                    />
+                    <tui-data-list-wrapper
+                      *tuiTextfieldDropdown
+                      new
+                      tuiMultiSelectGroup
+                      [items]="visibleReceiptPurposeCodes()"
+                      [itemContent]="receiptPurposeItemTpl"
+                    />
+                  </tui-textfield>
+
+                  <!-- Chọn kỳ (chỉ hiện khi chọn khoản kỳ trả nợ) -->
+                  @if (hasSelectedRepaymentPurpose() && unpaidPeriods().length > 1) {
+                    <div class="mt-2">
+                      <label tuiLabel class="text-xs text-gray-500">Thu cho kỳ nào?</label>
+                      <div class="flex flex-wrap gap-1.5 mt-1">
+                        <button
+                          type="button"
+                          class="px-2 py-1 text-xs font-medium rounded border transition-colors"
+                          [class]="
+                            selectedPeriodNo() === null
+                              ? 'bg-primary text-white border-primary'
+                              : 'bg-white text-gray-600 border-gray-200 hover:border-primary/50'
+                          "
+                          (click)="onSelectedPeriodChange(null)"
+                        >
+                          Auto (kỳ đầu tiên)
+                        </button>
+                        @for (p of unpaidPeriods(); track p.periodNo) {
+                          <button
+                            type="button"
+                            class="px-2 py-1 text-xs font-medium rounded border transition-colors"
+                            [class]="
+                              selectedPeriodNo() === p.periodNo
+                                ? 'bg-primary text-white border-primary'
+                                : p.statusCode === 'OVERDUE'
+                                  ? 'bg-red-50 text-red-700 border-red-200 hover:border-red-400'
+                                  : p.statusCode === 'WARNING'
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-400'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary/50'
+                            "
+                            (click)="onSelectedPeriodChange(p.periodNo)"
+                          >
+                            {{ p.label }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Toggle miễn phạt trễ nộp -->
+                  @if (hasLatePenaltyDue()) {
+                    <div class="flex flex-wrap gap-2 items-center mt-2">
+                      <button
+                        type="button"
+                        class="inline-flex gap-1.5 items-center px-2.5 py-1 text-xs font-medium rounded-md border transition-colors"
+                        [class]="
+                          waiveLatePenalty()
+                            ? 'bg-amber-100 text-amber-800 border-amber-400'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-amber-400'
+                        "
+                        (click)="toggleWaiveLatePenalty()"
+                      >
+                        <tui-icon icon="@tui.ban" class="text-xs" />
+                        {{ waiveLatePenalty() ? 'Đã bỏ phạt trễ nộp ✓' : 'Bỏ phạt trễ nộp' }}
+                      </button>
+                      @if (waiveLatePenalty()) {
+                        <span class="text-[10px] text-amber-600"
+                          >Số tiền phân bổ không bao gồm phạt chậm nộp kỳ này.</span
+                        >
+                      } @else {
+                        <span class="text-[10px] text-gray-400"
+                          >Bấm để không thu phạt chậm nộp kỳ này.</span
+                        >
+                      }
+                    </div>
+                  }
+
+                  <ng-template #receiptPurposeItemTpl let-item>
+                    @let amt = remainingAmounts()[item];
+                    <div class="flex gap-2 justify-between items-center w-full">
+                      <span>{{ receiptPurposeStringify(item) }}</span>
+                      @if (amt != null && amt > 0) {
+                        <span class="text-[10px] font-semibold text-primary">{{
+                          formatAmountShort(amt)
+                        }}</span>
+                      }
+                    </div>
+                  </ng-template>
+                  <p class="mt-1 text-[11px] text-gray-500">
+                    Có thể chọn nhiều khoản trong một lần thu để tạo 1 phiếu thu duy nhất.
+                  </p>
+
+                  @if (selectedReceiptPurposes().length > 0) {
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      @for (code of selectedReceiptPurposes(); track code) {
+                        <span
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+                          [class]="getReceiptPurposeBadgeClass(code)"
+                        >
+                          {{ receiptPurposeStringify(code) }}
+                        </span>
+                      }
+                    </div>
+
+                    <div
+                      class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-500"
+                    >
+                      <span class="inline-flex gap-1 items-center">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Thu nợ kỳ
+                      </span>
+                      <span class="inline-flex gap-1 items-center">
+                        <span class="w-2 h-2 bg-amber-500 rounded-full"></span> Phí/Bảo hiểm
+                      </span>
+                      <span class="inline-flex gap-1 items-center">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full"></span> Thu khác
+                      </span>
+                    </div>
+                  }
+                </div>
+
+                <div>
+                  <label tuiLabel>Số tiền (VNĐ)</label>
+                  <tui-textfield>
+                    <input
+                      tuiInputNumber
+                      [tuiNumberFormat]="numberFormat"
+                      [ngModel]="receiptAmountInput()"
+                      (ngModelChange)="receiptAmountInput.set($event == null ? null : +$event)"
+                      placeholder="Nhập số tiền"
+                      [postfix]="' VNĐ' | tuiCurrency"
+                    />
+                  </tui-textfield>
+
+                  @if (
+                    hasSelectedRepaymentPurpose() && installmentAllocationPreview();
+                    as preview
+                  ) {
+                    <div
+                      class="p-2.5 mt-2 space-y-1.5 bg-blue-50 rounded-lg border border-blue-200"
+                    >
+                      <p class="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">
+                        Phân bổ dự kiến theo khoản đã chọn
+                      </p>
+                      <p
+                        class="text-[10px] text-blue-700/80"
+                        title="Ưu tiên phân bổ: Lãi → Phí định kỳ → Phạt chậm nộp → Gốc"
+                      >
+                        Ưu tiên: <b>1. Lãi</b> → <b>2. Phí định kỳ</b> → <b>3. Phạt chậm</b> →
+                        <b>4. Gốc</b>
+                      </p>
+
+                      @for (line of preview.allocations; track line.code; let i = $index) {
+                        <div
+                          class="flex justify-between items-center px-2 py-1 text-xs rounded-md"
+                          [class]="
+                            line.due === 0
+                              ? 'bg-gray-100 text-gray-400'
+                              : line.allocated >= line.due
+                                ? 'bg-green-50 text-green-700'
+                                : line.allocated > 0
+                                  ? 'bg-amber-50 text-amber-700'
+                                  : 'bg-white text-gray-700'
+                          "
+                        >
+                          <span class="flex gap-1.5 items-center">
+                            <span
+                              class="inline-flex h-4 min-w-4 items-center justify-center rounded bg-black/10 px-1 text-[10px] font-semibold"
+                              >{{ i + 1 }}</span
+                            >
+                            <span>{{ line.label }}</span>
+                            @if (line.due === 0) {
+                              <span class="text-[10px]">(Đã đủ)</span>
+                            } @else if (line.allocated >= line.due) {
+                              <span class="text-[10px]">(Đủ kỳ này)</span>
+                            } @else if (line.allocated > 0) {
+                              <span class="text-[10px]">(Một phần)</span>
+                            }
+                          </span>
+                          <span class="font-medium">
+                            {{ formatCurrency(line.allocated) }}
+                            <span class="text-gray-400"> / {{ formatCurrency(line.due) }}</span>
+                          </span>
+                        </div>
+                      }
+
+                      <div class="pt-1.5 mt-1.5 space-y-1 text-xs border-t border-blue-200">
+                        <div class="flex justify-between items-center">
+                          <span class="text-gray-600">Tổng đến hạn</span>
+                          <span class="font-semibold text-gray-800">{{
+                            formatCurrency(preview.totalDue)
+                          }}</span>
+                        </div>
+                        @if (preview.remainingDueAfterPay > 0) {
+                          <div class="flex justify-between items-center text-amber-700">
+                            <span>Còn lại chưa phân bổ</span>
+                            <span class="font-semibold">{{
+                              formatCurrency(preview.remainingDueAfterPay)
+                            }}</span>
+                          </div>
+                        }
+                        @if (preview.overpaidAmount > 0) {
+                          <div class="flex justify-between items-center text-green-700">
+                            <span>Số tiền chuyển kỳ sau</span>
+                            <span class="font-semibold">{{
+                              formatCurrency(preview.overpaidAmount)
+                            }}</span>
+                          </div>
+                        }
+                      </div>
+                      <p class="text-[10px] text-gray-500">
+                        * Số tiền dư sẽ tự động chuyển vào các kỳ sau sau khi tạo phiếu thu.
+                      </p>
+                    </div>
+                  }
+
+                  @if (hasSelectedEarlySettlement()) {
+                    @if (!scheduleLoaded() || !financialSummaryLoaded()) {
+                      <div
+                        class="flex gap-2 items-center p-2.5 mt-2 text-sm text-orange-700 bg-orange-50 rounded-lg border border-orange-200"
+                      >
+                        <tui-icon icon="@tui.loader-2" class="text-base animate-spin" />
+                        <span>Đang tính số tiền tất toán...</span>
+                      </div>
+                    } @else if (settlementCalc(); as calc) {
+                      <div
+                        class="p-2.5 mt-2 space-y-1.5 bg-orange-50 rounded-lg border border-orange-200"
+                      >
+                        <p
+                          class="text-[11px] font-semibold text-orange-700 uppercase tracking-wide"
+                        >
+                          Chi tiết tất toán tại ngày hôm nay
+                        </p>
+                        @if (calc.isEarlySettlement) {
+                          <p class="text-[10px] text-orange-600 font-medium">
+                            ⚠ Tất toán sớm — đã qua {{ calc.completionRatio | number: '1.1-1' }}%
+                            thời gian (cần ≥ 80% để miễn phạt)
+                          </p>
+                        } @else {
+                          <p class="text-[10px] text-green-700 font-medium">
+                            ✓ Đúng hạn hoặc sau hạn — đã qua
+                            {{ calc.completionRatio | number: '1.1-1' }}% thời gian hợp đồng
+                          </p>
+                        }
+
+                        <div class="space-y-1">
+                          <div
+                            class="flex justify-between items-center px-2 py-1 text-xs text-gray-700 bg-white rounded-md"
+                          >
+                            <span>Gốc còn lại</span>
+                            <span class="font-medium">{{
+                              formatCurrency(calc.remainingPrincipalAmount)
+                            }}</span>
+                          </div>
+                          @if ((calc.remainingFileFeeAmount ?? 0) > 0) {
+                            <div
+                              class="flex justify-between items-center px-2 py-1 text-xs text-amber-700 bg-amber-50 rounded-md"
+                            >
+                              <span>Phí hồ sơ chưa thanh toán</span>
+                              <span class="font-medium">{{
+                                formatCurrency(calc.remainingFileFeeAmount)
+                              }}</span>
+                            </div>
+                          }
+                          @if ((calc.remainingInsuranceAmount ?? 0) > 0) {
+                            <div
+                              class="flex justify-between items-center px-2 py-1 text-xs text-amber-700 bg-amber-50 rounded-md"
+                            >
+                              <span>Bảo hiểm chưa thanh toán</span>
+                              <span class="font-medium">{{
+                                formatCurrency(calc.remainingInsuranceAmount)
+                              }}</span>
+                            </div>
+                          }
+                          @if ((calc.accruedInterestAmount ?? 0) > 0) {
+                            <div
+                              class="flex justify-between items-center px-2 py-1 text-xs text-gray-700 bg-white rounded-md"
+                            >
+                              <span>Lãi tích lũy</span>
+                              <span class="font-medium">{{
+                                formatCurrency(calc.accruedInterestAmount)
+                              }}</span>
+                            </div>
+                          }
+                          @if ((calc.accruedPeriodicFeeAmount ?? 0) > 0) {
+                            <div
+                              class="flex justify-between items-center px-2 py-1 text-xs text-gray-700 bg-white rounded-md"
+                            >
+                              <span>Phí định kỳ tích lũy</span>
+                              <span class="font-medium">{{
+                                formatCurrency(calc.accruedPeriodicFeeAmount)
+                              }}</span>
+                            </div>
+                          }
+                          @if ((calc.unpaidLatePenaltyAmount ?? 0) > 0) {
+                            <div
+                              class="flex justify-between items-center px-2 py-1 text-xs text-amber-700 bg-amber-50 rounded-md"
+                            >
+                              <span>Phạt chậm nộp chưa trả</span>
+                              <span class="font-medium">{{
+                                formatCurrency(calc.unpaidLatePenaltyAmount)
+                              }}</span>
+                            </div>
+                          }
+                          @if ((calc.earlySettlementPenaltyAmount ?? 0) > 0) {
+                            <div
+                              class="flex justify-between items-center px-2 py-1 text-xs text-red-700 bg-red-50 rounded-md"
+                            >
+                              <span
+                                >Phạt tất toán sớm ({{ calc.completionRatio | number: '1.1-1' }}%
+                                &lt; 80%)</span
+                              >
+                              <span class="font-medium">{{
+                                formatCurrency(calc.earlySettlementPenaltyAmount)
+                              }}</span>
+                            </div>
+                          }
+                        </div>
+
+                        <div
+                          class="flex justify-between items-center pt-1.5 mt-1 text-sm font-bold text-orange-800 border-t border-orange-300"
+                        >
+                          <span>Tổng tất toán</span>
+                          <span>{{ formatCurrency(calc.totalSettlementAmount) }}</span>
+                        </div>
+                        <p class="text-[10px] text-gray-500">
+                          * Tính tại ngày hôm nay. Số liệu chỉ mang tính tham khảo trước khi xác
+                          nhận.
+                        </p>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+
+              <div class="p-3 mt-3 space-y-2 bg-white rounded-lg border border-gray-200">
+                <!-- Thông tin tài khoản + nội dung -->
+                <p class="text-xs text-gray-500">Nội dung chuyển khoản gợi ý:</p>
+                <p class="text-sm font-semibold text-gray-800">{{ transferContent() }}</p>
+                <div class="grid grid-cols-3 gap-x-2 text-xs text-gray-600">
+                  <span><b>Ngân hàng:</b> {{ bankTransferInfo.bankName }}</span>
+                  <span><b>STK:</b> {{ bankTransferInfo.accountNo }}</span>
+                  <span><b>Chủ TK:</b> {{ bankTransferInfo.accountName }}</span>
+                </div>
+                <!-- QR code – dòng riêng, căn giữa, to -->
+                @if (qrImageUrl(); as qr) {
+                  <div class="flex flex-col gap-2 items-center pt-2 border-t border-gray-100">
+                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-wide">
+                      Quét QR để chuyển khoản
+                    </p>
+                    <img
+                      [src]="qr"
+                      alt="Mã QR chuyển khoản"
+                      class="w-64 h-64 rounded-xl border-2 shadow-sm border-primary"
+                    />
+                    <p class="text-[11px] text-gray-400">
+                      Sau khi nhận tiền, bấm <b>Tạo phiếu thu</b> để ghi nhận.
+                    </p>
+                  </div>
+                } @else {
+                  <p class="pt-1 text-xs text-center text-gray-400">
+                    Nhập số tiền để hiển thị mã QR.
+                  </p>
+                }
+              </div>
+
+              <div class="flex justify-end mt-3">
+                <button
+                  tuiButton
+                  type="button"
+                  appearance="primary"
+                  size="s"
+                  [disabled]="creatingReceipt()"
+                  (click)="createReceiptForContract()"
+                >
+                  @if (creatingReceipt()) {
+                    <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+                  }
+                  Tạo phiếu thu
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="p-4 text-center bg-gray-50 rounded-lg border border-gray-100">
+              <tui-icon icon="@tui.ban" class="mb-1 text-xl text-gray-300" />
+              <p class="text-xs text-gray-400">
+                Không thể tạo phiếu thu ở trạng thái hợp đồng hiện tại.
+              </p>
+            </div>
+          }
+
+          @if (paymentVouchersLoading()) {
+            <p class="py-10 text-sm text-center text-gray-400">Đang tải lịch sử thu tiền…</p>
+          } @else if (paymentVouchers().length === 0) {
+            <p class="py-10 text-sm text-center text-gray-400">Chưa có phiếu thu nào.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (v of paymentVouchers(); track v.voucherId) {
+                <div
+                  class="p-3 rounded-lg border border-gray-100"
+                  [class]="v.isAdjustment ? 'border-orange-200 bg-orange-50' : 'bg-white'"
+                >
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <div class="flex gap-2 items-center">
+                        <span class="font-mono text-xs font-bold text-gray-900">{{
+                          v.voucherNo
+                        }}</span>
+                        <span
+                          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
+                          [class]="
+                            v.voucherType === 'RECEIPT'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          "
+                        >
+                          {{ getVoucherTypeLabel(v.voucherType) }}
+                        </span>
+                        @if (v.isAdjustment) {
+                          <span
+                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-orange-100 text-orange-700"
+                            >Bổ sung</span
+                          >
+                        }
+                      </div>
+                      <p class="mt-0.5 text-xs text-gray-500">
+                        {{ getVoucherReasonLabel(v.reasonCode) }}
+                        @if (v.payerReceiverName) {
+                          · {{ v.payerReceiverName }}
+                        }
+                      </p>
+                      <p class="text-[10px] text-gray-300">
+                        {{ v.createdByName }} · {{ formatDate(v.businessDate) }}
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <p
+                        class="text-sm font-bold"
+                        [class]="v.voucherType === 'RECEIPT' ? 'text-green-700' : 'text-red-600'"
+                      >
+                        {{ formatCurrency(v.amount) }}
+                      </p>
+                    </div>
+                  </div>
+                  @if (v.allocations && v.allocations.length > 0) {
+                    <div
+                      class="flex flex-wrap gap-y-0.5 gap-x-3 pt-2 mt-2 border-t border-gray-100"
+                    >
+                      @for (a of v.allocations; track a.componentCode) {
+                        <span class="text-[10px] text-gray-400"
+                          >{{ getAllocLabel(a.componentCode) }}:
+                          <b class="text-gray-600">{{ formatCurrency(a.amount) }}</b></span
+                        >
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Tab: đảm bảo ─────────────────────────────────────────────── -->
+      @if (activeTab() === 'collateral') {
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+              Tài sản đảm bảo
+            </p>
+            @if (isDraft()) {
+              <button
+                tuiButton
+                type="button"
+                size="xs"
+                appearance="outline"
+                (click)="toggleCollateralForm()"
+              >
+                <tui-icon
+                  [icon]="showCollateralForm() ? '@tui.x' : '@tui.plus'"
+                  class="mr-1 text-xs"
+                />
+                {{ showCollateralForm() ? 'Hủy' : 'Thêm tài sản' }}
+              </button>
+            }
+          </div>
+
+          <!-- Form thêm đảm bảo -->
+          @if (showCollateralForm()) {
+            <form
+              class="p-4 space-y-3 bg-gray-50 rounded-lg border border-gray-200"
+              [formGroup]="collateralForm"
+              (ngSubmit)="saveCollateral()"
+            >
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div class="md:col-span-2">
+                  <label class="block mb-1 text-xs font-medium text-gray-600"
+                    >Loại tài sản <span class="text-red-500">*</span></label
+                  >
+                  <tui-textfield tuiChevron [stringify]="collateralTypeStringify">
+                    <input
+                      tuiComboBox
+                      formControlName="collateralType"
+                      placeholder="Chọn loại tài sản"
+                      [matcher]="collateralTypeMatcher"
+                    />
+                    <tui-data-list *tuiTextfieldDropdown>
+                      @for (t of collateralTypes; track t) {
+                        <button new tuiOption type="button" [value]="t">
+                          {{ collateralTypeStringify(t) }}
+                        </button>
+                      }
+                    </tui-data-list>
+                  </tui-textfield>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block mb-1 text-xs font-medium text-gray-600"
+                    >Mô tả <span class="text-red-500">*</span></label
+                  >
+                  <tui-textfield>
+                    <input
+                      tuiTextfield
+                      formControlName="description"
+                      placeholder="VD: Honda Wave RS 2020, túi xách Gucci, sổ tiết kiệm BIDV…"
+                    />
+                  </tui-textfield>
+                </div>
+                <div>
+                  <label class="block mb-1 text-xs font-medium text-gray-600">{{
+                    getSerialNumberLabel(collateralForm.value.collateralType!)
+                  }}</label>
+                  <tui-textfield>
+                    <input
+                      tuiTextfield
+                      formControlName="serialNumber"
+                      [placeholder]="
+                        getSerialNumberPlaceholder(collateralForm.value.collateralType!)
+                      "
+                    />
+                  </tui-textfield>
+                </div>
+                <div>
+                  <label class="block mb-1 text-xs font-medium text-gray-600"
+                    >Giá trị ước tính (VNĐ)</label
+                  >
+                  <tui-textfield>
+                    <input
+                      tuiTextfield
+                      type="number"
+                      formControlName="estimatedValue"
+                      placeholder="0"
+                    />
+                  </tui-textfield>
+                </div>
+                <div>
+                  <label class="block mb-1 text-xs font-medium text-gray-600"
+                    >Chi tiết (BKS, địa chỉ…)</label
+                  >
+                  <tui-textfield>
+                    <input tuiTextfield formControlName="detail" placeholder="Thông tin bổ sung…" />
+                  </tui-textfield>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block mb-1 text-xs font-medium text-gray-600">Ghi chú</label>
+                  <tui-textfield>
+                    <input tuiTextfield formControlName="note" placeholder="Ghi chú thêm…" />
+                  </tui-textfield>
+                </div>
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button
+                  tuiButton
+                  type="button"
+                  size="s"
+                  appearance="outline"
+                  (click)="toggleCollateralForm()"
+                >
+                  Hủy
+                </button>
+                <button
+                  tuiButton
+                  type="submit"
+                  size="s"
+                  appearance="primary"
+                  [disabled]="savingCollateral()"
+                >
+                  @if (savingCollateral()) {
+                    <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+                  }
+                  Lưu
+                </button>
+              </div>
+            </form>
+          }
+
+          <!-- Danh sách đảm bảo -->
+          @if (collateralLoading()) {
+            <p class="py-6 text-sm text-center text-gray-400">Đang tải…</p>
+          } @else if (collaterals().length === 0) {
+            <div class="py-10 text-center">
+              <tui-icon icon="@tui.landmark" class="mb-2 text-2xl text-gray-300" />
+              <p class="text-sm text-gray-400">Chưa có tài sản đảm bảo.</p>
+            </div>
+          } @else {
+            <div class="space-y-2">
+              @for (c of collaterals(); track c.collateralId) {
+                <div
+                  class="flex justify-between items-start px-4 py-3 bg-white rounded-lg border border-gray-100 hover:border-gray-200"
+                >
+                  <div class="flex-1 min-w-0">
+                    <div class="flex gap-2 items-center mb-0.5">
+                      <span
+                        class="px-1.5 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded"
+                      >
+                        {{ getCollateralTypeLabel(c.collateralType) }}
+                      </span>
+                    </div>
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ c.description }}</p>
+                    @if (c.serialNumber) {
+                      <p class="mt-0.5 text-xs font-medium text-gray-500">
+                        {{ getSerialNumberLabel(c.collateralType) }}: {{ c.serialNumber }}
+                      </p>
+                    }
+                    @if (c.detail) {
+                      <p class="mt-0.5 text-xs text-gray-400">{{ c.detail }}</p>
+                    }
+                    @if (c.estimatedValue) {
+                      <p class="mt-0.5 text-xs font-semibold text-amber-600">
+                        Ước tính: {{ formatCurrency(c.estimatedValue) }}
+                      </p>
+                    }
+                  </div>
+                  @if (isDraft()) {
+                    <button
+                      tuiButton
+                      type="button"
+                      size="xs"
+                      appearance="destructive"
+                      (click)="deleteCollateral(c)"
+                      class="ml-3 shrink-0"
+                    >
+                      <tui-icon icon="@tui.trash-2" />
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Tab: Hồ sơ giấy tờ ────────────────────────────────────────── -->
+      @if (activeTab() === 'docs') {
+        <div class="space-y-6">
+          <!-- ── Section 1: Hợp đồng (signed PDF) ────── -->
+          <div class="space-y-2">
+            <p
+              class="flex gap-1.5 items-center text-xs font-semibold tracking-wide text-gray-500 uppercase"
+            >
+              <tui-icon icon="@tui.file-signature" class="text-[10px]" />File hợp đồng
+            </p>
+            @if (attachmentLoading()) {
+              <p class="py-2 text-xs text-gray-400">Đang tải…</p>
+            } @else if (pdfAttachment(); as att) {
+              <div class="flex gap-3 items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="p-2 bg-red-50 rounded-lg shrink-0">
+                  <tui-icon icon="@tui.file" class="text-lg text-red-500" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ att.fileName }}</p>
+                  <p class="text-xs text-gray-400">
+                    {{ formatFileSize(att.fileSize) }} · {{ formatDate(att.uploadedAt) }}
+                  </p>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                  <button
+                    tuiButton
+                    type="button"
+                    size="xs"
+                    appearance="outline"
+                    (click)="openPdfAttachment(att.attachmentId)"
+                  >
+                    <tui-icon icon="@tui.eye" class="mr-1" />Xem
+                  </button>
+                  <button
+                    tuiButton
+                    type="button"
+                    size="xs"
+                    appearance="outline"
+                    (click)="downloadPdfAttachment(att)"
+                  >
+                    <tui-icon icon="@tui.download" />
+                  </button>
+                </div>
+              </div>
+              @if (isDraft()) {
+                <label class="block mt-2 cursor-pointer">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    class="hidden"
+                    (change)="onPdfFileSelected($event)"
+                    [disabled]="uploadingPdf()"
+                  />
+                  <div
+                    class="flex flex-col gap-1 justify-center items-center py-4 rounded-lg border-2 border-gray-200 border-dashed transition-colors hover:border-violet-300 hover:bg-violet-50"
+                  >
+                    @if (uploadingPdf()) {
+                      <tui-icon icon="@tui.loader-2" class="text-gray-300 animate-spin" />
+                    } @else {
+                      <tui-icon icon="@tui.refresh-cw" class="text-lg text-gray-300" />
+                    }
+                    <span class="text-xs text-gray-400">Thay thế file PDF</span>
+                  </div>
+                </label>
+              }
+            } @else {
+              @if (isDraft()) {
+                <label class="block cursor-pointer">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    class="hidden"
+                    (change)="onPdfFileSelected($event)"
+                    [disabled]="uploadingPdf()"
+                  />
+                  <div
+                    class="flex flex-col gap-1.5 justify-center items-center py-8 rounded-lg border-2 border-gray-200 border-dashed transition-colors hover:border-violet-300 hover:bg-violet-50"
+                  >
+                    @if (uploadingPdf()) {
+                      <tui-icon icon="@tui.loader-2" class="text-xl text-gray-300 animate-spin" />
+                    } @else {
+                      <tui-icon icon="@tui.file" class="text-xl text-gray-300" />
+                    }
+                    <span class="text-xs text-gray-400">Tải lên file hợp đồng (PDF)</span>
+                    <span class="text-[10px] text-gray-300">Tối đa 20 MB</span>
+                  </div>
+                </label>
+              } @else {
+                <div
+                  class="flex flex-col gap-1 justify-center items-center py-8 bg-gray-50 rounded-lg border-2 border-gray-100 border-dashed"
+                >
+                  <tui-icon icon="@tui.file" class="text-xl text-gray-200" />
+                  <p class="text-xs text-gray-300">Chưa có file hợp đồng PDF.</p>
+                </div>
+              }
+            }
+          </div>
+
+          <hr class="border-gray-100" />
+
+          <!-- ── Section 3: Ảnh / Giấy tờ khác ──── -->
+          <div class="space-y-2">
+            <p
+              class="flex gap-1.5 items-center text-xs font-semibold tracking-wide text-gray-500 uppercase shrink-0"
+            >
+              <tui-icon icon="@tui.image" class="text-[10px]" />Ảnh / Giấy tờ khác
+            </p>
+            @if (isDraft()) {
+              <label class="block cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  class="hidden"
+                  (change)="onDocFileSelected($event)"
+                  [disabled]="uploadingDoc()"
+                />
+                <div
+                  class="flex flex-col gap-1.5 justify-center items-center py-5 rounded-lg border-2 border-gray-200 border-dashed transition-colors hover:border-violet-300 hover:bg-violet-50"
+                >
+                  @if (uploadingDoc()) {
+                    <tui-icon icon="@tui.loader-2" class="text-xl text-gray-300 animate-spin" />
+                  } @else {
+                    <tui-icon icon="@tui.upload" class="text-xl text-gray-300" />
+                  }
+                  <span class="text-xs text-gray-400">Tải lên ảnh / giấy tờ</span>
+                  <span class="text-[10px] text-gray-300">JPEG, PNG, WebP, PDF</span>
+                </div>
+              </label>
+            }
+            @if (otherDocs().length === 0) {
+              @if (!isDraft()) {
+                <div
+                  class="py-6 text-center bg-gray-50 rounded-lg border border-gray-100 border-dashed"
+                >
+                  <tui-icon icon="@tui.image" class="mb-1 text-xl text-gray-200" />
+                  <p class="text-xs text-gray-300">Chưa có ảnh / giấy tờ nào.</p>
+                </div>
+              }
+            } @else {
+              <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+                @for (doc of otherDocs(); track doc.documentId) {
+                  <div
+                    class="overflow-hidden relative rounded-lg border border-gray-200 group hover:border-gray-300"
+                  >
+                    <div class="flex justify-center items-center bg-gray-50 aspect-video">
+                      @if (isImageContent(doc.contentType)) {
+                        <img
+                          [src]="getDocBlobUrl(doc)"
+                          [alt]="doc.fileName"
+                          class="object-cover w-full h-full"
+                          loading="lazy"
+                        />
+                      } @else {
+                        <div class="flex flex-col gap-1 items-center">
+                          <tui-icon icon="@tui.file" class="text-2xl text-red-400" />
+                          <span class="text-xs text-gray-400">PDF</span>
+                        </div>
+                      }
+                    </div>
+                    <div class="px-2 py-1.5 border-t border-gray-100">
+                      <span class="block text-[10px] font-medium text-gray-500 uppercase">{{
+                        getDocumentTypeLabel(doc.documentType)
+                      }}</span>
+                      <span class="block text-xs text-gray-700 truncate" [title]="doc.fileName">{{
+                        doc.fileName
+                      }}</span>
+                      <span class="block text-[10px] text-gray-400">{{
+                        formatFileSize(doc.fileSize)
+                      }}</span>
+                    </div>
+                    <div
+                      class="flex absolute inset-0 gap-2 justify-center items-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40"
+                    >
+                      <button
+                        tuiButton
+                        type="button"
+                        size="xs"
+                        appearance="primary"
+                        (click)="openDocPreview(doc)"
+                      >
+                        <tui-icon icon="@tui.eye" />
+                      </button>
+                      <button
+                        tuiButton
+                        type="button"
+                        size="xs"
+                        appearance="outline"
+                        (click)="downloadDocument(doc)"
+                      >
+                        <tui-icon icon="@tui.download" />
+                      </button>
+                      @if (isDraft()) {
+                        <button
+                          tuiButton
+                          type="button"
+                          size="xs"
+                          appearance="destructive"
+                          (click)="deleteDocument(doc)"
+                        >
+                          <tui-icon icon="@tui.trash-2" />
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Preview lightbox -->
+        @if (previewDocUrl()) {
+          <div
+            class="flex fixed inset-0 z-50 justify-center items-center bg-black/70"
+            (click)="closePreview()"
+          >
+            <div
+              class="relative"
+              style="max-width: 90vw; max-height: 90vh"
+              (click)="$event.stopPropagation()"
+            >
+              <button
+                tuiButton
+                type="button"
+                size="xs"
+                appearance="outline"
+                (click)="closePreview()"
+                class="absolute right-0 -top-8 text-white border-white/30 hover:bg-white/10"
+              >
+                <tui-icon icon="@tui.x" />Đóng
+              </button>
+              @if (previewIsImage()) {
+                <img
+                  [src]="previewDocUrl()!"
+                  class="object-contain rounded-lg shadow-xl"
+                  style="max-width: 85vw; max-height: 85vh"
+                />
+              } @else {
+                <!-- blob: URL không cần bypass sanitizer -->
+                <iframe
+                  [src]="previewDocUrl()!"
+                  class="rounded-lg shadow-xl"
+                  style="width: 80vw; height: 85vh"
+                ></iframe>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+    <!-- end tab content -->
+
+    <!-- ╔══ FOOTER ════════════════════════════════════════════════════════╗ -->
+    <div class="flex justify-end pt-4 mt-3 border-t border-gray-100">
+      <button tuiButton appearance="outline" size="m" (click)="context.$implicit.complete()">
+        Đóng
+      </button>
+    </div>
+  </div>
+}

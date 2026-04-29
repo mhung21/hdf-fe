@@ -1,0 +1,214 @@
+<div class="p-4 space-y-3 md:p-6">
+  <!-- Filter Chips -->
+  <div class="flex flex-wrap gap-2 items-center">
+    <button
+      tuiButton
+      [appearance]="filterType() === null ? 'primary' : 'outline'"
+      size="s"
+      (click)="setFilter(null)"
+    >
+      Tất cả
+    </button>
+    <button
+      tuiButton
+      [appearance]="filterType() === 'RECEIPT' ? 'primary' : 'outline'"
+      size="s"
+      (click)="setFilter('RECEIPT')"
+    >
+      <tui-icon icon="@tui.arrow-down-circle" class="mr-1 text-green-500" />Phiếu Thu
+    </button>
+    <button
+      tuiButton
+      [appearance]="filterType() === 'PAYMENT' ? 'primary' : 'outline'"
+      size="s"
+      (click)="setFilter('PAYMENT')"
+    >
+      <tui-icon icon="@tui.arrow-up-circle" class="mr-1 text-red-500" />Phiếu Chi
+    </button>
+  </div>
+
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="vouchers()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    [showActionsColumn]="false"
+    searchPlaceholder="Mã phiếu, tên người nộp/nhận..."
+    emptyIcon="@tui.receipt"
+    emptyText="Không có phiếu thu chi nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadVouchers()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <ng-container tableToolbar>
+      @if (canPickStoreFilter()) {
+        <tui-textfield multi tuiChevron [stringify]="storeStringify" class="w-full md:w-60">
+          <input
+            tuiInputChip
+            tuiSelectLike
+            [ngModel]="selectedStoreIds()"
+            (ngModelChange)="selectedStoreIds.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="selectedStoreIds().length ? '' : 'Chọn chi nhánh'"
+          />
+          <tui-data-list-wrapper
+            *tuiTextfieldDropdown
+            new
+            tuiMultiSelectGroup
+            [items]="storeIdsForFilter()"
+          />
+        </tui-textfield>
+      }
+
+      @if (canCreate()) {
+        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Tạo Phiếu
+        </button>
+      }
+    </ng-container>
+
+    <ng-template #summaryTop let-colspan="colspan">
+      <tr class="text-xs border-b border-green-200">
+        <td [attr.colspan]="colspan" class="px-4 py-2 font-semibold text-gray-700">
+          <div class="flex flex-wrap gap-3 justify-between items-center">
+            <div class="flex gap-1 items-center text-gray-600">
+              <tui-icon icon="@tui.sigma" class="text-xs" />
+              @if (isStaff()) {
+                Tổng hôm nay
+              } @else {
+                Tổng {{ vouchers().length }} phiếu
+              }
+            </div>
+            <div class="flex gap-3 items-center">
+              @if (isStaff()) {
+                <span class="text-green-700"
+                  >Tổng thu: {{ formatCurrency(todayReceiptAmount()) }}</span
+                >
+                <span class="text-red-700"
+                  >Tổng chi: {{ formatCurrency(todayPaymentAmount()) }}</span
+                >
+              } @else {
+                <span class="text-green-700"
+                  >Tổng thu: {{ formatCurrency(totalReceiptAmount()) }}</span
+                >
+                <span class="text-red-700"
+                  >Tổng chi: {{ formatCurrency(totalPaymentAmount()) }}</span
+                >
+              }
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('code')) {
+        <td class="px-4 py-3 align-top">
+          @if (asVoucher(item).voucherNo) {
+            <code
+              class="px-2 py-0.5 font-mono text-xs underline rounded transition-colors cursor-pointer bg-primary/10 text-primary underline-offset-2 decoration-primary/50 hover:bg-primary/20"
+              [tuiHint]="'Nhấn để xem chi tiết'"
+              tuiHintDirection="top"
+              (click)="openViewDialog(asVoucher(item))"
+              >{{ asVoucher(item).voucherNo }}</code
+            >
+          } @else {
+            <span class="text-xs text-gray-400">-</span>
+          }
+        </td>
+      }
+      @if (!isHidden('type')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span
+            class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
+            [class]="getTypeClass(asVoucher(item).voucherType)"
+          >
+            {{ getTypeLabel(asVoucher(item).voucherType) }}
+          </span>
+          @if (asVoucher(item).isAdjustment) {
+            <span
+              class="px-1.5 py-0.5 ml-1 text-xs text-purple-600 bg-purple-50 rounded-full border border-purple-200"
+              >Đ/chỉnh</span
+            >
+          }
+        </td>
+      }
+      @if (!isHidden('reason')) {
+        <td class="px-4 py-3 text-sm text-gray-700 align-top">
+          {{ getReasonLabel(asVoucher(item).reasonCode) }}
+        </td>
+      }
+      @if (!isHidden('payer')) {
+        <td class="px-4 py-3 align-top">
+          <p class="text-sm font-medium text-gray-900">
+            {{ asVoucher(item).payerReceiverName || asVoucher(item).customerName || '-' }}
+          </p>
+        </td>
+      }
+      @if (!isHidden('amount')) {
+        <td class="px-4 py-3 text-right align-top">
+          <span
+            class="text-sm font-semibold"
+            [class]="asVoucher(item).voucherType === 'RECEIPT' ? 'text-green-700' : 'text-red-700'"
+          >
+            {{ asVoucher(item).voucherType === 'RECEIPT' ? '+' : '-'
+            }}{{ formatCurrency(asVoucher(item).amount) }}
+          </span>
+        </td>
+      }
+      @if (!isHidden('date')) {
+        <td class="px-4 py-3 text-sm text-gray-600 align-top">
+          {{ formatDate(asVoucher(item).businessDate) }}
+        </td>
+      }
+      @if (!isHidden('contract')) {
+        <td class="px-4 py-3 align-top">
+          @if (asVoucher(item).contractNo) {
+            <code class="px-1.5 py-0.5 font-mono text-xs text-gray-600 bg-gray-100 rounded">{{
+              asVoucher(item).contractNo
+            }}</code>
+          } @else {
+            <span class="text-xs text-gray-400">-</span>
+          }
+        </td>
+      }
+    </ng-template>
+
+    <ng-template #summaryBottom let-colspan="colspan">
+      <tr class="text-xs border-t border-green-200">
+        <td [attr.colspan]="colspan" class="px-4 py-2 font-semibold text-gray-700">
+          <div class="flex flex-wrap gap-3 justify-between items-center">
+            <div class="flex gap-1 items-center text-gray-600">
+              <tui-icon icon="@tui.sigma" class="text-xs" />
+              @if (isStaff()) {
+                Tổng hôm nay
+              } @else {
+                Tổng cộng
+              }
+            </div>
+            <div class="flex gap-3 items-center">
+              @if (isStaff()) {
+                <span class="text-green-700"
+                  >Tổng thu: {{ formatCurrency(todayReceiptAmount()) }}</span
+                >
+                <span class="text-red-700"
+                  >Tổng chi: {{ formatCurrency(todayPaymentAmount()) }}</span
+                >
+              } @else {
+                <span class="text-green-700"
+                  >Tổng thu: {{ formatCurrency(totalReceiptAmount()) }}</span
+                >
+                <span class="text-red-700"
+                  >Tổng chi: {{ formatCurrency(totalPaymentAmount()) }}</span
+                >
+              }
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+</div>

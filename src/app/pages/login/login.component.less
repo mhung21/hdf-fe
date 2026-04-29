@@ -1,0 +1,250 @@
+/* ============================================================
+   LOGIN — Custom CSS chỉ cho những gì Tailwind không làm được:
+   @keyframes, -webkit- prefixes, SVG data URL, multi-layer
+   box-shadow, Taiga UI CSS vars, ::ng-deep pseudo-selector
+   ============================================================ */
+
+// ── Background: image + pseudo overlay (::after không làm được bằng Tailwind) ──
+.bg-gradient-layer {
+  position: absolute;
+  inset: 0;
+  background: url('/images/login-bg-1.jpg') center / cover no-repeat;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(21, 21, 21, 0.7), rgba(68, 70, 68, 0.6));
+  }
+}
+
+// ── SVG noise texture (data URL — không thể inline Tailwind) ──
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px;
+}
+
+// ── CSS gradient grid pattern ──
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+// ── Floating orbs: filter blur + keyframe animation references ──
+.floating-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.orb-1 {
+  width: 500px; height: 500px;
+  top: -15%; right: -10%;
+  background: radial-gradient(circle, rgb(16 185 129 / 0.25), transparent 70%);
+  animation: orbFloat1 18s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: 400px; height: 400px;
+  bottom: -10%; left: -8%;
+  background: radial-gradient(circle, rgb(5 150 105 / 0.2), transparent 70%);
+  animation: orbFloat2 22s ease-in-out infinite;
+}
+
+.orb-3 {
+  width: 300px; height: 300px;
+  top: 50%; left: 40%;
+  background: radial-gradient(circle, rgb(52 211 153 / 0.12), transparent 70%);
+  animation: orbFloat3 15s ease-in-out infinite;
+}
+
+.orb-4 {
+  width: 200px; height: 200px;
+  top: 20%; left: 15%;
+  background: radial-gradient(circle, rgb(110 231 183 / 0.1), transparent 70%);
+  animation: orbFloat4 20s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(-40px, 30px) scale(1.05); }
+  66%      { transform: translate(20px, -20px) scale(0.95); }
+}
+
+@keyframes orbFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(30px, -40px) scale(1.08); }
+  66%      { transform: translate(-25px, 15px) scale(0.96); }
+}
+
+@keyframes orbFloat3 {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-30px, -30px); }
+}
+
+@keyframes orbFloat4 {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(20px, 25px); }
+}
+
+// ── Card layout: multi-layer box-shadow (Tailwind shadow-[] chỉ nhận 1 shadow) ──
+.login-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow:
+    0 32px 80px rgb(0 0 0 / 0.5),
+    0 0 0 1px rgb(255 255 255 / 0.08) inset,
+    0 0 120px rgb(16 185 129 / 0.1);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+// ── Brand panel inner: -webkit-backdrop-filter + complex gradient ──
+.brand-panel-inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.04));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-right: 1px solid rgb(255 255 255 / 0.1);
+}
+
+// ── Brand glow: absolute radial-gradient ──
+.brand-glow {
+  position: absolute;
+  top: -60%; left: -30%;
+  width: 160%; height: 160%;
+  background: radial-gradient(ellipse, rgb(16 185 129 / 0.15), transparent 60%);
+  pointer-events: none;
+}
+
+// ── Logo ring: multi-layer box-shadow + pulse animation ──
+.logo-ring {
+  width: 100px; height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.95);
+  border: 2px solid rgb(255 255 255 / 0.5);
+  box-shadow:
+    0 0 0 10px rgb(255 255 255 / 0.06),
+    0 0 40px rgb(16 185 129 / 0.3),
+    0 8px 24px rgb(0 0 0 / 0.2);
+  animation: logoPulse 4s ease-in-out infinite;
+
+  img { filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.12)); }
+}
+
+.logo-ring-sm { width: 68px; height: 68px; }
+
+@keyframes logoPulse {
+  0%, 100% { box-shadow: 0 0 0 10px rgb(255 255 255 / 0.06), 0 0 40px rgb(16 185 129 / 0.3), 0 8px 24px rgb(0 0 0 / 0.2); }
+  50%      { box-shadow: 0 0 0 14px rgb(255 255 255 / 0.1), 0 0 60px rgb(16 185 129 / 0.45), 0 8px 28px rgb(0 0 0 / 0.25); }
+}
+
+// ── Form panel: -webkit-backdrop-filter ──
+.form-panel {
+  background: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+}
+
+// ── Taiga UI CSS custom properties (không thể dùng Tailwind) ──
+.field-control {
+  --tui-border-radius: 0.75rem;
+  --tui-background-base: rgb(255 255 255 / 0.14);
+  --tui-background-base-hover: rgb(255 255 255 / 0.2);
+  --tui-background-accent-1: rgb(52 211 153 / 0.2);
+  --tui-border-normal: rgb(255 255 255 / 0.2);
+  --tui-text-primary: rgb(255 255 255 / 0.95);
+  --tui-text-secondary: rgb(255 255 255 / 0.45);
+}
+
+// ── Submit button: Taiga UI component overrides cần !important ──
+.login-submit {
+  --tui-radius-l: 0.75rem;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #059669, #10b981, #34d399) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgb(5 150 105 / 0.3);
+  transition: transform 0.2s, box-shadow 0.3s;
+
+  &:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgb(5 150 105 / 0.4), 0 0 0 3px rgb(16 185 129 / 0.15);
+  }
+
+  &:not(:disabled):active { transform: translateY(0); }
+
+  &:disabled {
+    // opacity: 0.5;
+    background: linear-gradient(135deg, #6b7280, #9ca3af) !important;
+    box-shadow: none;
+  }
+}
+
+// ── Loading spinner ──
+.login-spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgb(255 255 255 / 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// // ── Entrance animations ──
+// @keyframes fadeIn {
+//   from { opacity: 0.001; transform: translateY(20px) scale(0.98); }
+//   to   { opacity: 1;     transform: translateY(0)    scale(1); }
+// }
+
+// @keyframes slideDown {
+//   from { opacity: 0; transform: translateY(-8px); }
+//   to   { opacity: 1; transform: translateY(0); }
+// }
+
+.animate-fadeIn    { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-slideDown { animation: slideDown 0.28s ease-out; }
+
+// ── Chrome autofill override — ::ng-deep bắt buộc vì :-webkit-autofill
+//    không nhận Angular scoped attribute selector ──
+:host ::ng-deep {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px rgb(10 28 20 / 0.9) inset !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
+    caret-color: rgba(255, 255, 255, 0.9);
+    transition: background-color 5000s ease-in-out 0s !important;
+  }
+}

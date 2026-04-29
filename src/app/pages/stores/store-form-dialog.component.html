@@ -1,0 +1,78 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="p-1 space-y-4">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <label tuiLabel>Mã chi nhánh <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="storeCode" placeholder="Mã chi nhánh" />
+      </tui-textfield>
+      @if (form.get('storeCode')?.invalid && form.get('storeCode')?.touched) {
+        <p class="mt-1 text-xs text-red-500">Mã chi nhánh là bắt buộc</p>
+      }
+    </div>
+
+    <div>
+      <label tuiLabel>Tên chi nhánh <span class="text-red-500">*</span></label>
+      <tui-textfield>
+        <input
+          tuiTextfield
+          formControlName="storeName"
+          placeholder="Tên chi nhánh"
+          (input)="syncGeneratedStoreCode()"
+        />
+      </tui-textfield>
+      @if (form.get('storeName')?.invalid && form.get('storeName')?.touched) {
+        <p class="mt-1 text-xs text-red-500">Tên chi nhánh là bắt buộc</p>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label tuiLabel>Địa chỉ</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="address" placeholder="123 Nguyễn Huệ, Quận 1, TP.HCM" />
+      </tui-textfield>
+    </div>
+
+    <div>
+      <label tuiLabel>Số điện thoại</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="phone" placeholder="0901 234 567" />
+      </tui-textfield>
+    </div>
+
+    @if (!isLimitedEdit()) {
+      <div>
+        <label tuiLabel>Ngày mở</label>
+        <tui-textfield>
+          <input tuiInputDate formControlName="openedOn" placeholder="dd/mm/yyyy" />
+          <tui-calendar *tuiTextfieldDropdown />
+        </tui-textfield>
+      </div>
+    }
+
+    @if (editingStore() && !isLimitedEdit()) {
+      <div class="flex items-center gap-2 sm:col-span-2">
+        <input
+          id="isActive"
+          type="checkbox"
+          formControlName="isActive"
+          class="w-4 h-4 border-gray-300 rounded"
+        />
+        <label for="isActive" class="text-sm text-gray-700 cursor-pointer">
+          Chi nhánh đang hoạt động
+        </label>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+    <button tuiButton type="button" appearance="outline" size="m" (click)="context.$implicit.complete()">
+      Huỷ
+    </button>
+    <button tuiButton type="submit" appearance="primary" size="m" [disabled]="saving()">
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      {{ editingStore() ? 'Cập nhật' : 'Tạo mới' }}
+    </button>
+  </div>
+</form>

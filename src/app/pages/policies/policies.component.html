@@ -1,0 +1,100 @@
+<div class="p-4 space-y-3 md:p-6">
+  <!-- Info Banner -->
+  <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+    <tui-icon icon="@tui.info" class="text-blue-500 shrink-0 mt-0.5" />
+    <div>
+      <p class="text-sm font-semibold text-blue-800">Chính Sách Hệ Thống</p>
+      <p class="text-xs text-blue-600 mt-0.5">Cấu hình tỷ lệ phạt, ngưỡng nợ xấu và ngày cảnh báo. Có thể tạo riêng cho từng chi nhánh — chính sách chi nhánh ưu tiên hơn chính sách toàn hệ thống.</p>
+    </div>
+  </div>
+
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="policies()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    searchPlaceholder="Tìm kiếm chính sách..."
+    emptyIcon="@tui.settings"
+    emptyText="Chưa có chính sách nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadPolicies()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <ng-container tableToolbar>
+      @if (canManage()) {
+        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Thêm Chính Sách
+        </button>
+      }
+    </ng-container>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('store')) {
+        <td class="px-4 py-3 align-top">
+          @if (asPolicy(item).isGlobal || !asPolicy(item).storeIds?.length) {
+            <span class="badge badge-outline badge-sm text-primary border-primary">Toàn hệ thống</span>
+          } @else {
+            <div class="flex flex-wrap gap-1">
+              @for (name of asPolicy(item).storeNames ?? []; track name) {
+                <span class="badge badge-sm badge-ghost text-xs">{{ name }}</span>
+              }
+            </div>
+          }
+        </td>
+      }
+      @if (!isHidden('effective')) {
+        <td class="px-4 py-3 align-top">
+          <p class="text-sm text-gray-900">{{ formatDate(asPolicy(item).effectiveFrom) }}</p>
+          @if (asPolicy(item).effectiveTo) {
+            <p class="text-xs text-gray-400">đến {{ formatDate(asPolicy(item).effectiveTo) }}</p>
+          } @else {
+            <p class="text-xs text-green-500">Hiện tại</p>
+          }
+        </td>
+      }
+      @if (!isHidden('latePayment')) {
+        <td class="px-4 py-3 text-center align-top">
+          <p class="text-sm font-semibold text-amber-600">{{ asPolicy(item).latePaymentPenaltyRate }}%</p>
+          <p class="text-xs text-gray-400">từ ngày {{ asPolicy(item).latePaymentStartDay }}</p>
+        </td>
+      }
+      @if (!isHidden('earlySettlement')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span class="text-sm font-semibold text-purple-600">{{ asPolicy(item).earlySettlementPenaltyRate }}%</span>
+        </td>
+      }
+      @if (!isHidden('badDebt')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span class="text-sm font-semibold text-red-600">Ngày {{ asPolicy(item).badDebtStartDay }}</span>
+        </td>
+      }
+      @if (!isHidden('warning')) {
+        <td class="px-4 py-3 align-top">
+          <div class="flex flex-wrap gap-1">
+            @for (day of asPolicy(item).warningDays ?? []; track day) {
+              <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded">{{ day }}</span>
+            }
+          </div>
+        </td>
+      }
+    </ng-template>
+
+    <ng-template #rowActions let-item>
+      @if (canManage()) {
+        <button
+          tuiButton
+          appearance="flat"
+          size="xs"
+          [tuiHint]="'Chỉnh sửa chính sách'"
+          tuiHintDirection="top"
+          (click)="openEditDialog(asPolicy(item))"
+        >
+          <tui-icon icon="@tui.pencil" class="text-gray-500" />
+        </button>
+      }
+    </ng-template>
+  </app-data-table>
+</div>

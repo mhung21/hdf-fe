@@ -1,0 +1,54 @@
+<form [formGroup]="form" (ngSubmit)="confirm()" class="space-y-4 p-1">
+  <div class="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+    <tui-icon icon="@tui.info" class="text-amber-500 mt-0.5 shrink-0" />
+    <p class="text-sm text-amber-700">
+      Chỉ chuyển hợp đồng có trạng thái <strong>Nợ xấu</strong> đã được đánh dấu trong hệ thống. Sau
+      khi chuyển, hồ sơ sẽ vào danh sách theo dõi nợ xấu.
+    </p>
+  </div>
+
+  <div>
+    <label tuiLabel>Hợp đồng <span class="text-red-500">*</span></label>
+    <tui-textfield tuiChevron [stringify]="loanStringify">
+      <input
+        tuiComboBox
+        formControlName="loanContractId"
+        placeholder="Chọn hợp đồng..."
+        [matcher]="loanMatcher"
+      />
+      <tui-data-list *tuiTextfieldDropdown>
+        @for (l of loanContracts(); track l.loanContractId) {
+          <button new tuiOption type="button" [value]="l.loanContractId">
+            <span class="font-mono">{{ l.contractCode }}</span>
+            <span class="text-gray-500 ml-2">{{ l.customerName }}</span>
+          </button>
+        }
+      </tui-data-list>
+    </tui-textfield>
+  </div>
+
+  <div>
+    <label tuiLabel>Ghi chú</label>
+    <tui-textfield>
+      <input tuiTextfield formControlName="note" placeholder="Ghi chú thêm..." />
+    </tui-textfield>
+  </div>
+
+  <div class="flex justify-end gap-3 pt-2">
+    <button
+      tuiButton
+      type="button"
+      appearance="outline"
+      size="m"
+      (click)="context.$implicit.complete()"
+    >
+      Hủy
+    </button>
+    <button tuiButton type="submit" appearance="destructive" size="m" [disabled]="saving()">
+      @if (saving()) {
+        <tui-icon icon="@tui.loader-2" class="mr-1 animate-spin" />
+      }
+      Xác Nhận Chuyển
+    </button>
+  </div>
+</form>

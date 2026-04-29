@@ -1,0 +1,229 @@
+<!-- Main Layout Container -->
+<div class="flex overflow-hidden h-screen bg-gray-50">
+  <!-- Desktop Sidebar -->
+  <div class="hidden h-full lg:block">
+    <app-sidebar [isCollapsed]="isSidebarCollapsed()"></app-sidebar>
+  </div>
+
+  <!-- Mobile Drawer -->
+  <div class="drawer lg:hidden">
+    <input
+      id="mobile-menu-drawer"
+      type="checkbox"
+      class="drawer-toggle"
+      [checked]="isMobileMenuOpen()"
+      (change)="toggleMobileMenu()"
+    />
+
+    <div class="z-50 drawer-side">
+      <label for="mobile-menu-drawer" class="drawer-overlay" (click)="closeMobileMenu()"></label>
+      <div class="w-64 h-full">
+        <app-sidebar [isCollapsed]="false"></app-sidebar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="flex overflow-hidden flex-col flex-1 h-full">
+    <!-- Top Header Bar -->
+    <header
+      class="flex items-center gap-2 px-4 h-14 border-b border-green-100 bg-white shadow-sm shrink-0 z-[100]"
+    >
+      <!-- Mobile Menu Toggle -->
+      <button
+        class="transition-colors btn btn-ghost btn-sm btn-circle lg:hidden hover:bg-green-50"
+        (click)="toggleMobileMenu()"
+      >
+        <tui-icon icon="@tui.menu" class="text-zinc-500"></tui-icon>
+      </button>
+
+      <!-- Desktop Sidebar Toggle -->
+      <button
+        class="hidden transition-colors btn btn-ghost btn-sm btn-circle lg:flex hover:bg-green-50"
+        (click)="toggleSidebar()"
+      >
+        <tui-icon
+          [icon]="isSidebarCollapsed() ? '@tui.chevrons-right' : '@tui.chevrons-left'"
+          class="text-zinc-500"
+        ></tui-icon>
+      </button>
+
+      <!-- Page Title -->
+      <div class="flex flex-1 gap-2 items-center min-w-0">
+        <div class="w-1 h-5 bg-green-500 rounded-full shrink-0"></div>
+        <span
+          class="text-base font-extrabold text-transparent truncate bg-clip-text bg-gradient-to-r from-green-900 to-green-600"
+          >{{ currentPageTitle() }}</span
+        >
+        @if (roleTitleBadge(); as badge) {
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-[0.6rem] font-bold tracking-wide uppercase shrink-0"
+            [class]="badge.cls"
+            >{{ badge.label }}</span
+          >
+        }
+      </div>
+
+      <!-- Right Actions -->
+      <div class="flex gap-0.5 items-center">
+        <!-- Current Date (desktop only) -->
+        <span
+          class="hidden px-3 py-1.5 text-xs bg-gray-50 rounded-lg border border-gray-100 lg:block text-zinc-400"
+        >
+          {{ today | date: 'EEEE, dd/MM/yyyy HH:mm' : '' : 'vi' }}
+        </span>
+
+        <div class="hidden mx-1.5 w-px h-5 bg-green-100 lg:block"></div>
+
+        <!-- Notifications -->
+        <div class="relative" id="notif-dropdown-wrap">
+          <!--          <button
+            class="relative transition-colors btn btn-ghost btn-sm btn-circle hover:bg-green-50"
+            (click)="toggleNotificationDropdown($event)"
+          >
+            <tui-icon icon="@tui.bell" class="text-zinc-500"></tui-icon>
+            <tui-badge-notification class="absolute -top-0.5 -right-0.5" size="s">3</tui-badge-notification>
+          </button>-->
+
+          @if (notificationDropdownOpen()) {
+            <div
+              tuiAnimated
+              class="absolute right-0 mt-2 overflow-hidden shadow-xl z-[500] w-80 rounded-2xl bg-white border border-green-100"
+            >
+              <div class="p-4 card-body">
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="flex gap-2 items-center text-sm font-bold text-zinc-800">
+                    <div
+                      class="flex justify-center items-center w-6 h-6 bg-green-600 rounded-lg shrink-0"
+                    >
+                      <tui-icon icon="@tui.bell" class="text-xs text-white"></tui-icon>
+                    </div>
+                    Thông Báo
+                    <span class="font-bold text-white bg-red-500 border-0 badge badge-xs">3</span>
+                  </h3>
+                  <button
+                    class="btn btn-ghost btn-xs btn-circle hover:bg-red-50"
+                    (click)="closeNotificationDropdown()"
+                  >
+                    <tui-icon icon="@tui.x" class="text-xs text-zinc-400"></tui-icon>
+                  </button>
+                </div>
+                <!-- <div class="space-y-2">
+                  <div class="flex gap-3 p-3 bg-amber-50 rounded-xl border border-amber-100 transition-colors cursor-pointer hover:bg-amber-100">
+                    <div class="flex justify-center items-center w-8 h-8 bg-amber-500 rounded-full shrink-0">
+                      <tui-icon icon="@tui.alert-circle" class="text-xs text-white"></tui-icon>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-bold text-zinc-800">5 hợp đồng cần duyệt</p>
+                      <p class="mt-0.5 text-xs text-zinc-500">Vui lòng xem xét và duyệt</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-3 p-3 bg-red-50 rounded-xl border border-red-100 transition-colors cursor-pointer hover:bg-red-100">
+                    <div class="flex justify-center items-center w-8 h-8 bg-red-500 rounded-full shrink-0">
+                      <tui-icon icon="@tui.alert-triangle" class="text-xs text-white"></tui-icon>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-bold text-zinc-800">3 khoản vay quá hạn</p>
+                      <p class="mt-0.5 text-xs text-zinc-500">Cần xử lý ngay</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-3 p-3 bg-green-50 rounded-xl border border-green-100 transition-colors cursor-pointer hover:bg-green-100">
+                    <div class="flex justify-center items-center w-8 h-8 bg-green-600 rounded-full shrink-0">
+                      <tui-icon icon="@tui.check-circle" class="text-xs text-white"></tui-icon>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-bold text-zinc-800">Thu được 150 triệu hôm nay</p>
+                      <p class="mt-0.5 text-xs text-zinc-500">Cập nhật lúc 14:30</p>
+                    </div>
+                  </div>
+                </div> -->
+                <div class="pt-3 mt-3 border-t border-gray-100">
+                  <button class="w-full text-xs font-semibold text-green-600 hover:underline">
+                    Xem tất cả thông báo
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="mx-1.5 w-px h-5 bg-green-100"></div>
+
+        <!-- User Profile -->
+        @if (currentUser(); as user) {
+          <div class="relative" id="profile-dropdown-wrap">
+            <button
+              type="button"
+              class="flex gap-2 items-center px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer hover:bg-green-50"
+              (click)="toggleProfileDropdown($event)"
+            >
+              <div
+                class="flex justify-center items-center w-7 h-7 text-xs font-black text-white bg-gradient-to-br from-green-600 to-green-800 rounded-lg shadow-sm shrink-0"
+              >
+                {{ user.fullName.split(' ').at(-1)?.charAt(0)?.toUpperCase() }}
+              </div>
+              <div class="hidden flex-col min-w-0 md:flex">
+                <span class="text-xs font-bold text-zinc-800 truncate max-w-[7rem] leading-tight">{{
+                  user.fullName
+                }}</span>
+                <span
+                  class="text-[10px] leading-tight font-semibold"
+                  [class]="getRoleCls(user.role)"
+                  >{{ getRoleLabel(user.role) }}</span
+                >
+              </div>
+              <tui-icon
+                [icon]="profileDropdownOpen() ? '@tui.chevron-up' : '@tui.chevron-down'"
+                class="text-[10px] text-zinc-400 hidden md:block shrink-0 transition-transform"
+              ></tui-icon>
+            </button>
+
+            @if (profileDropdownOpen()) {
+              <div
+                tuiAnimated
+                class="absolute right-0 mt-2 shadow-xl z-[500] rounded-2xl bg-white border border-green-100 overflow-hidden w-56"
+              >
+                <!-- User info header -->
+                <div
+                  class="px-4 py-3 bg-gradient-to-br from-green-50 to-emerald-50 border-b border-green-100"
+                >
+                  <p class="text-sm font-bold truncate text-zinc-800">{{ user.fullName }}</p>
+                  <p class="mt-0.5 text-xs font-semibold" [class]="getRoleCls(user.role)">
+                    {{ getRoleLabel(user.role) }}
+                  </p>
+                  @if (user.storeName) {
+                    <p class="mt-0.5 text-xs text-zinc-400">{{ user.storeName }}</p>
+                  }
+                </div>
+                <!-- Actions -->
+                <div class="p-1.5">
+                  <a
+                    routerLink="/settings"
+                    class="flex gap-3 items-center px-3 py-2.5 w-full text-left rounded-xl transition-colors hover:bg-green-50"
+                    (click)="closeProfileDropdown()"
+                  >
+                    <tui-icon icon="@tui.lock-keyhole" class="text-sm text-zinc-400"></tui-icon>
+                    <span class="text-sm font-medium text-zinc-700">Đổi mật khẩu</span>
+                  </a>
+                  <button
+                    type="button"
+                    class="flex gap-3 items-center px-3 py-2.5 w-full text-left rounded-xl transition-colors hover:bg-red-50"
+                    (click)="$event.stopPropagation(); logout()"
+                  >
+                    <tui-icon icon="@tui.log-out" class="text-sm text-red-400"></tui-icon>
+                    <span class="text-sm font-semibold text-red-600">Đăng xuất</span>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="overflow-y-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

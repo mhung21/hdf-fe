@@ -1,0 +1,57 @@
+// loans page – table layout
+
+/* Contract number stamp */
+.contract-stamp {
+  display: inline-block;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: #15803d;
+  white-space: nowrap;
+}
+
+/* Sticky totals row */
+.totals-row td {
+  background: #f0fdf4;
+  font-weight: 700;
+  border-top: 2px solid #bbf7d0;
+}
+
+/* Table row hover */
+.loans-table tbody tr:hover td {
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+/* Overdue badge – compact */
+.overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Skeleton shimmer */
+.skeleton-row {
+  td {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eaeb 50%, #f3f4f6 75%);
+    background-size: 400% 100%;
+    animation: shimmer 1.5s infinite;
+    height: 38px;
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+

@@ -1,0 +1,128 @@
+<div class="p-4 space-y-3 md:p-6">
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="collaborators()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    searchPlaceholder="Tên, số điện thoại CTV..."
+    emptyIcon="@tui.users"
+    emptyText="Chưa có cộng tác viên nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadCollaborators()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <ng-container tableToolbar>
+      @if (canManage()) {
+        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Thêm CTV
+        </button>
+      }
+    </ng-container>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('name')) {
+        <td class="px-4 py-3 align-top">
+          @if (canManage()) {
+            <p
+              class="text-sm font-medium text-primary cursor-pointer underline underline-offset-2 decoration-primary/50"
+              [tuiHint]="'Chỉnh sửa thông tin'"
+              tuiHintDirection="top"
+              (click)="openEditDialog(asCtv(item))"
+            >{{ asCtv(item).fullName }}</p>
+          } @else {
+            <p class="text-sm font-medium text-gray-900">{{ asCtv(item).fullName }}</p>
+          }
+          @if (!asCtv(item).isActive) {
+            <span class="text-xs text-gray-400">(Ngưng hoạt động)</span>
+          }
+        </td>
+      }
+      @if (!isHidden('contact')) {
+        <td class="px-4 py-3 align-top text-sm text-gray-700">
+          @if (asCtv(item).phone) {
+            <p>{{ asCtv(item).phone }}</p>
+          } @else {
+            <span class="text-gray-400">-</span>
+          }
+          @if (asCtv(item).idNumber) {
+            <p class="text-xs text-gray-400 mt-0.5">CCCD: {{ maskId(asCtv(item).idNumber) }}</p>
+          }
+          @if (asCtv(item).note) {
+            <p class="text-xs text-gray-400 mt-0.5 italic">{{ asCtv(item).note }}</p>
+          }
+        </td>
+      }
+      @if (!isHidden('store')) {
+        <td class="px-4 py-3 align-top text-sm text-gray-700">
+          {{ asCtv(item).storeName ?? '—' }}
+        </td>
+      }
+      @if (!isHidden('commission')) {
+        <td class="px-4 py-3 text-center align-top">
+          @if (asCtv(item).commissionRate != null) {
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              {{ asCtv(item).commissionRate }}%
+            </span>
+          } @else {
+            <span class="text-gray-400 text-xs">Chưa cấu hình</span>
+          }
+        </td>
+      }
+      @if (!isHidden('status')) {
+        <td class="px-4 py-3 text-center align-top">
+          @if (asCtv(item).isActive) {
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">Hoạt động</span>
+          } @else {
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">Tạm dừng</span>
+          }
+        </td>
+      }
+    </ng-template>
+
+    <ng-template #rowActions let-item>
+      @if (canManage()) {
+        <div class="flex items-center gap-0.5">
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            type="button"
+            [tuiHint]="'Chỉnh sửa thông tin'"
+            tuiHintDirection="top"
+            (click)="openEditDialog(asCtv(item))"
+          >
+            <tui-icon icon="@tui.pencil" class="text-gray-500" />
+          </button>
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            type="button"
+            [tuiHint]="asCtv(item).isActive ? 'Tạm dừng hoạt động' : 'Kích hoạt lại'"
+            tuiHintDirection="top"
+            (click)="toggleActive(asCtv(item))"
+          >
+            <tui-icon
+              [icon]="asCtv(item).isActive ? '@tui.pause-circle' : '@tui.play-circle'"
+              [class]="asCtv(item).isActive ? 'text-amber-500' : 'text-green-500'"
+            />
+          </button>
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            type="button"
+            [tuiHint]="'Xóa cộng tác viên'"
+            tuiHintDirection="top"
+            (click)="deleteCollaborator(asCtv(item))"
+          >
+            <tui-icon icon="@tui.trash" class="text-red-500" />
+          </button>
+        </div>
+      }
+    </ng-template>
+  </app-data-table>
+</div>

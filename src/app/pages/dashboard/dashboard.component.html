@@ -1,0 +1,882 @@
+<!-- Dashboard -->
+<div
+  class="min-h-screen p-5 md:px-8 md:py-7 mx-auto"
+  style="
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(22, 163, 74, 0.08) 0%, transparent 70%),
+      linear-gradient(180deg, #eef6f1 0%, #f3f4f6 60%, #f3f4f6 100%);
+  "
+>
+  <div>
+    <!-- ── SKELETON ──────────────────────────── -->
+    @if (loading()) {
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <div class="h-28 rounded-[1.125rem]" [tuiSkeleton]="true"></div>
+        }
+      </div>
+      <div class="grid gap-5 mb-5">
+        <div class="h-72 rounded-[1.125rem]" [tuiSkeleton]="true"></div>
+        <div class="h-56 rounded-[1.125rem]" [tuiSkeleton]="true"></div>
+      </div>
+    }
+
+    <!-- ── ERROR ─────────────────────────────── -->
+    @else if (error()) {
+      <div
+        role="alert"
+        class="flex items-center gap-3 px-5 py-4 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-sm"
+      >
+        <tui-icon icon="@tui.alert-circle" class="text-xl shrink-0"></tui-icon>
+        <span class="flex-1">{{ error() }}</span>
+        <button
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-white/70 border border-gray-200 hover:bg-white hover:text-green-600 hover:border-green-300 transition-all"
+          (click)="refresh()"
+        >
+          Thử lại
+        </button>
+      </div>
+    } @else {
+      <!-- ── QUICK ACTIONS BAR ────────────── -->
+      <div class="flex items-center gap-2 mb-5 flex-wrap">
+        @if (isAdmin()) {
+          <a
+            routerLink="/customers"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.users" class="text-xs"></tui-icon>Khách Hàng
+          </a>
+          <a
+            routerLink="/loans"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.file-text" class="text-xs"></tui-icon>Hợp Đồng
+            @if (pendingApprovalCount() + pendingDisbCount() > 0) {
+              <span
+                class="w-4 h-4 rounded-full bg-amber-500 text-white text-[.55rem] font-extrabold inline-flex items-center justify-center"
+                >{{ pendingApprovalCount() + pendingDisbCount() }}</span
+              >
+            }
+          </a>
+          <a
+            routerLink="/vouchers"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-teal-50 hover:border-teal-300 hover:text-teal-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.receipt" class="text-xs"></tui-icon>Phiếu Thu
+          </a>
+          <a
+            routerLink="/reports/all"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.bar-chart-2" class="text-xs"></tui-icon>Báo Cáo
+          </a>
+          <a
+            routerLink="/users"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-gray-100 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.user" class="text-xs"></tui-icon>Người Dùng
+          </a>
+          <a
+            routerLink="/day-locks"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-gray-100 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.lock" class="text-xs"></tui-icon>Khóa Ngày
+          </a>
+        } @else if (isManager()) {
+          <a
+            routerLink="/loans"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.file-text" class="text-xs"></tui-icon>Hợp đồng
+            @if (pendingApprovalCount() + pendingDisbCount() > 0) {
+              <span
+                class="w-4 h-4 rounded-full bg-amber-500 text-white text-[.55rem] font-extrabold inline-flex items-center justify-center"
+                >{{ pendingApprovalCount() + pendingDisbCount() }}</span
+              >
+            }
+          </a>
+          <a
+            routerLink="/reports/store"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.bar-chart-2" class="text-xs"></tui-icon>Báo Cáo
+          </a>
+          <a
+            routerLink="/vouchers"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-teal-50 hover:border-teal-300 hover:text-teal-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.receipt" class="text-xs"></tui-icon>Phiếu Thu
+          </a>
+        } @else {
+          <a
+            routerLink="/customers"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.user-plus" class="text-xs"></tui-icon>Khách Hàng Mới
+          </a>
+          <a
+            routerLink="/loans"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.file-plus" class="text-xs"></tui-icon>Hợp Đồng Mới
+          </a>
+          <a
+            routerLink="/vouchers"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.receipt" class="text-xs"></tui-icon>Ghi Phiếu Thu
+          </a>
+          <a
+            routerLink="/bad-debts"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-600 no-underline hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all shadow-sm"
+          >
+            <tui-icon icon="@tui.alert-circle" class="text-xs"></tui-icon>Nợ Xấu
+          </a>
+        }
+        <button
+          class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 bg-white/70 border border-gray-200 hover:bg-white hover:text-green-600 hover:border-green-300 transition-all"
+          (click)="refresh()"
+        >
+          <tui-icon icon="@tui.refresh-cw" class="text-xs"></tui-icon>Làm mới
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           KPI CARDS — Admin / Manager (5 cards)
+      ════════════════════════════════════════ -->
+      @if (isAdmin() || isManager()) {
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+          <!-- HĐ Đang Giải Ngân -->
+          <div
+            class="relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-green-600 to-green-900 shadow-[0_8px_20px_-4px_rgba(22,163,74,.4)] hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,.5)] kpi-card-deco"
+          >
+            <div
+              class="relative z-10 flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur mb-3.5"
+            >
+              <tui-icon icon="@tui.file-check" class="text-white text-sm"></tui-icon>
+            </div>
+            <div class="relative z-10 text-[1.75rem] font-black leading-none tracking-tight mb-0.5">
+              {{ disbursedCount() }}
+            </div>
+            <div
+              class="relative z-10 text-[.7rem] font-semibold text-white/75 uppercase tracking-[.05em]"
+            >
+              Đang Giải Ngân
+            </div>
+            <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
+              {{ pendingApprovalCount() + pendingDisbCount() }} chờ duyệt / GN
+            </div>
+            <div
+              class="absolute right-4 bottom-4 w-2 h-2 rounded-full bg-white/60 kpi-pulse-ring"
+            ></div>
+          </div>
+
+          <!-- Dư Nợ Còn Lại -->
+          <div
+            class="relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-teal-600 to-teal-900 shadow-[0_8px_20px_-4px_rgba(13,148,136,.4)] hover:shadow-[0_16px_32px_-8px_rgba(13,148,136,.5)] kpi-card-deco"
+          >
+            <div
+              class="relative z-10 flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur mb-3.5"
+            >
+              <tui-icon icon="@tui.wallet" class="text-white text-sm"></tui-icon>
+            </div>
+            <div class="relative z-10 text-[1.35rem] font-black leading-none tracking-tight mb-0.5">
+              {{ formatCurrency(remainingPrincipal()) }}
+            </div>
+            <div
+              class="relative z-10 text-[.7rem] font-semibold text-white/75 uppercase tracking-[.05em]"
+            >
+              Dư Nợ Còn Lại
+            </div>
+            <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
+              Portfolio: {{ formatCurrency(totalActivePortfolio()) }}
+            </div>
+          </div>
+
+          <!-- Tổng Thu Năm -->
+          <div
+            class="relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-amber-500 to-amber-900 shadow-[0_8px_20px_-4px_rgba(245,158,11,.4)] hover:shadow-[0_16px_32px_-8px_rgba(245,158,11,.5)] kpi-card-deco"
+          >
+            <div
+              class="relative z-10 flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur mb-3.5"
+            >
+              <tui-icon icon="@tui.trending-up" class="text-white text-sm"></tui-icon>
+            </div>
+            <div class="relative z-10 text-[1.35rem] font-black leading-none tracking-tight mb-0.5">
+              {{ formatCurrency(cashFlow()?.totalCollected ?? 0) }}
+            </div>
+            <div
+              class="relative z-10 text-[.7rem] font-semibold text-white/75 uppercase tracking-[.05em]"
+            >
+              Tổng Thu Năm
+            </div>
+            <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
+              LN ròng: {{ formatCurrency(cashFlow()?.totalNetIncome ?? 0) }}
+            </div>
+          </div>
+
+          <!-- Quá Hạn / Nợ Xấu -->
+          <div
+            class="relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-red-500 to-red-900 shadow-[0_8px_20px_-4px_rgba(239,68,68,.4)] hover:shadow-[0_16px_32px_-8px_rgba(239,68,68,.5)] kpi-card-deco"
+          >
+            <div class="relative z-10 flex items-start justify-between mb-3.5">
+              <div
+                class="flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur"
+              >
+                <tui-icon icon="@tui.alert-triangle" class="text-white text-sm"></tui-icon>
+              </div>
+              @if (badDebtCount() > 0) {
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full bg-white/20 backdrop-blur text-[.65rem] font-bold"
+                  >{{ badDebtCount() }} NX</span
+                >
+              }
+            </div>
+            <div class="relative z-10 text-[1.75rem] font-black leading-none tracking-tight mb-0.5">
+              {{ overdueContractCount() }}
+            </div>
+            <div
+              class="relative z-10 text-[.7rem] font-semibold text-white/75 uppercase tracking-[.05em]"
+            >
+              Hợp Đồng Quá Hạn
+            </div>
+            <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
+              {{ formatCurrency(overdueTotal()) }}
+            </div>
+          </div>
+
+          <!-- Tổng Nợ Xấu -->
+          <div
+            class="relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-rose-500 to-rose-900 shadow-[0_8px_20px_-4px_rgba(244,63,94,.4)] hover:shadow-[0_16px_32px_-8px_rgba(244,63,94,.5)] kpi-card-deco"
+          >
+            <div class="relative z-10 flex items-start justify-between mb-3.5">
+              <div
+                class="flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur"
+              >
+                <tui-icon icon="@tui.alert-circle" class="text-white text-sm"></tui-icon>
+              </div>
+              @if (badDebtCount() > 0) {
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full bg-white/20 backdrop-blur text-[.65rem] font-bold"
+                  >{{ badDebtCount() }} NX</span
+                >
+              }
+            </div>
+            <div class="relative z-10 text-[1.35rem] font-black leading-none tracking-tight mb-0.5">
+              {{ formatCurrency(badDebtOutstanding()) }}
+            </div>
+            <div
+              class="relative z-10 text-[.7rem] font-semibold text-white/75 uppercase tracking-[.05em]"
+            >
+              Tổng nợ xấu
+            </div>
+            <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
+              Theo {{ currentYear }}/{{ today.getMonth() + 1 }}
+            </div>
+          </div>
+        </div>
+      } @else {
+        <!-- Staff: 4 compact KPI tiles -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+          <div
+            class="flex items-center gap-3.5 bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,.06),0_4px_12px_-4px_rgba(0,0,0,.08)] border-l-4 border-green-600 hover:-translate-y-0.5 hover:shadow-md transition-all"
+          >
+            <div
+              class="w-10 h-10 rounded-[.875rem] bg-green-50 flex items-center justify-center shrink-0"
+            >
+              <tui-icon icon="@tui.dollar-sign" class="text-green-600"></tui-icon>
+            </div>
+            <div>
+              <div class="text-lg font-extrabold text-gray-900">
+                {{ formatCurrency(todayReceiptTotal()) }}
+              </div>
+              <div class="text-[.7rem] text-gray-500 mt-0.5">Thu trong ngày</div>
+              <div class="text-[.65rem] text-gray-400 mt-0.5">
+                Ròng: {{ formatCurrency(todayNetCash()) }}
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex items-center gap-3.5 bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,.06),0_4px_12px_-4px_rgba(0,0,0,.08)] border-l-4 border-red-500 hover:-translate-y-0.5 hover:shadow-md transition-all"
+          >
+            <div
+              class="w-10 h-10 rounded-[.875rem] bg-red-50 flex items-center justify-center shrink-0"
+            >
+              <tui-icon icon="@tui.alert-triangle" class="text-red-500"></tui-icon>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-lg font-extrabold text-gray-900">{{
+                  overdueContractCount()
+                }}</span>
+                @if (overdueContractCount() > 0) {
+                  <span
+                    class="text-[.6rem] font-extrabold text-white bg-red-500 rounded-full px-1.5"
+                    >!</span
+                  >
+                }
+              </div>
+              <div class="text-[.7rem] text-gray-500 mt-0.5">Khoản cần xử lý</div>
+            </div>
+          </div>
+          <div
+            class="flex items-center gap-3.5 bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,.06),0_4px_12px_-4px_rgba(0,0,0,.08)] border-l-4 border-rose-500 hover:-translate-y-0.5 hover:shadow-md transition-all"
+          >
+            <div
+              class="w-10 h-10 rounded-[.875rem] bg-rose-50 flex items-center justify-center shrink-0"
+            >
+              <tui-icon icon="@tui.alert-circle" class="text-rose-500"></tui-icon>
+            </div>
+            <div>
+              <div class="text-lg font-extrabold text-gray-900">
+                {{ formatCurrency(badDebtOutstanding()) }}
+              </div>
+              <div class="text-[.7rem] text-gray-500 mt-0.5">Tổng nợ xấu</div>
+              @if (badDebtCount() > 0) {
+                <div class="text-[.65rem] text-gray-400 mt-0.5">{{ badDebtCount() }} hồ sơ</div>
+              }
+            </div>
+          </div>
+          <div
+            class="flex items-center gap-3.5 bg-white rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,.06),0_4px_12px_-4px_rgba(0,0,0,.08)] border-l-4 border-amber-500 hover:-translate-y-0.5 hover:shadow-md transition-all"
+          >
+            <div
+              class="w-10 h-10 rounded-[.875rem] bg-amber-50 flex items-center justify-center shrink-0"
+            >
+              <tui-icon icon="@tui.clipboard-list" class="text-amber-600"></tui-icon>
+            </div>
+            <div>
+              <div class="text-lg font-extrabold text-gray-900">
+                {{ pendingApprovalCount() + pendingDisbCount() + draftCount() }}
+              </div>
+              <div class="text-[.7rem] text-gray-500 mt-0.5">Việc đang chờ</div>
+              <div class="text-[.65rem] text-gray-400 mt-0.5">
+                Chờ duyệt/GN: {{ pendingApprovalCount() + pendingDisbCount() }} · Nháp:
+                {{ draftCount() }}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════
+           CHARTS ROW — Admin & Manager
+      ════════════════════════════════════════ -->
+      @if (isAdmin() || isManager()) {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+          <!-- Bar Chart: Dòng tiền 12 tháng -->
+          <div
+            class="lg:col-span-2 bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+          >
+            <div class="p-[1.35rem]">
+              <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+                <div>
+                  <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900">
+                    <span
+                      class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-green-600 to-emerald-600 shrink-0"
+                    ></span>
+                    Dòng Tiền Theo Tháng
+                    <span
+                      class="text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-900"
+                      >{{ currentYear }}</span
+                    >
+                  </div>
+                  <p class="text-[.68rem] text-gray-400 mt-0.5 pl-3.5">
+                    Giải ngân · Thu về · Lợi nhuận (tỷ VNĐ)
+                  </p>
+                </div>
+                <div class="text-right">
+                  <div class="text-[.8rem] font-extrabold text-green-600">
+                    {{ formatCurrency(cashFlow()?.totalCollected ?? 0) }}
+                  </div>
+                  <div class="text-[.65rem] text-gray-400">Tổng thu năm</div>
+                </div>
+              </div>
+              <div class="relative h-56">
+                <canvas
+                  baseChart
+                  [data]="barChartData()"
+                  [options]="barChartOptions"
+                  type="bar"
+                ></canvas>
+              </div>
+              <div class="grid grid-cols-3 gap-3 pt-4 mt-4 border-t border-gray-100">
+                <div class="text-center">
+                  <div class="text-[.8rem] font-extrabold text-blue-600">
+                    {{ formatCurrency(cashFlow()?.totalDisbursed ?? 0) }}
+                  </div>
+                  <div class="text-[.65rem] text-gray-400 mt-px">Tổng giải ngân</div>
+                </div>
+                <div class="text-center border-x border-gray-100">
+                  <div class="text-[.8rem] font-extrabold text-green-600">
+                    {{ formatCurrency(cashFlow()?.totalCollected ?? 0) }}
+                  </div>
+                  <div class="text-[.65rem] text-gray-400 mt-px">Tổng thu về</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-[.8rem] font-extrabold text-amber-600">
+                    {{ formatCurrency(cashFlow()?.totalNetIncome ?? 0) }}
+                  </div>
+                  <div class="text-[.65rem] text-gray-400 mt-px">Lợi nhuận ròng</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doughnut: Phân bố hợp đồng -->
+          <div
+            class="bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+          >
+            <div class="p-[1.35rem]">
+              <div class="mb-4">
+                <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900">
+                  <span
+                    class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-teal-500 to-teal-700 shrink-0"
+                  ></span>
+                  Phân Bố Hợp Đồng
+                </div>
+                <p class="text-[.68rem] text-gray-400 mt-0.5 pl-3.5">Theo trạng thái hiện tại</p>
+              </div>
+              <div class="relative h-44">
+                @if (doughnutTotal() > 0) {
+                  <canvas
+                    baseChart
+                    [data]="doughnutData()"
+                    [options]="doughnutOptions"
+                    type="doughnut"
+                  ></canvas>
+                  <div
+                    class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+                  >
+                    <span class="text-2xl font-black text-gray-900 leading-none">{{
+                      doughnutTotal()
+                    }}</span>
+                    <span class="text-[.6rem] text-gray-400 uppercase tracking-widest"
+                      >Tổng HĐ</span
+                    >
+                  </div>
+                } @else {
+                  <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="text-xs font-medium">Chưa có dữ liệu</div>
+                  </div>
+                }
+              </div>
+              <div class="mt-4 flex flex-col gap-1">
+                @for (item of doughnutLegend(); track item.label) {
+                  <div
+                    class="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="w-2 h-2 rounded-sm shrink-0"
+                        [style.background]="item.color"
+                      ></span>
+                      <span class="text-[.7rem] font-semibold text-gray-700">{{ item.label }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="text-[.75rem] font-extrabold text-gray-900">{{
+                        item.value
+                      }}</span>
+                      @if (doughnutTotal() > 0) {
+                        <span class="text-[.65rem] text-gray-400 min-w-8 text-right"
+                          >{{ ((item.value / doughnutTotal()) * 100).toFixed(0) }}%</span
+                        >
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════
+           DATA ROW — Overdue table + Right panel
+      ════════════════════════════════════════ -->
+      <div
+        [class]="
+          isAdmin() || isManager()
+            ? 'grid grid-cols-1 md:grid-cols-2 gap-5 mb-5'
+            : 'grid grid-cols-1 gap-5 mb-5'
+        "
+      >
+        <!-- Khoản vay quá hạn -->
+        <div
+          class="bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+        >
+          <div class="p-[1.35rem]">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900">
+                  <span
+                    class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-red-500 to-red-600 shrink-0"
+                  ></span>
+                  Khoản Quá Hạn
+                  @if (overdueList().length > 0) {
+                    <span
+                      class="text-[.65rem] font-extrabold px-1.5 py-px rounded-full bg-red-100 text-red-800"
+                      >{{ overdueList().length }}</span
+                    >
+                  }
+                </div>
+                <p class="text-[.68rem] text-gray-400 mt-0.5 pl-3.5">Cần ưu tiên xử lý ngay</p>
+              </div>
+              <a
+                routerLink="/loans"
+                class="inline-flex items-center gap-1 text-[.7rem] font-bold text-red-500 no-underline px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                Xem tất cả <tui-icon icon="@tui.arrow-right" class="text-[.65rem]"></tui-icon>
+              </a>
+            </div>
+
+            @if (overdueList().length > 0) {
+              <div class="overflow-x-auto -mx-[1.35rem] px-[1.35rem]" style="scrollbar-width: thin">
+                <table
+                  tuiTable
+                  [columns]="overdueTableCols"
+                  size="s"
+                  style="width: 100%; min-width: 480px"
+                >
+                  <thead>
+                    <tr tuiThGroup>
+                      <th *tuiHead="'contractNo'" tuiTh [resizable]="false">Hợp Đồng</th>
+                      <th *tuiHead="'customerName'" tuiTh [resizable]="false">Khách Hàng</th>
+                      <th *tuiHead="'daysOverdue'" tuiTh [resizable]="false">Trễ</th>
+                      <th *tuiHead="'totalUnpaid'" tuiTh [resizable]="false">Còn Nợ</th>
+                      <th *tuiHead="'riskLevel'" tuiTh [resizable]="false">Mức Độ</th>
+                    </tr>
+                  </thead>
+                  <tbody tuiTbody>
+                    @for (loan of overdueList(); track loan.scheduleId) {
+                      <tr tuiTr>
+                        <td *tuiCell="'contractNo'" tuiTd>
+                          <span class="font-mono text-[.7rem] font-bold text-blue-600">{{
+                            loan.contractNo
+                          }}</span>
+                        </td>
+                        <td
+                          *tuiCell="'customerName'"
+                          tuiTd
+                          class="text-[.75rem] font-semibold text-gray-700"
+                        >
+                          {{ loan.customerName }}
+                        </td>
+                        <td *tuiCell="'daysOverdue'" tuiTd>
+                          <span
+                            [class]="
+                              (loan.daysOverdue ?? 0) > 10
+                                ? 'overdue-days overdue-days--bad'
+                                : (loan.daysOverdue ?? 0) > 3
+                                  ? 'overdue-days overdue-days--late'
+                                  : 'overdue-days overdue-days--warn'
+                            "
+                          >
+                            {{ loan.daysOverdue }}N
+                          </span>
+                        </td>
+                        <td
+                          *tuiCell="'totalUnpaid'"
+                          tuiTd
+                          class="font-mono text-[.7rem] font-extrabold text-gray-900 text-right"
+                        >
+                          {{ formatCurrency(loan.totalUnpaid) }}
+                        </td>
+                        <td *tuiCell="'riskLevel'" tuiTd>
+                          <span
+                            [class]="
+                              loan.riskLevel === 'POTENTIAL_BAD_DEBT'
+                                ? 'overdue-tag overdue-tag--bad'
+                                : loan.riskLevel === 'LATE'
+                                  ? 'overdue-tag overdue-tag--late'
+                                  : 'overdue-tag overdue-tag--warn'
+                            "
+                          >
+                            {{ getRiskLabel(loan.riskLevel) }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                <tui-icon
+                  icon="@tui.check-circle"
+                  class="text-3xl text-emerald-500 mb-2"
+                ></tui-icon>
+                <span class="text-sm font-medium">Không có khoản quá hạn</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: varies by role -->
+        @if (isAdmin()) {
+          <!-- Admin: dư nợ chi nhánh -->
+          <div
+            class="bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+          >
+            <div class="p-[1.35rem]">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900">
+                    <span
+                      class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-green-600 to-emerald-600 shrink-0"
+                    ></span>
+                    Dư Nợ Theo Chi Nhánh
+                  </div>
+                  <p class="text-[.68rem] text-gray-400 mt-0.5 pl-3.5">Toàn hệ thống</p>
+                </div>
+                <a
+                  routerLink="/reports/all"
+                  class="inline-flex items-center gap-1 text-[.7rem] font-bold text-green-600 no-underline px-2 py-1 rounded-lg hover:bg-green-50 transition-colors"
+                >
+                  Báo cáo <tui-icon icon="@tui.arrow-right" class="text-[.65rem]"></tui-icon>
+                </a>
+              </div>
+              @if (storeList().length > 0) {
+                <div class="flex flex-col gap-2.5">
+                  @for (store of storeList(); track store.storeId) {
+                    <div
+                      class="border border-gray-100 rounded-2xl p-3.5 hover:border-green-200 hover:shadow-[0_2px_12px_rgba(22,163,74,.08)] transition-all"
+                    >
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2.5">
+                          <div
+                            class="w-9 h-9 rounded-[.625rem] bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center text-[.7rem] font-extrabold text-white shadow-[0_3px_8px_rgba(22,163,74,.3)] shrink-0"
+                          >
+                            {{ (store.storeName ?? 'S').charAt(0) }}
+                          </div>
+                          <div>
+                            <div class="text-[.8rem] font-bold text-gray-900">
+                              {{ store.storeName }}
+                            </div>
+                            <div class="text-[.65rem] text-gray-400">
+                              {{ store.activeLoanCount }} hợp đồng
+                            </div>
+                          </div>
+                        </div>
+                        @if ((store.badDebtCount ?? 0) > 0) {
+                          <span
+                            class="text-[.65rem] font-extrabold px-2 py-0.5 rounded-full bg-red-100 text-red-800"
+                            >{{ store.badDebtCount }} NX</span
+                          >
+                        }
+                      </div>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1.5">
+                          <span class="block text-[.6rem] text-gray-400 mb-0.5">Dư Nợ Gốc</span>
+                          <span class="text-[.75rem] font-extrabold text-gray-800">{{
+                            formatCurrency(store.outstandingPrincipalAmount)
+                          }}</span>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1.5">
+                          <span class="block text-[.6rem] text-gray-400 mb-0.5">Portfolio</span>
+                          <span class="text-[.75rem] font-extrabold text-gray-800">{{
+                            formatCurrency(store.totalPrincipalAmount)
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                  <tui-icon icon="@tui.building" class="text-3xl mb-2"></tui-icon>
+                  <span class="text-sm font-medium">Chưa có dữ liệu chi nhánh</span>
+                </div>
+              }
+            </div>
+          </div>
+        } @else if (isManager()) {
+          <!-- Manager: buckets + quick actions -->
+          <div
+            class="bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+          >
+            <div class="p-[1.35rem]">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900">
+                    <span
+                      class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-teal-500 to-teal-700 shrink-0"
+                    ></span>
+                    Phân Tích Chậm Nộp
+                  </div>
+                  <p class="text-[.68rem] text-gray-400 mt-0.5 pl-3.5">Theo số ngày trễ hạn</p>
+                </div>
+                @if (pendingApprovalCount() + pendingDisbCount() > 0) {
+                  <span
+                    class="text-[.65rem] font-extrabold px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800"
+                    >{{ pendingApprovalCount() + pendingDisbCount() }} chờ duyệt</span
+                  >
+                }
+              </div>
+
+              <!-- Buckets -->
+              <div class="grid grid-cols-2 gap-2.5 mb-4">
+                @for (bucket of overdueBuckets(); track bucket.label) {
+                  <div
+                    [class]="
+                      bucket.label.includes('>30')
+                        ? 'bucket-card bucket-card--bad'
+                        : bucket.label.includes('11-20') || bucket.label.includes('21-30')
+                          ? 'bucket-card bucket-card--late'
+                          : 'bucket-card bucket-card--warn'
+                    "
+                  >
+                    <div
+                      class="text-[1.35rem] font-black leading-none mb-1"
+                      [style.color]="
+                        bucket.label.includes('>30')
+                          ? '#991b1b'
+                          : bucket.label.includes('11') || bucket.label.includes('21')
+                            ? '#c2410c'
+                            : '#a16207'
+                      "
+                    >
+                      {{ bucket.count ?? 0 }}
+                    </div>
+                    <div class="text-[.65rem] font-semibold text-gray-500">{{ bucket.label }}</div>
+                    <div class="text-[.7rem] font-extrabold text-gray-700 mt-0.5">
+                      {{ formatCurrency(bucket.amount) }}
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      <!-- /data-row -->
+
+      <!-- ═══════════════════════════════════════
+           STAFF BOTTOM ROW
+      ════════════════════════════════════════ -->
+      @if (!isAdmin() && !isManager()) {
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <!-- Buckets (staff) -->
+          @if (overdueBuckets().length > 0) {
+            <div
+              class="bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+            >
+              <div class="p-[1.35rem]">
+                <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900 mb-4">
+                  <span
+                    class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-amber-500 to-amber-600 shrink-0"
+                  ></span>
+                  Phân Tích Chậm Nộp
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                  @for (bucket of overdueBuckets(); track bucket.label) {
+                    <div
+                      [class]="
+                        bucket.label.includes('>30')
+                          ? 'bucket-card bucket-card--bad'
+                          : bucket.label.includes('11-20') || bucket.label.includes('21-30')
+                            ? 'bucket-card bucket-card--late'
+                            : 'bucket-card bucket-card--warn'
+                      "
+                    >
+                      <div
+                        class="text-[1.35rem] font-black leading-none mb-0.5"
+                        [style.color]="
+                          bucket.label.includes('>30')
+                            ? '#991b1b'
+                            : bucket.label.includes('11') || bucket.label.includes('21')
+                              ? '#c2410c'
+                              : '#a16207'
+                        "
+                      >
+                        {{ bucket.count ?? 0 }}
+                      </div>
+                      <div class="text-[.65rem] font-semibold text-gray-500">
+                        {{ bucket.label }}
+                      </div>
+                      <div class="text-[.7rem] font-extrabold text-gray-700 mt-0.5">
+                        {{ formatCurrency(bucket.amount) }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Priority list (staff) -->
+          <div
+            class="bg-white rounded-[1.125rem] shadow-[0_1px_2px_rgba(0,0,0,.04),0_4px_16px_-6px_rgba(0,0,0,.08),0_0_0_1px_rgba(0,0,0,.04)] overflow-hidden"
+          >
+            <div class="p-[1.35rem]">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2 text-sm font-extrabold text-gray-900">
+                  <span
+                    class="w-1 h-[1.2em] rounded-sm bg-gradient-to-b from-red-500 to-red-700 shrink-0"
+                  ></span>
+                  Ưu tiên gọi ngay
+                </div>
+                <a
+                  routerLink="/loans"
+                  class="inline-flex items-center gap-1 text-[.7rem] font-bold text-red-600 no-underline px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  Mở DS <tui-icon icon="@tui.arrow-right" class="text-[.65rem]"></tui-icon>
+                </a>
+              </div>
+
+              @if (staffPriorityOverdues().length > 0) {
+                <div class="flex flex-col gap-2.5">
+                  @for (loan of staffPriorityOverdues(); track loan.scheduleId) {
+                    <div
+                      class="border border-gray-100 rounded-xl p-3 hover:border-red-200 hover:bg-red-50/30 transition-all"
+                    >
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                          <p class="text-[.72rem] font-mono font-bold text-blue-700 truncate">
+                            {{ loan.contractNo }}
+                          </p>
+                          <p class="text-[.76rem] font-semibold text-gray-800 truncate">
+                            {{ loan.customerName }}
+                          </p>
+                        </div>
+                        <span
+                          [class]="
+                            (loan.daysOverdue ?? 0) > 10
+                              ? 'overdue-days overdue-days--bad'
+                              : (loan.daysOverdue ?? 0) > 3
+                                ? 'overdue-days overdue-days--late'
+                                : 'overdue-days overdue-days--warn'
+                          "
+                        >
+                          {{ loan.daysOverdue }} ngày
+                        </span>
+                      </div>
+                      <div class="mt-2 text-[.68rem] text-gray-500">
+                        Còn nợ:
+                        <span class="font-bold text-gray-900">{{
+                          formatCurrency(loan.totalUnpaid)
+                        }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                  <tui-icon
+                    icon="@tui.check-circle"
+                    class="text-3xl text-emerald-500 mb-2"
+                  ></tui-icon>
+                  <span class="text-sm font-medium">Không có hồ sơ cần ưu tiên</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+    <!-- /else -->
+  </div>
+  <!-- /max-width -->
+</div>
+<!-- /shell -->

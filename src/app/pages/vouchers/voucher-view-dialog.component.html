@@ -1,0 +1,53 @@
+@if (item(); as v) {
+  <div class="space-y-4 p-1">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Mã phiếu</p>
+        <p class="text-sm font-semibold font-mono text-gray-900 mt-1">{{ v.voucherNo || '-' }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Loại</p>
+        <span
+          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-1"
+          [class]="getTypeClass(v.voucherType)"
+        >
+          {{ getTypeLabel(v.voucherType) }}
+        </span>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Lý do</p>
+        <p class="text-sm text-gray-900 mt-1">{{ getReasonLabel(v.reasonCode) }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Số tiền</p>
+        <p
+          class="text-base font-bold mt-1"
+          [class]="v.voucherType === 'RECEIPT' ? 'text-green-700' : 'text-red-700'"
+        >
+          {{ v.voucherType === 'RECEIPT' ? '+' : '-' }}{{ formatCurrency(v.amount) }}
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Ngày nghiệp vụ</p>
+        <p class="text-sm text-gray-900 mt-1">{{ formatDate(v.businessDate) }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Người nộp/nhận</p>
+        <p class="text-sm font-medium text-gray-900 mt-1">{{ v.payerReceiverName || '-' }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Hợp đồng</p>
+        <p class="text-sm text-gray-900 mt-1">{{ v.contractCode || '-' }}</p>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Diễn giải</p>
+        <p class="text-sm text-gray-700 mt-1">{{ v.description || '-' }}</p>
+      </div>
+    </div>
+    <div class="flex justify-end">
+      <button tuiButton appearance="outline" size="m" (click)="context.$implicit.complete()">
+        Đóng
+      </button>
+    </div>
+  </div>
+}

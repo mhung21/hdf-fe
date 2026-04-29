@@ -1,0 +1,103 @@
+<div class="p-4 space-y-3 md:p-6">
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="stores()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    searchPlaceholder="Mã chi nhánh, tên chi nhánh..."
+    emptyIcon="@tui.home"
+    emptyText="Chưa có chi nhánh nào"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadStores()"
+    (pageChange)="onPaginationChange($event)"
+  >
+    <!-- Extra toolbar: Add button -->
+    <ng-container tableToolbar>
+      @if (canCreate()) {
+        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+          <tui-icon icon="@tui.plus" class="mr-1" />
+          Thêm Chi Nhánh
+        </button>
+      }
+    </ng-container>
+
+    <!-- Row cells -->
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('code')) {
+        <td class="px-4 py-3 align-top">
+          <code class="text-sm bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-700">
+            {{ asStore(item).storeCode }}
+          </code>
+        </td>
+      }
+      @if (!isHidden('name')) {
+        <td class="px-4 py-3 align-top">
+          @if (canEditStore(asStore(item))) {
+            <p
+              class="font-medium text-primary cursor-pointer underline underline-offset-2 decoration-primary/50"
+              [tuiHint]="'Chỉnh sửa chi nhánh'"
+              tuiHintDirection="top"
+              (click)="openEditDialog(asStore(item))"
+            >{{ asStore(item).storeName }}</p>
+          } @else {
+            <p class="font-medium text-gray-900">{{ asStore(item).storeName }}</p>
+          }
+          <p class="text-xs text-gray-400 truncate">{{ asStore(item).address || '-' }}</p>
+        </td>
+      }
+      @if (!isHidden('contact')) {
+        <td class="px-4 py-3 text-sm text-gray-700 align-top">{{ asStore(item).phone || '-' }}</td>
+      }
+      @if (!isHidden('openedOn')) {
+        <td class="px-4 py-3 text-sm text-gray-700 align-top">{{ formatDate(asStore(item).openedOn) }}</td>
+      }
+      @if (!isHidden('status')) {
+        <td class="px-4 py-3 text-center align-top">
+          <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            [class]="asStore(item).isActive
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-gray-100 text-gray-500 border border-gray-200'"
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full"
+              [class]="asStore(item).isActive ? 'bg-green-500' : 'bg-gray-400'"
+            ></span>
+            {{ asStore(item).isActive ? 'Hoạt động' : 'Đã xóa' }}
+          </span>
+        </td>
+      }
+    </ng-template>
+
+    <!-- Row actions -->
+    <ng-template #rowActions let-item>
+      @if (canDelete()) {
+        @if (asStore(item).isActive) {
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            [tuiHint]="'Vô hiệu hóa chi nhánh'"
+            tuiHintDirection="top"
+            (click)="deleteStore(asStore(item))"
+          >
+            <tui-icon icon="@tui.trash" class="text-red-500" />
+          </button>
+        } @else {
+          <button
+            tuiButton
+            appearance="flat"
+            size="xs"
+            [tuiHint]="'Kích hoạt lại chi nhánh'"
+            tuiHintDirection="top"
+            (click)="activateStore(asStore(item))"
+          >
+            <tui-icon icon="@tui.rotate-ccw" class="text-green-600" />
+          </button>
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

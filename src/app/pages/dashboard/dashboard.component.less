@@ -1,0 +1,87 @@
+/* Dashboard – only what Tailwind can't handle */
+
+:host { display: block; }
+
+
+/* ── KPI card decorations (noise texture + shine blob) ── */
+.kpi-card-deco {
+  /* noise texture overlay */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  /* shine blob */
+  &::after {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.2) 0%, transparent 70%);
+    top: -40px;
+    right: -30px;
+    pointer-events: none;
+  }
+}
+
+/* ── KPI pulse dot animation ──────────────────── */
+@keyframes kpi-ping {
+  0%        { transform: scale(1);   opacity: .8; }
+  75%, 100% { transform: scale(2.2); opacity: 0;  }
+}
+
+.kpi-pulse-ring {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    animation: kpi-ping 1.8s cubic-bezier(0,0,.2,1) infinite;
+  }
+}
+
+/* ── Dynamic state classes (used in [class] bindings) ── */
+.overdue-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: .65rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &--warn { background: #fef9c3; color: #a16207; }
+  &--late { background: #ffedd5; color: #c2410c; }
+  &--bad  { background: #fee2e2; color: #b91c1c; }
+}
+
+.overdue-days {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 2px 6px;
+  border-radius: .4rem;
+  font-size: .7rem;
+  font-weight: 800;
+
+  &--warn { background: #fef9c3; color: #92400e; }
+  &--late { background: #fed7aa; color: #9a3412; }
+  &--bad  { background: #fecaca; color: #991b1b; }
+}
+
+.bucket-card {
+  border-radius: .75rem;
+  padding: .85rem;
+  border: 1.5px solid transparent;
+  transition: border-color .2s;
+
+  &--warn { border-color: #fef08a; background: #fefce8; }
+  &--late { border-color: #fed7aa; background: #fff7ed; }
+  &--bad  { border-color: #fca5a5; background: #fef2f2; }
+}
