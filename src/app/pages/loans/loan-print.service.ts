@@ -179,9 +179,8 @@ export class LoanPrintService {
           <td>${this.formatCurrency(r.interestAmount)}</td>
           <td>${this.formatCurrency((r.principalAmount ?? 0) + (r.interestAmount ?? 0))}</td>
           <td>${this.formatCurrency(r.qlkvAmount)}</td>
-          <td>${this.formatCurrency(r.fixedMonthlyFeeAmount)}</td>
           <td>${this.formatCurrency(r.qltsAmount)}</td>
-          <td>${this.formatCurrency((r.qlkvAmount ?? 0) + (r.qltsAmount ?? 0))}</td>
+          <td><strong>${this.formatCurrency((r.qlkvAmount ?? 0) + (r.qltsAmount ?? 0))}</strong></td>
           <td>${this.formatCurrency(r.remainingPrincipal)}</td>
         </tr>`,
       )
@@ -193,13 +192,7 @@ export class LoanPrintService {
          &nbsp;|&nbsp; SĐT: ${p.customer.phone ?? '-'}`
       : '';
 
-    const totalPeriodicRate = (p.qlkvRateMonthly ?? 0) + (p.qltsRateMonthly ?? 0);
-    const feeMeta =
-      totalPeriodicRate > 0
-        ? `&nbsp;|&nbsp; QLKV ${p.qlkvRateMonthly ?? 0}% + QLTS ${p.qltsRateMonthly ?? 0}%/tháng`
-        : '';
-
-    const fixedFeeMeta = `&nbsp;|&nbsp; Phí cố định/tháng ${this.formatCurrency(p.fixedMonthlyFeeAmount ?? 0)}`;
+    const feeMeta = `&nbsp;|&nbsp; Phí phần mềm đã gồm phí định kỳ, hao mòn riêng`;
 
     const html = `<!DOCTYPE html>
 <html lang="vi">
@@ -238,21 +231,20 @@ export class LoanPrintService {
   <h2>Bảng minh họa lãi suất</h2>
   <div class="sub">Công ty TNHH HD Finance — Tài liệu tham khảo, không có giá trị pháp lý</div>
   <hr />
-  <div class="meta">
+    <div class="meta">
     ${custMeta}
     <br/>
     Tổng gốc (gốc + BH): <strong>${this.formatCurrency(p.principalAmount)}</strong>
     &nbsp;|&nbsp; ${p.termMonths} tháng
     &nbsp;|&nbsp; Lãi ${p.interestRateMonthly}%/tháng
     ${feeMeta}
-    ${fixedFeeMeta}
   </div>
 
   <div class="summary">
     <div class="box upfront">
-      <div class="label">⚡ Thanh toán ngay (phí hồ sơ)</div>
+      <div class="label">⚡ Thanh toán ngay (phí hợp đồng)</div>
       <div class="value">${this.formatCurrency(upfront)}</div>
-      <div class="sub-detail">Phí hồ sơ: ${this.formatCurrency(p.fileFeeAmount ?? 0)}</div>
+      <div class="sub-detail">Phí hợp đồng: ${this.formatCurrency(p.fileFeeAmount ?? 0)}</div>
     </div>
     <div class="box">
       <div class="label">Trả hàng tháng (gốc + lãi + phí ĐK)</div>
@@ -267,7 +259,7 @@ export class LoanPrintService {
       <div class="value">${this.formatCurrency(p.totalInterest)}</div>
     </div>
     <div class="box">
-      <div class="label">Tổng phí định kỳ (ĐK)</div>
+      <div class="label">Tổng phí (phí phần mềm đã gồm phí định kỳ, hao mòn riêng)</div>
       <div class="value">${this.formatCurrency(p.totalPeriodicFee)}</div>
     </div>
     <div class="box">
@@ -286,9 +278,8 @@ export class LoanPrintService {
         <th>Tiền gốc</th>
         <th>Tiền lãi</th>
         <th>Tổng cầm đồ</th>
-        <th>Phí QLKV</th>
-        <th>Phí cố định/tháng</th>
-        <th>Phí QLTS</th>
+        <th>Phí phần mềm</th>
+        <th>Phí hao mòn</th>
         <th>Tổng cho thuê</th>
         <th>Nợ gốc còn lại</th>
       </tr>

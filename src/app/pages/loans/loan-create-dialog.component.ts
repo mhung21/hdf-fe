@@ -874,9 +874,10 @@ export class LoanCreateDialogComponent {
       const dueDate = period?.toDate ?? addMonths(base, n);
 
       const interest = Math.round(remaining * interestRateMonth * dailyFactor * dayCount);
-      const qlkv = Math.round(remaining * qlkvRateMonth * dailyFactor * dayCount);
-      const qlts =
-        Math.round(remaining * qltsRateMonth * dailyFactor * dayCount) + fixedMonthlyFeeAmount;
+      const qlkv =
+        Math.round(remaining * qlkvRateMonth * dailyFactor * dayCount) +
+        Math.round(fixedMonthlyFeeAmount * dailyFactor * dayCount);
+      const qlts = Math.round(remaining * qltsRateMonth * dailyFactor * dayCount);
       const fee = qlkv + qlts;
 
       let principal: number;
