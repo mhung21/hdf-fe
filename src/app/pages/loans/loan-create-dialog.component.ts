@@ -31,6 +31,7 @@ import {
   TuiInputDate,
   TuiInputNumber,
   TuiTabs,
+  TuiFilterByInputPipe,
 } from '@taiga-ui/kit';
 import { TuiDay, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { injectContext } from '@taiga-ui/polymorpheus';
@@ -43,7 +44,7 @@ import { LoanProductProvider } from '../../api/api/loan-product.service';
 import { CULoanContractModel } from '../../api/model/cu-loan-contract-model';
 import { LoanContractStatus } from '../../models/loan-contract-status.model';
 import { AuthService } from '../../services/auth.service';
-import { ReferenceDataService } from '../../services/reference-data.service';
+import { ReferenceDataService, type StoreOption } from '../../services/reference-data.service';
 import { RoleCode } from '../../models/role.model';
 import { LoanPrintService } from './loan-print.service';
 import {
@@ -58,6 +59,7 @@ import {
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_TYPES,
 } from '../../services/loan-contract-document.service';
+import { CustomerSource } from '../../api/model/customer-source';
 
 export interface LoanProductOption {
   loanProductId: string;
@@ -163,6 +165,7 @@ export interface LoanCreateDialogData {
     TuiInputNumber,
     TuiCurrencyPipe,
     TuiTabs,
+    TuiFilterByInputPipe,
   ],
   templateUrl: './loan-create-dialog.component.html',
 })
@@ -291,50 +294,83 @@ export class LoanCreateDialogComponent {
     return list.filter((c) => (c.firstStoreId ?? c.storeId ?? null) === storeId);
   });
 
-  readonly customerStringify: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return (
-      this.filteredCustomers().find((c) => c.customerId === id)?.fullName ??
-      this.customers().find((c) => c.customerId === id)?.fullName ??
-      id
-    );
+  readonly customerStringify: TuiStringHandler<CustomerOption | string> = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return (
+        this.filteredCustomers().find((c) => c.customerId === item)?.fullName ??
+        this.customers().find((c) => c.customerId === item)?.fullName ??
+        item
+      );
+    }
+
+    return this.normalizeVi(item.fullName);
   };
   readonly customerMatcher: TuiStringMatcher<string> = (id, query) => {
     if (!id || !query) return false;
-    const qn = this.normalizeVi(query);
     const customer = this.filteredCustomers().find((c) => c.customerId === id);
     if (!customer) return false;
-    return (
-      this.normalizeVi(customer.fullName).includes(qn) ||
-      this.normalizeVi(customer.customerCode ?? '').includes(qn)
-    );
+    const qn = this.normalizeVi(query);
+    return this.normalizeVi(customer.fullName) === qn || this.normalizeVi(customer.customerId) === qn;
   };
 
-  readonly productStringify: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return this.loanProducts().find((p) => p.loanProductId === id)?.productName ?? id;
+  readonly productStringify: TuiStringHandler<LoanProductOption | string> = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return this.loanProducts().find((p) => p.loanProductId === item)?.productName ?? item;
+    }
+
+    return this.normalizeVi(item.productName);
   };
   readonly productMatcher: TuiStringMatcher<string> = (id, query) => {
     if (!id || !query) return false;
-    return this.normalizeVi(this.productStringify(id)).includes(this.normalizeVi(query));
+    const qn = this.normalizeVi(query);
+    const product = this.loanProducts().find((p) => p.loanProductId === id);
+    if (!product) return false;
+    return (
+      this.normalizeVi(product.productName) === qn ||
+      this.normalizeVi(product.loanProductId) === qn ||
+      this.normalizeVi(product.productCode) === qn
+    );
   };
 
-  readonly storeStringify: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return this.storeList().find((s) => s.storeId === id)?.storeName ?? id;
+  readonly storeStringify: TuiStringHandler<StoreOption | string> = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return this.storeList().find((s) => s.storeId === item)?.storeName ?? item;
+    }
+
+    return this.normalizeVi(item.storeName);
   };
   readonly storeMatcher: TuiStringMatcher<string> = (id, query) => {
     if (!id || !query) return false;
-    return this.normalizeVi(this.storeStringify(id)).includes(this.normalizeVi(query));
+    const qn = this.normalizeVi(query);
+    const store = this.storeList().find((s) => s.storeId === id);
+    if (!store) return false;
+    return (
+      this.normalizeVi(store.storeName) === qn ||
+      this.normalizeVi(store.storeId) === qn ||
+      this.normalizeVi(store.storeCode ?? '') === qn
+    );
   };
 
-  readonly customerSourceStringify: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return this.customerSources().find((s) => s.sourceId === id)?.sourceName ?? id;
+  readonly customerSourceStringify: TuiStringHandler<CustomerSource | string> = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return this.customerSources().find((s) => s.sourceId === item)?.sourceName ?? item;
+    }
+
+    return this.normalizeVi(item.sourceName);
   };
   readonly customerSourceMatcher: TuiStringMatcher<string> = (id, query) => {
     if (!id || !query) return false;
-    return this.normalizeVi(this.customerSourceStringify(id)).includes(this.normalizeVi(query));
+    const qn = this.normalizeVi(query);
+    const source = this.customerSources().find((s) => s.sourceId === id);
+    if (!source) return false;
+    return (
+      this.normalizeVi(source.sourceName) === qn ||
+      this.normalizeVi(source.sourceId) === qn
+    );
   };
 
   form = this.fb.group({
@@ -713,10 +749,10 @@ export class LoanCreateDialogComponent {
   ngOnInit(): void {
     if (this.canPickStore()) {
       this.form.get('storeId')!.setValidators(Validators.required);
-      const first = this.storeList()[0]?.storeId ?? null;
-      if (first && !this.form.controls.storeId.value) {
-        this.form.controls.storeId.setValue(first);
-      }
+      // const first = this.storeList()[0]?.storeId ?? null;
+      // if (first && !this.form.controls.storeId.value) {
+      //   this.form.controls.storeId.setValue(first);
+      // }
     } else {
       this.form.patchValue({ storeId: this.authService.currentUser()?.storeId ?? null });
       this.form.get('storeId')!.clearValidators();
