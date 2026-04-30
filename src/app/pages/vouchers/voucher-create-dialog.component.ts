@@ -20,7 +20,7 @@ import {
   TuiWithDropdownOpen,
   type TuiDialogContext,
 } from '@taiga-ui/core';
-import { TuiChevron, TuiComboBox, TuiInputDate, TuiInputNumber } from '@taiga-ui/kit';
+import { TuiChevron, TuiComboBox, TuiFilterByInputPipe, TuiInputDate, TuiInputNumber } from '@taiga-ui/kit';
 import { TuiDay, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { injectContext } from '@taiga-ui/polymorpheus';
 import { CommonModule } from '@angular/common';
@@ -94,6 +94,7 @@ const REASONS_BY_TYPE: Record<string, string[]> = {
     TuiNumberFormat,
     TuiInputNumber,
     TuiCurrencyPipe,
+    TuiFilterByInputPipe,
   ],
   templateUrl: './voucher-create-dialog.component.html',
 })
@@ -142,33 +143,49 @@ export class VoucherCreateDialogComponent implements OnInit {
   readonly reasonStringify: TuiStringHandler<string> = (v) => REASON_LABELS[v] ?? v;
   readonly typeMatcher: TuiStringMatcher<string> = (v, q) => {
     if (!v || !q) return false;
-    return this.normalizeVi(this.typeStringify(v)).includes(this.normalizeVi(q));
+    const qn = this.normalizeVi(q);
+    return this.normalizeVi(this.typeStringify(v)) === qn || this.normalizeVi(v) === qn;
   };
   readonly reasonMatcher: TuiStringMatcher<string> = (v, q) => {
     if (!v || !q) return false;
-    return this.normalizeVi(this.reasonStringify(v)).includes(this.normalizeVi(q));
+    const qn = this.normalizeVi(q);
+    return this.normalizeVi(this.reasonStringify(v)) === qn || this.normalizeVi(v) === qn;
   };
 
-  readonly customerStringify: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return this.customers().find((c) => c.customerId === id)?.fullName ?? id;
+  readonly customerStringify: TuiStringHandler<CustomerOption | string> = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return this.customers().find((c) => c.customerId === item)?.fullName ?? item;
+    }
+    return this.normalizeVi(`${item.fullName} ${item.customerCode ?? item.nationalId ?? ''}`.trim());
   };
   readonly customerMatcher: TuiStringMatcher<string> = (id, q) => {
     if (!id || !q) return false;
     const c = this.customers().find((x) => x.customerId === id);
     if (!c) return false;
+    const qn = this.normalizeVi(q);
     return (
-      this.normalizeVi(c.fullName).includes(this.normalizeVi(q)) || (c.nationalId ?? '').includes(q)
+      this.normalizeVi(c.fullName) === qn ||
+      this.normalizeVi(c.customerCode ?? '') === qn ||
+      this.normalizeVi(c.nationalId ?? '') === qn
     );
   };
 
-  readonly storeStringify: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return this.storeList().find((s) => s.storeId === id)?.storeName ?? id;
+  readonly storeStringify: TuiStringHandler<{ storeId: string; storeName: string; storeCode?: string } | string> = (
+    item,
+  ) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return this.storeList().find((s) => s.storeId === item)?.storeName ?? item;
+    }
+    return this.normalizeVi(`${item.storeName} ${item.storeCode ?? ''}`.trim());
   };
   readonly storeMatcher: TuiStringMatcher<string> = (id, q) => {
     if (!id || !q) return false;
-    return this.normalizeVi(this.storeStringify(id)).includes(this.normalizeVi(q));
+    const store = this.storeList().find((s) => s.storeId === id);
+    if (!store) return false;
+    const qn = this.normalizeVi(q);
+    return this.normalizeVi(store.storeName) === qn || this.normalizeVi(store.storeCode ?? '') === qn;
   };
 
   readonly loanStringify: TuiStringHandler<string> = (id) => {
@@ -180,10 +197,8 @@ export class VoucherCreateDialogComponent implements OnInit {
     if (!id || !q) return false;
     const l = this.loanContracts().find((x) => x.loanContractId === id);
     if (!l) return false;
-    return (
-      this.normalizeVi(l.contractNo ?? '').includes(this.normalizeVi(q)) ||
-      this.normalizeVi(l.customerName ?? '').includes(this.normalizeVi(q))
-    );
+    const qn = this.normalizeVi(q);
+    return this.normalizeVi(l.contractNo ?? '') === qn || this.normalizeVi(l.customerName ?? '') === qn;
   };
 
   form = this.fb.group({
@@ -209,6 +224,15 @@ export class VoucherCreateDialogComponent implements OnInit {
     }
   }
 
+  private normalizeVi(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .trim();
+  }
+
   ngOnInit(): void {
     const today = new Date();
     this.form.patchValue({
@@ -222,7 +246,7 @@ export class VoucherCreateDialogComponent implements OnInit {
     // Logic default store removed as per user request.
 
     this.customerProvider
-      .apiCustomerSearchPost({ searchCustomerRequest: { pageSize: 500 } })
+      .apiCustomerSearchPost({ searchCustomerRequest: { pageSize: 5000 } })
       .subscribe({
         next: (r) => {
           if (r.status && r.data) {
@@ -234,7 +258,7 @@ export class VoucherCreateDialogComponent implements OnInit {
       });
     this.loanProvider
       .apiLoanContractSearchPost({
-        searchLoanContractRequest: { pageSize: 500, sortBy: 'ApplicationDate', sortDesc: true },
+        searchLoanContractRequest: { pageSize: 5000, sortBy: 'ApplicationDate', sortDesc: true },
       })
       .subscribe({
         next: (r) => {
@@ -286,12 +310,4 @@ export class VoucherCreateDialogComponent implements OnInit {
     });
   }
 
-  /** Chuẩn hóa tiếng Việt: bỏ dấu + lowercase để so sánh không phân biệt dấu */
-  private normalizeVi(s: string): string {
-    return s
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[đĐ]/g, (m) => (m === 'đ' ? 'd' : 'D'))
-      .toLowerCase();
-  }
 }

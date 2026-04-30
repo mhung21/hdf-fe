@@ -95,13 +95,15 @@
               placeholder="Chọn vai trò"
               [matcher]="matcherRole"
             />
-            <tui-data-list *tuiTextfieldDropdown>
-              @for (role of availableRoles(); track role) {
-                <button new tuiOption type="button" [value]="role">
-                  {{ roleStringify(role) }}
-                </button>
-              }
-            </tui-data-list>
+            @if (availableRoles() | tuiFilterByInput: matcherRoleFilter; as roles) {
+              <tui-data-list *tuiTextfieldDropdown>
+                @for (role of roles; track role) {
+                  <button new tuiOption type="button" [value]="role">
+                    {{ roleStringify(role) }}
+                  </button>
+                }
+              </tui-data-list>
+            }
           </tui-textfield>
         </div>
       }
@@ -117,13 +119,22 @@
               placeholder="Chọn chi nhánh..."
               [matcher]="matcherStore"
             />
-            <tui-data-list *tuiTextfieldDropdown>
-              @for (store of storeList(); track store.storeId) {
-                <button new tuiOption type="button" [value]="store.storeId">
-                  {{ store.storeName }}
-                </button>
-              }
-            </tui-data-list>
+            @if (storeList() | tuiFilterByInput: matcherStoreFilter; as stores) {
+              <tui-data-list *tuiTextfieldDropdown>
+                @for (store of stores; track store.storeId) {
+                  <button new tuiOption type="button" [value]="store.storeId">
+                    <div class="flex flex-col py-0.5 min-w-0">
+                      <span class="text-sm font-medium leading-tight">{{ store.storeName }}</span>
+                      @if (store.storeCode) {
+                        <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
+                          {{ store.storeCode }}
+                        </span>
+                      }
+                    </div>
+                  </button>
+                }
+              </tui-data-list>
+            }
           </tui-textfield>
         </div>
       }
@@ -141,18 +152,27 @@
               (ngModelChange)="selectedStoreIds.set($event)"
               [ngModelOptions]="{ standalone: true }"
             />
-            <tui-data-list *tuiTextfieldDropdown>
-              @for (store of storeList(); track store.storeId) {
-                <button
-                  new
-                  tuiOption
-                  type="button"
-                  [value]="store.storeId"
-                >
-                  {{ store.storeName }}
-                </button>
-              }
-            </tui-data-list>
+            @if (storeList() | tuiFilterByInput: matcherStoreFilter; as stores) {
+              <tui-data-list *tuiTextfieldDropdown>
+                @for (store of stores; track store.storeId) {
+                  <button
+                    new
+                    tuiOption
+                    type="button"
+                    [value]="store.storeId"
+                  >
+                    <div class="flex flex-col py-0.5 min-w-0">
+                      <span class="text-sm font-medium leading-tight">{{ store.storeName }}</span>
+                      @if (store.storeCode) {
+                        <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
+                          {{ store.storeCode }}
+                        </span>
+                      }
+                    </div>
+                  </button>
+                }
+              </tui-data-list>
+            }
           </tui-textfield>
           @if (selectedStoreIds().length === 0) {
             <p class="mt-1 text-xs text-gray-400">Quản lý vùng phải quản lý ít nhất 1 chi nhánh</p>

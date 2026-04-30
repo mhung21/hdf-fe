@@ -11,20 +11,22 @@
             placeholder="Chọn chi nhánh..."
             [matcher]="storeMatcher"
           />
-          <tui-data-list *tuiTextfieldDropdown>
-            @for (s of storeList(); track s.storeId) {
-              <button new tuiOption type="button" [value]="s.storeId">
-                <div class="flex flex-col min-w-0 py-0.5">
-                  <span class="font-medium text-sm leading-tight">{{ s.storeName }}</span>
-                  @if (s.storeCode) {
-                    <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
-                      {{ s.storeCode }}
-                    </span>
-                  }
-                </div>
-              </button>
-            }
-          </tui-data-list>
+          @if (storeList() | tuiFilterByInput; as stores) {
+            <tui-data-list *tuiTextfieldDropdown>
+              @for (s of stores; track s.storeId) {
+                <button new tuiOption type="button" [value]="s.storeId">
+                  <div class="flex flex-col min-w-0 py-0.5">
+                    <span class="font-medium text-sm leading-tight">{{ s.storeName }}</span>
+                    @if (s.storeCode) {
+                      <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
+                        {{ s.storeCode }}
+                      </span>
+                    }
+                  </div>
+                </button>
+              }
+            </tui-data-list>
+          }
         </tui-textfield>
       </div>
     }
@@ -38,11 +40,13 @@
           placeholder="Chọn loại phiếu"
           [matcher]="typeMatcher"
         />
-        <tui-data-list *tuiTextfieldDropdown>
-          @for (t of voucherTypes; track t) {
-            <button new tuiOption type="button" [value]="t">{{ typeStringify(t) }}</button>
-          }
-        </tui-data-list>
+        @if (voucherTypes | tuiFilterByInput; as types) {
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (t of types; track t) {
+              <button new tuiOption type="button" [value]="t">{{ typeStringify(t) }}</button>
+            }
+          </tui-data-list>
+        }
       </tui-textfield>
     </div>
     <!-- Reason -->
@@ -55,16 +59,18 @@
           placeholder="Chọn lý do"
           [matcher]="reasonMatcher"
         />
-        <tui-data-list *tuiTextfieldDropdown>
-          @for (r of filteredReasonCodes(); track r) {
-            <button new tuiOption type="button" [value]="r">
-              <div class="flex flex-col min-w-0 py-0.5">
-                <span class="font-medium text-sm leading-tight">{{ reasonStringify(r) }}</span>
-                <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">{{ r }}</span>
-              </div>
-            </button>
-          }
-        </tui-data-list>
+        @if (filteredReasonCodes() | tuiFilterByInput; as reasons) {
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (r of reasons; track r) {
+              <button new tuiOption type="button" [value]="r">
+                <div class="flex flex-col min-w-0 py-0.5">
+                  <span class="font-medium text-sm leading-tight">{{ reasonStringify(r) }}</span>
+                  <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">{{ r }}</span>
+                </div>
+              </button>
+            }
+          </tui-data-list>
+        }
       </tui-textfield>
     </div>
     <!-- Date -->
@@ -106,20 +112,22 @@
           placeholder="Liên kết khách hàng..."
           [matcher]="customerMatcher"
         />
-        <tui-data-list *tuiTextfieldDropdown>
-          @for (c of customers(); track c.customerId) {
-            <button new tuiOption type="button" [value]="c.customerId">
-              <div class="flex flex-col min-w-0 py-0.5">
-                <span class="font-medium text-sm leading-tight">{{ c.fullName }}</span>
-                @if (c.customerCode || c.nationalId) {
-                  <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
-                    {{ c.customerCode || c.nationalId }}
-                  </span>
-                }
-              </div>
-            </button>
-          }
-        </tui-data-list>
+        @if (customers() | tuiFilterByInput; as items) {
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (c of items; track c.customerId) {
+              <button new tuiOption type="button" [value]="c.customerId">
+                <div class="flex flex-col min-w-0 py-0.5">
+                  <span class="font-medium text-sm leading-tight">{{ c.fullName }}</span>
+                  @if (c.customerCode || c.nationalId) {
+                    <span class="text-[10px] leading-none text-gray-400 font-mono mt-0.5">
+                      {{ c.customerCode || c.nationalId }}
+                    </span>
+                  }
+                </div>
+              </button>
+            }
+          </tui-data-list>
+        }
       </tui-textfield>
     </div>
     <!-- Loan Contract -->
@@ -132,20 +140,22 @@
           placeholder="Liên kết hợp đồng..."
           [matcher]="loanMatcher"
         />
-        <tui-data-list *tuiTextfieldDropdown>
-          @for (l of loanContracts(); track l.loanContractId) {
-            <button new tuiOption type="button" [value]="l.loanContractId">
-              <div class="flex flex-col min-w-0 py-0.5">
-                <span class="font-medium text-sm leading-tight">{{ l.contractNo }}</span>
-                @if (l.customerName) {
-                  <span class="text-[10px] leading-none text-gray-400 mt-0.5">
-                    {{ l.customerName }}
-                  </span>
-                }
-              </div>
-            </button>
-          }
-        </tui-data-list>
+        @if (loanContracts() | tuiFilterByInput; as items) {
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (l of items; track l.loanContractId) {
+              <button new tuiOption type="button" [value]="l.loanContractId">
+                <div class="flex flex-col min-w-0 py-0.5">
+                  <span class="font-medium text-sm leading-tight">{{ l.contractNo }}</span>
+                  @if (l.customerName) {
+                    <span class="text-[10px] leading-none text-gray-400 mt-0.5">
+                      {{ l.customerName }}
+                    </span>
+                  }
+                </div>
+              </button>
+            }
+          </tui-data-list>
+        }
       </tui-textfield>
     </div>
     <!-- Description -->

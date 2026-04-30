@@ -22,7 +22,7 @@ import {
   TuiWithDropdownOpen,
   type TuiDialogContext,
 } from '@taiga-ui/core';
-import { TuiChevron, TuiComboBox, TuiInputDate, TuiSkeleton } from '@taiga-ui/kit';
+import { TuiChevron, TuiComboBox, TuiInputDate, TuiSkeleton, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { TuiDay, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { injectContext } from '@taiga-ui/polymorpheus';
 import { CommonModule } from '@angular/common';
@@ -36,6 +36,7 @@ import { CustomerProvider } from '../../api/api/customer.service';
 import type { CUCustomerModel } from '../../api/model/cu-customer-model';
 
 import { ReferenceDataService } from '../../services/reference-data.service';
+import type { StoreOption } from '../../services/reference-data.service';
 import { AuthService } from '../../services/auth.service';
 import { RoleCode } from '../../models/role.model';
 
@@ -84,6 +85,7 @@ const GENDER_IDS = Object.keys(GENDER_LABELS);
     TuiCalendar,
     TuiWithDropdownOpen,
     TuiInputDate,
+    TuiFilterByInputPipe,
   ],
   templateUrl: './customer-form-dialog.component.html',
 })
@@ -170,13 +172,19 @@ export class CustomerFormDialogComponent implements OnInit, OnDestroy {
   readonly genderIds = GENDER_IDS;
   readonly stringifyGender: TuiStringHandler<string> = (code) => GENDER_LABELS[code] ?? code ?? '';
 
-  readonly stringifyStore: TuiStringHandler<string> = (id) => {
-    if (!id) return '';
-    return this.storeList().find((s) => s.storeId === id)?.storeName ?? id;
+  readonly stringifyStore: TuiStringHandler<StoreOption | string> = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') {
+      return this.storeList().find((s) => s.storeId === item)?.storeName ?? item;
+    }
+    return this.normalizeVi(`${item.storeName} ${item.storeCode ?? ''}`.trim());
   };
   readonly matcherStore: TuiStringMatcher<string> = (id, query) => {
     if (!id || !query) return false;
-    return this.normalizeVi(this.stringifyStore(id)).includes(this.normalizeVi(query));
+    const store = this.storeList().find((s) => s.storeId === id);
+    if (!store) return false;
+    const qn = this.normalizeVi(query);
+    return this.normalizeVi(store.storeName) === qn || this.normalizeVi(store.storeCode ?? '') === qn;
   };
 
   form = this.fb.group({

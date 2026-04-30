@@ -11,6 +11,7 @@ import {
   type TuiDialogContext,
 } from '@taiga-ui/core';
 import { TuiCheckbox, TuiChevron, TuiComboBox, TuiDataListWrapper, TuiInputChip, TuiMultiSelect } from '@taiga-ui/kit';
+import { TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { injectContext } from '@taiga-ui/polymorpheus';
 
 import { AppUserProvider } from '../../api/api/app-user.service';
@@ -51,6 +52,7 @@ export interface UserFormDialogData {
     TuiMultiSelect,
     TuiTextfield,
     TuiDataList,
+    TuiFilterByInputPipe,
   ],
   templateUrl: './user-form-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -79,14 +81,20 @@ export class UserFormDialogComponent {
   );
 
   readonly roleStringify: TuiStringHandler<string> = (code) => ROLE_LABELS[code] ?? code;
-  
   protected readonly matcherRole: TuiStringMatcher<string> = (id, query) => {
-    const roleName = ROLE_LABELS[id] ?? id;
-
-    return String(id) === query || roleName.toLowerCase() === query.toLowerCase();
+    if (!id || !query) return false;
+    const qn = this.normalizeVi(query);
+    const roleName = this.normalizeVi(ROLE_LABELS[id] ?? id);
+    return roleName === qn || this.normalizeVi(id) === qn;
+  };
+  protected readonly matcherRoleFilter: TuiStringMatcher<string> = (id, query) => {
+    if (!id || !query) return false;
+    const qn = this.normalizeVi(query);
+    const roleName = this.normalizeVi(ROLE_LABELS[id] ?? id);
+    return roleName.includes(qn) || this.normalizeVi(id).includes(qn);
   };
 
-  readonly storeStringify: TuiStringHandler<StoreOption> = (id) =>
+  readonly storeStringify: TuiStringHandler<StoreOption | string> = (id) =>
     this.storeList().find((s) => s.storeId === String(id))?.storeName ?? '';
 
   /** Stringify cho multi-select (nhận storeId dạng string) */
@@ -94,10 +102,28 @@ export class UserFormDialogComponent {
     this.storeList().find((s) => s.storeId === id)?.storeName ?? id;
 
   protected readonly matcherStore: TuiStringMatcher<string> = (id, query) => {
-    const { storeName } = this.storeList().find((item) => item.storeId == String(id))!;
-
-    return String(id) === query || storeName.toLowerCase() === query.toLowerCase();
+    if (!id || !query) return false;
+    const store = this.storeList().find((item) => item.storeId === String(id));
+    if (!store) return false;
+    const qn = this.normalizeVi(query);
+    return this.normalizeVi(store.storeName) === qn || this.normalizeVi(store.storeId) === qn;
   };
+  protected readonly matcherStoreFilter: TuiStringMatcher<StoreOption> = (store, query) => {
+    if (!store || !query) return false;
+    const qn = this.normalizeVi(query);
+    const name = this.normalizeVi(store.storeName);
+    const code = this.normalizeVi(store.storeCode ?? '');
+    return name.includes(qn) || code.includes(qn) || this.normalizeVi(store.storeId).includes(qn);
+  };
+
+  private normalizeVi(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .trim();
+  }
 
   readonly form = this.fb.group({
     userId: [null as string | null],
@@ -109,7 +135,7 @@ export class UserFormDialogComponent {
     roleCode: ['STAFF', Validators.required],
     storeId: [null as string | null],
     isActive: [true],
-    mustChangePassword: [true],
+    mustChangePassword: [false],
   });
 
   constructor() {
