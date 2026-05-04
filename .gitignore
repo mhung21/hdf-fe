@@ -47,3 +47,4 @@ __screenshots__/
 Thumbs.db
 /docs
 .*
+!.gemini
