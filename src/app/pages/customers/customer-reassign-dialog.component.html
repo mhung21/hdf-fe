@@ -25,7 +25,7 @@
         [matcher]="userMatcher"
       />
       <tui-data-list *tuiTextfieldDropdown>
-        @for (user of users(); track user.userId) {
+        @for (user of users() | tuiFilterByInput: filterMatcherUser; track user.userId) {
           <button new tuiOption type="button" [value]="user.userId">
             {{ user.fullName }}
             @if (user.username) {

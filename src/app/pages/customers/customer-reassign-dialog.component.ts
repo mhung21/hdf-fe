@@ -15,7 +15,7 @@ import {
   TuiTextfield,
   type TuiDialogContext,
 } from '@taiga-ui/core';
-import { TuiChevron, TuiComboBox } from '@taiga-ui/kit';
+import { TuiChevron, TuiComboBox, TuiFilterByInputPipe } from '@taiga-ui/kit';
 import { TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { injectContext } from '@taiga-ui/polymorpheus';
 
@@ -46,6 +46,7 @@ interface UserItem {
     TuiDataList,
     TuiChevron,
     TuiComboBox,
+    TuiFilterByInputPipe,
   ],
   templateUrl: './customer-reassign-dialog.component.html',
 })
@@ -66,14 +67,31 @@ export class CustomerReassignDialogComponent implements OnInit {
   readonly userStringify: TuiStringHandler<string> = (id) =>
     this.users().find((u) => u.userId === id)?.fullName ?? '';
 
+  /** Strict matcher cho comboBox — chỉ match chính xác tên hoặc username (tránh auto chọn) */
   protected readonly userMatcher: TuiStringMatcher<string> = (id, query) => {
     const user = this.users().find((u) => u.userId === id);
     if (!user) return false;
+    const qn = this.normalizeVi(query);
+    return this.normalizeVi(user.fullName) === qn || this.normalizeVi(user.username) === qn;
+  };
+
+  /** Partial matcher cho tuiFilterByInput — lọc dropdown khi gõ tìm kiếm */
+  protected readonly filterMatcherUser: TuiStringMatcher<UserItem> = (user, query) => {
+    if (!query) return true;
+    const qn = this.normalizeVi(query);
     return (
-      user.fullName.toLowerCase().includes(query.toLowerCase()) ||
-      user.username.toLowerCase().includes(query.toLowerCase())
+      this.normalizeVi(user.fullName).includes(qn) ||
+      this.normalizeVi(user.username).includes(qn)
     );
   };
+
+  private normalizeVi(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
 
   ngOnInit(): void {
     this.appUserProvider.apiAppUserGetAllGet().subscribe({

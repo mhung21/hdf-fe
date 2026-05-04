@@ -187,6 +187,16 @@ export class CustomerFormDialogComponent implements OnInit, OnDestroy {
     return this.normalizeVi(store.storeName) === qn || this.normalizeVi(store.storeCode ?? '') === qn;
   };
 
+  /** Matcher cho tuiFilterByInput — partial match để lọc dropdown khi gõ tìm kiếm */
+  readonly filterMatcherStore: TuiStringMatcher<StoreOption> = (store, query) => {
+    if (!query) return true;
+    const qn = this.normalizeVi(query);
+    return (
+      this.normalizeVi(store.storeName).includes(qn) ||
+      this.normalizeVi(store.storeCode ?? '').includes(qn)
+    );
+  };
+
   form = this.fb.group({
     customerId: [null as string | null],
     nationalId: ['', [Validators.required, Validators.pattern(/^\d{12}$/)]],

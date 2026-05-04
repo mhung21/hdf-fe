@@ -131,7 +131,7 @@
               placeholder="Chọn chi nhánh..."
               [matcher]="matcherStore"
             />
-            @if (storeList() | tuiFilterByInput; as stores) {
+            @if (storeList() | tuiFilterByInput: filterMatcherStore; as stores) {
               <tui-data-list *tuiTextfieldDropdown>
                 @for (store of stores; track store.storeId) {
                   <button new tuiOption type="button" [value]="store.storeId">
