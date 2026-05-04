@@ -217,19 +217,19 @@ export class LoansComponent {
   >(new Map());
 
   readonly totalPrincipal = computed(() =>
-    this.filteredLoans().reduce((s, l) => s + (l.principalAmount ?? 0), 0),
+    this.filteredLoans().reduce((s, l) => s + (Number(l.principalAmount) || 0), 0),
   );
 
   readonly totalInsurance = computed(() =>
-    this.filteredLoans().reduce((s, l) => s + (l.insuranceAmountSnapshot ?? 0), 0),
+    this.filteredLoans().reduce((s, l) => s + (Number(l.insuranceAmountSnapshot) || 0), 0),
   );
 
   readonly totalFileFee = computed(() =>
-    this.filteredLoans().reduce((s, l) => s + (l.fileFeeAmountSnapshot ?? 0), 0),
+    this.filteredLoans().reduce((s, l) => s + (Number(l.fileFeeAmountSnapshot) || 0), 0),
   );
 
   readonly totalNetDisbursed = computed(() =>
-    this.filteredLoans().reduce((s, l) => s + (l.netDisbursedAmount ?? 0), 0),
+    this.filteredLoans().reduce((s, l) => s + (Number(l.netDisbursedAmount) || 0), 0),
   );
 
   private readonly statusSortOrder: Record<string, number> = {
