@@ -79,6 +79,7 @@
     (keywordChange)="onKeywordChange($event)"
     (reload)="loadCustomers()"
     (pageChange)="onPaginationChange($event)"
+    (sortChange)="onSortChange($event)"
   >
     <ng-container tableToolbar>
       @if (canPickStoreFilter()) {
@@ -200,6 +201,20 @@
               Bình thường
             </span>
           }
+        </td>
+      }
+      @if (!isHidden('createdAt')) {
+        <td class="px-4 py-3 text-sm text-gray-600 align-top whitespace-nowrap">
+          @if (asCustomer(item).createdAt) {
+            {{ asCustomer(item).createdAt | date: 'dd/MM/yyyy HH:mm' }}
+          } @else {
+            <span class="text-gray-400">-</span>
+          }
+        </td>
+      }
+      @if (!isHidden('createdBy')) {
+        <td class="px-4 py-3 text-sm text-gray-700 align-top">
+          {{ asCustomer(item).createdByName || '-' }}
         </td>
       }
     </ng-template>

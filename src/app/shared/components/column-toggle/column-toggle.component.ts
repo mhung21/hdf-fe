@@ -16,6 +16,8 @@ export interface ColumnDef {
   key: string;
   label: string;
   align?: 'left' | 'center' | 'right';
+  /** API field name for sorting. If set, the column header becomes clickable for sorting. */
+  sortKey?: string;
 }
 
 @Component({

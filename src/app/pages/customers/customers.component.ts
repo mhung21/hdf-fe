@@ -57,6 +57,8 @@ interface CustomerItem {
   storeName?: string | null;
   dateOfBirth?: TuiDay | null;
   gender?: string | null;
+  createdAt?: string | null;
+  createdByName?: string | null;
 }
 
 const GENDER_LABELS: Record<string, string> = {
@@ -101,6 +103,8 @@ export class CustomersComponent {
   page = 0;
   size = 10;
   keyword = signal('');
+  sortBy = signal<string | null>(null);
+  sortDesc = signal(false);
   badDebtFilter = signal<boolean | null>(null);
   activeLoanFilter = signal<boolean | null>(null);
   readonly selectedFilterStoreIds = signal<string[]>([]);
@@ -136,12 +140,14 @@ export class CustomersComponent {
   }
 
   readonly tableColumns: ColumnDef[] = [
-    { key: 'code', label: 'Mã KH' },
-    { key: 'name', label: 'Họ tên & CCCD' },
-    { key: 'phone', label: 'Số điện thoại' },
+    { key: 'code', label: 'Mã KH', sortKey: 'customerCode' },
+    { key: 'name', label: 'Họ tên & CCCD', sortKey: 'fullName' },
+    { key: 'phone', label: 'Số điện thoại', sortKey: 'phone' },
     { key: 'address', label: 'Địa chỉ' },
     { key: 'loanStatus', label: 'HĐ vay', align: 'center' },
     { key: 'badHistory', label: 'Nợ xấu', align: 'center' },
+    { key: 'createdAt', label: 'Ngày tạo', sortKey: 'createdAt' },
+    { key: 'createdBy', label: 'Người tạo' },
   ];
 
   canCreate = computed(() =>
@@ -217,6 +223,13 @@ export class CustomersComponent {
     this.loadCustomers();
   }
 
+  onSortChange(event: { sortBy: string | null; sortDesc: boolean }): void {
+    this.sortBy.set(event.sortBy);
+    this.sortDesc.set(event.sortDesc);
+    this.page = 0;
+    this.loadCustomers();
+  }
+
   loadCustomers(): void {
     this.loading.set(true);
     const filterStoreIds = this.canPickStoreFilter() ? this.selectedFilterStoreIds() : [];
@@ -225,8 +238,8 @@ export class CustomersComponent {
       keyword: this.keyword() || null,
       pageIndex: this.page + 1,
       pageSize: this.size,
-      sortBy: 'FullName',
-      sortDesc: false,
+      sortBy: this.sortBy() || null,
+      sortDesc: this.sortDesc(),
       hasBadDebt: this.badDebtFilter(),
       hasActiveLoan: this.activeLoanFilter(),
     };

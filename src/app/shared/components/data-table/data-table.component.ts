@@ -81,12 +81,31 @@ export type { ColumnDef };
           <table class="w-full">
             <thead class="border-b border-gray-100 bg-gray-50/60">
               <tr>
-                @for (col of columns(); track col.key) {
+              @for (col of columns(); track col.key) {
                   @if (!hiddenColumns().includes(col.key)) {
                     <th
-                      class="px-4 py-3 text-sm font-semibold text-gray-600"
-                      [class]="colClass(col)"
-                    >{{ col.label }}</th>
+                      class="px-4 py-3 text-sm font-semibold text-gray-600 select-none"
+                      [class]="colClass(col) + (col.sortKey ? ' cursor-pointer hover:text-gray-900 hover:bg-gray-100/60 transition-colors' : '')"
+                      (click)="col.sortKey && onSortClick(col.sortKey)"
+                    >
+                      <span class="inline-flex items-center gap-1">
+                        {{ col.label }}
+                        @if (col.sortKey) {
+                          @if (currentSortBy() === col.sortKey) {
+                            <tui-icon
+                              [icon]="currentSortDesc() ? '@tui.arrow-down' : '@tui.arrow-up'"
+                              style="font-size: 0.875rem; color: #16a34a"
+                            />
+                          } @else {
+                            <tui-icon
+                              icon="@tui.arrow-up-down"
+                              style="font-size: 0.875rem"
+                              class="text-gray-400"
+                            />
+                          }
+                        }
+                      </span>
+                    </th>
                   }
                 }
                 @if (showActionsColumn()) {
@@ -192,6 +211,7 @@ export class DataTableComponent {
   keywordChange = output<string>();
   reload = output<void>();
   pageChange = output<{ page: number; size: number }>();
+  sortChange = output<{ sortBy: string | null; sortDesc: boolean }>();
 
   // ─── Content projection ──────────────────────────────────────────
   @ContentChild('row') rowTpl?: TemplateRef<unknown>;
@@ -202,6 +222,8 @@ export class DataTableComponent {
   // ─── Internal state ──────────────────────────────────────────────
   hiddenColumns = signal<string[]>([]);
   localKeyword = signal('');
+  currentSortBy = signal<string | null>(null);
+  currentSortDesc = signal(false);
 
   /** Stable function reference passed as template context — reads signal at call time */
   readonly isHiddenFn = (key: string): boolean => this.hiddenColumns().includes(key);
@@ -229,5 +251,16 @@ export class DataTableComponent {
 
   onPaginationChange(e: { page: number; size: number }): void {
     this.pageChange.emit(e);
+  }
+
+  onSortClick(sortKey: string): void {
+    if (this.currentSortBy() === sortKey) {
+      // Toggle direction
+      this.currentSortDesc.update(v => !v);
+    } else {
+      this.currentSortBy.set(sortKey);
+      this.currentSortDesc.set(false);
+    }
+    this.sortChange.emit({ sortBy: this.currentSortBy(), sortDesc: this.currentSortDesc() });
   }
 }
