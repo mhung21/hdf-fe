@@ -40,11 +40,11 @@ export type { ColumnDef };
     <div class="space-y-3">
 
       <!-- ─── Toolbar ──────────────────────────────────────────── -->
-      <div class="flex flex-wrap items-center gap-2 p-2.5 bg-white border border-gray-200 shadow-sm rounded-xl">
+      <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-2.5 bg-white border border-gray-200 shadow-sm rounded-xl">
         <!-- Left toolbar slot (e.g. for filters next to search) -->
         <ng-content select="[leftToolbar]" />
 
-        <tui-textfield class="flex-1 min-w-40 max-w-xs">
+        <tui-textfield class="w-full md:max-w-xs md:flex-1" [tuiTextfieldSize]="'m'">
           <input
             tuiTextfield
             [placeholder]="searchPlaceholder()"
@@ -54,7 +54,7 @@ export type { ColumnDef };
           <tui-icon icon="@tui.search" />
         </tui-textfield>
 
-        <div class="flex items-center gap-1.5 ml-auto">
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto md:ml-auto">
           <app-column-toggle
             [columns]="columns()"
             [hiddenColumns]="hiddenColumns()"

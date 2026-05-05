@@ -17,7 +17,7 @@
 
   <div>
     <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
-    <tui-textfield tuiChevron [stringify]="storeStringify">
+    <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="storeStringify">
       <input
         tuiComboBox
         formControlName="storeId"
@@ -34,7 +34,7 @@
 
   <div>
     <label tuiLabel>Ngày nghiệp vụ <span class="text-red-500">*</span></label>
-    <tui-textfield>
+    <tui-textfield [tuiTextfieldSize]="'m'">
       <input tuiInputDate formControlName="businessDate" placeholder="dd/mm/yyyy" />
       <tui-calendar *tuiTextfieldDropdown />
     </tui-textfield>

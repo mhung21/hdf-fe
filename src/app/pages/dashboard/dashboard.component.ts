@@ -147,6 +147,35 @@ export class DashboardComponent implements OnInit {
     };
   });
 
+  readonly storeChartOptions: ChartOptions<'bar'> = {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 }, color: '#6b7280' } },
+      tooltip: {
+        backgroundColor: 'rgba(15,23,42,0.9)', titleColor: '#e2e8f0', bodyColor: '#cbd5e1',
+        padding: 10, cornerRadius: 8,
+        callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.x + ' tỷ' }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#f3f4f6' }, border: { display: false }, ticks: { font: { size: 11 }, color: '#9ca3af', callback: v => v + 'B' } },
+      y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 }, color: '#9ca3af' } }
+    }
+  };
+
+  storeChartData = computed((): ChartData<'bar'> => {
+    const stores = this.storeList();
+    const toB = (v: number) => Math.round((v ?? 0) / 1e7) / 100;
+    return {
+      labels: stores.map(s => s.storeName),
+      datasets: [
+        { data: stores.map(s => toB(s.outstandingPrincipalAmount)), label: 'Dư Nợ Gốc', backgroundColor: '#10b981aa', hoverBackgroundColor: '#10b981', borderRadius: 5, borderSkipped: false },
+        { data: stores.map(s => toB(s.totalPrincipalAmount)), label: 'Portfolio', backgroundColor: '#3b82f6aa', hoverBackgroundColor: '#3b82f6', borderRadius: 5, borderSkipped: false }
+      ]
+    };
+  });
+
   readonly overdueTableCols = ['contractNo', 'customerName', 'daysOverdue', 'totalUnpaid', 'riskLevel'] as const;
 
   ngOnInit(): void { this.loadAll(); }
@@ -252,6 +281,53 @@ export class DashboardComponent implements OnInit {
     return results.flatMap((items) => Array.isArray(items) ? items : []);
   }
 
+  private aggregateStoreOutstandings(loans: any[], badDebtList: any[]): any[] {
+    if (!Array.isArray(loans) || loans.length === 0) return [];
+
+    // Count bad debt cases per store from the bad debt summary
+    const badDebtByStore = new Map<string, number>();
+    if (Array.isArray(badDebtList)) {
+      for (const bd of badDebtList) {
+        const sid = bd?.storeId;
+        if (sid) {
+          badDebtByStore.set(sid, (badDebtByStore.get(sid) ?? 0) + (Number(bd?.newCases ?? bd?.badDebtCount ?? 1) || 0));
+        }
+      }
+    }
+
+    // Group loans by storeId
+    const storeMap = new Map<string, any>();
+    for (const loan of loans) {
+      const sid = loan?.storeId ?? 'unknown';
+      if (!storeMap.has(sid)) {
+        storeMap.set(sid, {
+          storeId: sid,
+          storeName: loan?.storeName ?? 'Không xác định',
+          activeLoanCount: 0,
+          outstandingPrincipalAmount: 0,
+          totalPrincipalAmount: 0,
+          badDebtCount: 0,
+        });
+      }
+      const store = storeMap.get(sid)!;
+      store.activeLoanCount += 1;
+      store.outstandingPrincipalAmount += Number(loan?.remainingPrincipal ?? 0) || 0;
+      store.totalPrincipalAmount += Number(loan?.principalAmount ?? 0) || 0;
+    }
+
+    // Merge bad debt counts
+    for (const [sid, count] of badDebtByStore) {
+      const store = storeMap.get(sid);
+      if (store) {
+        store.badDebtCount = count;
+      }
+    }
+
+    return Array.from(storeMap.values()).sort((a, b) =>
+      (a.storeName ?? '').localeCompare(b.storeName ?? '')
+    );
+  }
+
   private loadAll(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -277,7 +353,7 @@ export class DashboardComponent implements OnInit {
         (storeId) => this.svc.getBadDebtSummary(this.currentYear, this.today.getMonth() + 1, storeId),
         (results) => this.combineLists(results),
       ),
-      stores: this.storeScope.fetchAcrossStores(
+      rawLoans: this.storeScope.fetchAcrossStores(
         storeIds,
         (storeId) => this.svc.getOutstandingLoans(storeId),
         (results) => this.combineLists(results),
@@ -289,11 +365,14 @@ export class DashboardComponent implements OnInit {
       ),
     }).subscribe({
       next: (data) => {
+        const badDebtArr = Array.isArray(data.badDebt) ? data.badDebt : [];
+        const rawLoans = Array.isArray(data.rawLoans) ? data.rawLoans : [];
+
         this.portfolio.set(data.portfolio);
         this.cashFlow.set(data.cashFlow);
         this.overdueSummary.set(data.overdue);
-        this.badDebtSummary.set(Array.isArray(data.badDebt) ? data.badDebt : []);
-        this.storeList.set(Array.isArray(data.stores) ? data.stores : []);
+        this.badDebtSummary.set(badDebtArr);
+        this.storeList.set(this.aggregateStoreOutstandings(rawLoans, badDebtArr));
         this.todayColList.set(Array.isArray(data.todayCol) ? data.todayCol : []);
         this.loading.set(false);
       },

@@ -4,13 +4,11 @@
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div class="flex flex-wrap items-center gap-2">
       @if (isAdmin()) {
-        <div class="w-52">
-          <tui-textfield tuiChevron [stringify]="storeStringify">
-            <input
-              tuiComboBox
+        <div class="w-72">
+          <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
+            <input tuiSelect
               [formControl]="storeControl"
               placeholder="Tất cả chi nhánh"
-              [matcher]="matcherStore"
             />
             <tui-data-list *tuiTextfieldDropdown>
               <button new tuiOption type="button" [value]="null">Tất cả chi nhánh</button>
@@ -35,15 +33,15 @@
 
       <!-- Date range (theo ngày) hoặc Month picker (theo tháng) -->
       @if (groupBy() === 'day') {
-        <div class="min-w-68">
-          <tui-textfield>
+        <div class="min-w-80">
+          <tui-textfield [tuiTextfieldSize]="'m'" [tuiTextfieldCleaner]="true">
             <input tuiInputDateRange [formControl]="dateRangeControl" />
             <tui-calendar-range *tuiTextfieldDropdown />
           </tui-textfield>
         </div>
       } @else {
-        <div class="min-w-48">
-          <tui-textfield>
+        <div class="min-w-56">
+          <tui-textfield [tuiTextfieldSize]="'m'" [tuiTextfieldCleaner]="true">
             <input tuiInputMonth [formControl]="monthControl" placeholder="MM/YYYY" />
             <tui-calendar-month *tuiTextfieldDropdown />
           </tui-textfield>

@@ -2,7 +2,7 @@
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
     <div>
       <label tuiLabel>Mã chi nhánh <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="storeCode" placeholder="Mã chi nhánh" />
       </tui-textfield>
       @if (form.get('storeCode')?.invalid && form.get('storeCode')?.touched) {
@@ -12,7 +12,7 @@
 
     <div>
       <label tuiLabel>Tên chi nhánh <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiTextfield
           formControlName="storeName"
@@ -27,14 +27,14 @@
 
     <div class="sm:col-span-2">
       <label tuiLabel>Địa chỉ</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="address" placeholder="123 Nguyễn Huệ, Quận 1, TP.HCM" />
       </tui-textfield>
     </div>
 
     <div>
       <label tuiLabel>Số điện thoại</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="phone" placeholder="0901 234 567" />
       </tui-textfield>
     </div>
@@ -42,7 +42,7 @@
     @if (!isLimitedEdit()) {
       <div>
         <label tuiLabel>Ngày mở</label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiInputDate formControlName="openedOn" placeholder="dd/mm/yyyy" />
           <tui-calendar *tuiTextfieldDropdown />
         </tui-textfield>

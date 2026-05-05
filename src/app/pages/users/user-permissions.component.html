@@ -27,7 +27,7 @@
   >
     <!-- Toolbar: bộ lọc vai trò -->
     <ng-container tableToolbar>
-      <tui-textfield tuiChevron [stringify]="roleStringify" class="min-w-[180px]">
+      <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="roleStringify" class="min-w-[180px]">
         <input
           tuiComboBox
           [ngModel]="filterRole()"

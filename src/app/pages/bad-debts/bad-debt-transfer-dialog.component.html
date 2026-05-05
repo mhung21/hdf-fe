@@ -9,7 +9,7 @@
 
   <div>
     <label tuiLabel>Hợp đồng <span class="text-red-500">*</span></label>
-    <tui-textfield tuiChevron [stringify]="loanStringify">
+    <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="loanStringify">
       <input
         tuiComboBox
         formControlName="loanContractId"
@@ -29,7 +29,7 @@
 
   <div>
     <label tuiLabel>Ghi chú</label>
-    <tui-textfield>
+    <tui-textfield [tuiTextfieldSize]="'m'">
       <input tuiTextfield formControlName="note" placeholder="Ghi chú thêm..." />
     </tui-textfield>
   </div>

@@ -15,7 +15,7 @@
   <div class="flex flex-wrap gap-3 bg-white border border-gray-200 rounded-xl p-3">
     <div class="flex flex-col gap-1 min-w-[220px]">
       <label class="text-xs font-medium text-gray-500">Khoảng thời gian</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'" [tuiTextfieldCleaner]="true">
         <input tuiInputDateRange [formControl]="dateRangeControl" placeholder="Từ ngày – đến ngày" />
         <tui-calendar-range *tuiTextfieldDropdown />
       </tui-textfield>
@@ -24,12 +24,10 @@
     @if (isAdmin()) {
       <div class="flex flex-col gap-1 min-w-[200px]">
         <label class="text-xs font-medium text-gray-500">Chi nhánh</label>
-        <tui-textfield tuiChevron [stringify]="storeStringify">
-          <input
-            tuiComboBox
+        <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
+          <input tuiSelect
             [formControl]="storeControl"
             placeholder="Tất cả chi nhánh"
-            [matcher]="matcherStore"
           />
           <tui-data-list *tuiTextfieldDropdown>
             @for (id of storeOptions(); track id) {

@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TuiButton, TuiDataList, TuiIcon, TuiTextfield } from '@taiga-ui/core';
-import { TuiChevron, TuiComboBox, TuiSkeleton } from '@taiga-ui/kit';
+import { TuiChevron, TuiSelect, TuiSkeleton } from '@taiga-ui/kit';
 import { TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { map } from 'rxjs';
 
@@ -93,7 +93,7 @@ const MONTH_NAMES = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10'
     TuiIcon,
     TuiSkeleton,
     TuiChevron,
-    TuiComboBox,
+    TuiSelect,
     TuiTextfield,
   ],
   templateUrl: './reports-financial.component.html',
@@ -125,7 +125,7 @@ export class ReportsFinancialComponent implements OnInit {
   );
 
   readonly storeStringify: TuiStringHandler<string | null> = (id) => {
-    if (!id) return '';
+    if (!id) return 'Tất cả chi nhánh';
     return this.stores().find((s) => s.storeId === id)?.storeName ?? id;
   };
 
@@ -191,10 +191,7 @@ export class ReportsFinancialComponent implements OnInit {
         },
         error: () => {},
       });
-      this.storeControl.valueChanges.subscribe((val) => {
-        this.selectedStoreId.set(val ?? null);
-        this.loadAll();
-      });
+      this.storeControl.valueChanges.subscribe((val) => { if (val === '') { this.storeControl.setValue(null, { emitEvent: false }); this.selectedStoreId.set(null); } else { this.selectedStoreId.set(val ?? null); } this.loadAll(); });
     }
     this.yearControl.valueChanges.subscribe((val) => {
       if (val) {

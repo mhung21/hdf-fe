@@ -43,14 +43,14 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
       <label tuiLabel>Hiệu lực từ <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiInputDate formControlName="effectiveFrom" placeholder="dd/mm/yyyy" />
         <tui-calendar *tuiTextfieldDropdown />
       </tui-textfield>
     </div>
     <div>
       <label tuiLabel>Hiệu lực đến</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiInputDate formControlName="effectiveTo" placeholder="dd/mm/yyyy" />
         <tui-calendar *tuiTextfieldDropdown />
       </tui-textfield>
@@ -60,42 +60,42 @@
     <!-- ── Phí ── -->
     <div>
       <label tuiLabel>Phạt chậm nộp (%) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield type="number" formControlName="latePaymentPenaltyRate" step="0.1" />
       </tui-textfield>
       <p class="text-xs text-gray-400 mt-1">Tính trên tổng tiền (gốc+lãi+phí)</p>
     </div>
     <div>
       <label tuiLabel>Bắt đầu tính phạt (ngày thứ) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield type="number" formControlName="latePaymentStartDay" />
       </tui-textfield>
       <p class="text-xs text-gray-400 mt-1">Mặc định: ngày thứ 4</p>
     </div>
     <div>
       <label tuiLabel>Phạt tất toán sớm (%) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield type="number" formControlName="earlySettlementPenaltyRate" step="0.1" />
       </tui-textfield>
       <p class="text-xs text-gray-400 mt-1">Tính trên dư nợ gốc còn lại</p>
     </div>
     <div>
       <label tuiLabel>Chuyển nợ xấu (ngày thứ) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield type="number" formControlName="badDebtStartDay" />
       </tui-textfield>
       <p class="text-xs text-gray-400 mt-1">Mặc định: ngày thứ 11</p>
     </div>
     <div class="md:col-span-2">
       <label tuiLabel>Ngày cảnh báo (cách nhau bằng dấu phẩy)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="warningDaysStr" placeholder="VD: 3,7,10" />
       </tui-textfield>
       <p class="text-xs text-gray-400 mt-1">Gửi cảnh báo vào các ngày này khi khách chưa trả. Để trống nếu không dùng.</p>
     </div>
     <div>
       <label tuiLabel>Chiết khấu bảo hiểm (%) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield type="number" formControlName="insuranceDiscountRate" step="0.1" min="0" max="100" />
       </tui-textfield>
       <p class="text-xs text-gray-400 mt-1">% công ty nhận lại từ nhà bảo hiểm trên phí bảo hiểm thu hộ</p>

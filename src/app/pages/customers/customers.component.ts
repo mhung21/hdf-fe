@@ -279,7 +279,7 @@ export class CustomersComponent {
     tuiDialog(CustomerFormDialogComponent, {
       injector: this.injector,
       label: 'Thêm Khách Hàng',
-      size: 'l',
+      size: 'm',
     })({ customer: null } as CustomerFormDialogData).subscribe(() => this.loadCustomers());
   }
 
@@ -287,7 +287,7 @@ export class CustomersComponent {
     tuiDialog(CustomerFormDialogComponent, {
       injector: this.injector,
       label: 'Chỉnh Sửa Khách Hàng',
-      size: 'l',
+      size: 'm',
     })({ customer: customer as CustomerFormItem } as CustomerFormDialogData).subscribe(() =>
       this.loadCustomers(),
     );

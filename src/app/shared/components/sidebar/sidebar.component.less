@@ -9,16 +9,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 17.5rem;
+  width: 100%;
   overflow: hidden;
   border-right: 1px solid rgb(22 163 74 / 0.2);
   background: linear-gradient(180deg, #f0fdf4 0%, #f9fafb 30%, #ffffff 100%);
   box-shadow: 0 10px 32px rgb(17 24 39 / 0.08);
-  transition: width 0.26s ease;
 }
 
 .sidebar-shell.collapsed {
-  width: 5.5rem;
+  /* Let parent handle the width */
 }
 
 // ── Glow: radial-gradient ──
@@ -44,6 +43,7 @@
   border-radius: 0.78rem;
   color: #44403c;
   font-weight: 600;
+  background: transparent;
   transition: all 0.22s ease;
 }
 
@@ -171,11 +171,21 @@ a.menu-link.active,
   }
 }
 
-// ── Collapsed state overrides ──
 .collapsed .sidebar-header {
   justify-content: center;
 }
 
 .collapsed .menu-link {
   justify-content: center;
+  gap: 0;
+}
+
+.collapsed .menu-badge,
+.collapsed .menu-chevron {
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
 }

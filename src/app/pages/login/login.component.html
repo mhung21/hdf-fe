@@ -99,7 +99,7 @@
           <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="grid gap-5" novalidate>
             <div class="grid gap-1.5">
               <label for="usernameInput" class="text-xs font-semibold text-white/75 tracking-[0.01em]">Tên đăng nhập</label>
-              <tui-textfield class="field-control">
+              <tui-textfield [tuiTextfieldSize]="'m'" class="field-control" [tuiTextfieldCleaner]="false">
                 <input
                   id="usernameInput"
                   tuiTextfield
@@ -118,20 +118,27 @@
 
             <div class="grid gap-1.5">
               <label for="passwordInput" class="text-xs font-semibold text-white/75 tracking-[0.01em]">Mật khẩu</label>
-              <tui-textfield class="field-control">
+              <tui-textfield [tuiTextfieldSize]="'m'" class="field-control" [tuiTextfieldCleaner]="false">
                 <input
                   id="passwordInput"
                   tuiTextfield
                   name="password"
                   placeholder="Nhập mật khẩu"
-                  type="password"
+                  [type]="showPassword() ? 'text' : 'password'"
                   [ngModel]="password()"
                   (ngModelChange)="password.set($event)"
                   [disabled]="isLoading()"
                   required
                   autocomplete="current-password"
                 />
-                <tui-icon icon="@tui.lock" tuiTextfieldIconLeft></tui-icon>
+                <button
+                  type="button"
+                  class="password-toggle-btn"
+                  (click)="showPassword.set(!showPassword())"
+                  [attr.aria-label]="showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                >
+                  <tui-icon [icon]="showPassword() ? '@tui.eye-off' : '@tui.eye'"></tui-icon>
+                </button>
               </tui-textfield>
             </div>
 

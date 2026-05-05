@@ -4,13 +4,11 @@
     <div class="flex flex-wrap items-center gap-2">
       <!-- Store filter (admin only) -->
       @if (isAdmin()) {
-        <div class="min-w-52">
-          <tui-textfield tuiChevron [stringify]="storeStringify">
-            <input
-              tuiComboBox
+        <div class="min-w-72">
+          <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
+            <input tuiSelect
               [formControl]="storeControl"
               placeholder="Tất cả chi nhánh"
-              [matcher]="matcherStore"
             />
             <tui-data-list *tuiTextfieldDropdown>
               <button new tuiOption type="button" [value]="null">Tất cả chi nhánh</button>
@@ -24,12 +22,10 @@
 
       <!-- Year selector -->
       <div class="min-w-32">
-        <tui-textfield tuiChevron [stringify]="yearStringify">
-          <input
-            tuiComboBox
+        <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="yearStringify">
+          <input tuiSelect
             [formControl]="yearControl"
             placeholder="Năm"
-            [matcher]="matcherYear"
           />
           <tui-data-list *tuiTextfieldDropdown>
             @for (y of availableYearsStr; track y) {

@@ -30,7 +30,7 @@
             @if (canPickStore()) {
               <div>
                 <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
-                <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
+                <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
                 <input
                   tuiComboBox
                   formControlName="storeId"
@@ -64,7 +64,7 @@
             }
             <div>
               <label tuiLabel>Khách hàng <span class="text-red-500">*</span></label>
-              <tui-textfield
+              <tui-textfield [tuiTextfieldSize]="'m'"
                 tuiChevron
                 [tuiTextfieldCleaner]="true"
                 [stringify]="customerStringify"
@@ -101,7 +101,7 @@
             </div>
             <div>
               <label tuiLabel>Luồng khách</label>
-              <tui-textfield tuiChevron [stringify]="customerSourceStringify">
+              <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="customerSourceStringify">
                 <input
                   tuiComboBox
                   formControlName="customerSourceId"
@@ -121,7 +121,7 @@
             </div>
             <div>
               <label tuiLabel>Sản phẩm cầm cố</label>
-              <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="productStringify">
+              <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="productStringify">
                 <input
                   tuiComboBox
                   formControlName="loanProductId"
@@ -218,7 +218,7 @@
                 >{{ selectedContractType() === 'PAWN' ? 'Số tiền cầm đồ (VNĐ)' : 'Số tiền (VNĐ)' }}
                 <span class="text-red-500">*</span></label
               >
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiInputNumber
                   [tuiNumberFormat]="numberFormat"
@@ -267,7 +267,7 @@
                 {{ selectedContractType() === 'PAWN' ? 'Số kỳ' : 'Kỳ hạn (tháng)' }}
                 <span class="text-red-500">*</span></label
               >
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiTextfield
                   type="number"
@@ -310,7 +310,7 @@
             </div>
             <div>
               <label tuiLabel>Ngày lập hồ sơ <span class="text-red-500">*</span></label>
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input tuiInputDate formControlName="applicationDate" placeholder="dd/mm/yyyy" />
                 <tui-calendar *tuiTextfieldDropdown />
               </tui-textfield>
@@ -326,7 +326,7 @@
                 <label tuiLabel
                   >Lãi cầm đồ (VNĐ/1tr/ngày) <span class="text-red-500">*</span></label
                 >
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -345,7 +345,7 @@
               </div>
               <div>
                 <label tuiLabel>Phí QLTS (VNĐ/1tr/ngày) <span class="text-red-500">*</span></label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -364,7 +364,7 @@
               </div>
               <div>
                 <label tuiLabel>Số ngày/kỳ <span class="text-red-500">*</span></label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiTextfield
                     type="number"
@@ -384,7 +384,7 @@
             @if (selectedContractType() === 'INSTALLMENT') {
               <div>
                 <label tuiLabel>Lãi suất (%/tháng) <span class="text-red-500">*</span></label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -403,7 +403,7 @@
               </div>
               <div>
                 <label tuiLabel>Phí phần mềm (%/tháng)</label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -415,7 +415,7 @@
               </div>
               <div>
                 <label tuiLabel>Phí hao mòn (%/tháng)</label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -427,7 +427,7 @@
               </div>
               <!--            <div>
               <label tuiLabel>Phí cố định/tháng (VNĐ)</label>
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiInputNumber
                   [tuiNumberFormat]="numberFormat"
@@ -439,7 +439,7 @@
             </div>-->
               <div>
                 <label tuiLabel>Phí hợp đồng (VNĐ)</label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -451,7 +451,7 @@
               </div>
               <div>
                 <label tuiLabel>Bảo hiểm (VNĐ)</label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -463,7 +463,7 @@
               </div>
               <div>
                 <label tuiLabel>Phí định kỳ (VNĐ/tháng)</label>
-                <tui-textfield>
+                <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
                     [tuiNumberFormat]="numberFormat"
@@ -476,7 +476,7 @@
             }
             <div>
               <label tuiLabel>Ghi chú</label>
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input tuiTextfield formControlName="note" placeholder="Ghi chú thêm..." />
               </tui-textfield>
             </div>
@@ -505,7 +505,7 @@
                   <label tuiLabel class="text-xs text-amber-700"
                     >Ngày giải ngân thực tế <span class="text-red-500">*</span></label
                   >
-                  <tui-textfield class="w-48">
+                  <tui-textfield [tuiTextfieldSize]="'m'" class="w-48">
                     <input
                       tuiInputDate
                       [ngModel]="backdatedDisbursedDate()"
@@ -785,7 +785,7 @@
               <label class="block mb-1 text-xs font-medium text-gray-600"
                 >Loại tài sản <span class="text-red-500">*</span></label
               >
-              <tui-textfield tuiChevron [stringify]="collateralTypeStringify">
+              <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="collateralTypeStringify">
                 <input
                   tuiComboBox
                   formControlName="collateralType"
@@ -805,7 +805,7 @@
               <label class="block mb-1 text-xs font-medium text-gray-600"
                 >Mô tả tài sản <span class="text-red-500">*</span></label
               >
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiTextfield
                   formControlName="description"
@@ -817,7 +817,7 @@
               <label class="block mb-1 text-xs font-medium text-gray-600">{{
                 getSerialNumberLabel(collateralForm.value.collateralType!)
               }}</label>
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiTextfield
                   formControlName="serialNumber"
@@ -829,7 +829,7 @@
               <label class="block mb-1 text-xs font-medium text-gray-600"
                 >Giá trị ước tính (VNĐ)</label
               >
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiInputNumber
                   [tuiNumberFormat]="numberFormat"
@@ -843,7 +843,7 @@
               <label class="block mb-1 text-xs font-medium text-gray-600"
                 >Chi tiết bổ sung (BKS, địa chỉ…)</label
               >
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input
                   tuiTextfield
                   formControlName="detail"
@@ -853,7 +853,7 @@
             </div>
             <div>
               <label class="block mb-1 text-xs font-medium text-gray-600">Ghi chú</label>
-              <tui-textfield>
+              <tui-textfield [tuiTextfieldSize]="'m'">
                 <input tuiTextfield formControlName="note" placeholder="Ghi chú thêm…" />
               </tui-textfield>
             </div>

@@ -4,7 +4,7 @@
     @if (canPickStore()) {
       <div class="md:col-span-2">
         <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
-        <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
+        <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="storeStringify">
           <input
             tuiComboBox
             formControlName="storeId"
@@ -33,7 +33,7 @@
     <!-- Type -->
     <div>
       <label tuiLabel>Loại phiếu <span class="text-red-500">*</span></label>
-      <tui-textfield tuiChevron [stringify]="typeStringify">
+      <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="typeStringify">
         <input
           tuiComboBox
           formControlName="voucherType"
@@ -52,7 +52,7 @@
     <!-- Reason -->
     <div>
       <label tuiLabel>Lý do <span class="text-red-500">*</span></label>
-      <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="reasonStringify">
+      <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="reasonStringify">
         <input
           tuiComboBox
           formControlName="reasonCode"
@@ -76,7 +76,7 @@
     <!-- Date -->
     <div>
       <label tuiLabel>Ngày nghiệp vụ <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiInputDate formControlName="businessDate" placeholder="dd/mm/yyyy" />
         <tui-calendar *tuiTextfieldDropdown />
       </tui-textfield>
@@ -84,28 +84,28 @@
     <!-- Amount -->
     <div>
       <label tuiLabel>Số tiền (VNĐ) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiInputNumber [tuiNumberFormat]="numberFormat" [postfix]="' VNĐ' | tuiCurrency"  formControlName="amount" placeholder="VD: 10.000.000 VNĐ" />
       </tui-textfield>
     </div>
     <!-- Payer/Receiver Name -->
     <div>
       <label tuiLabel>Người nộp / nhận <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="payerReceiverName" placeholder="Họ tên người nộp/nhận" />
       </tui-textfield>
     </div>
     <!-- Address -->
     <div>
       <label tuiLabel>Địa chỉ</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="payerReceiverAddress" placeholder="Địa chỉ" />
       </tui-textfield>
     </div>
     <!-- Customer -->
     <div>
       <label tuiLabel>Khách hàng (tùy chọn)</label>
-      <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="customerStringify">
+      <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="customerStringify">
         <input
           tuiComboBox
           formControlName="customerId"
@@ -133,7 +133,7 @@
     <!-- Loan Contract -->
     <div>
       <label tuiLabel>Hợp đồng (tùy chọn)</label>
-      <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="loanStringify">
+      <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="loanStringify">
         <input
           tuiComboBox
           formControlName="loanContractId"
@@ -161,14 +161,14 @@
     <!-- Description -->
     <div class="md:col-span-2">
       <label tuiLabel>Diễn giải <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="description" placeholder="Nội dung diễn giải phiếu..." />
       </tui-textfield>
     </div>
     <!-- Document No -->
     <div>
       <label tuiLabel>Số chứng từ</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="documentNo" placeholder="Số hóa đơn / chứng từ" />
       </tui-textfield>
     </div>

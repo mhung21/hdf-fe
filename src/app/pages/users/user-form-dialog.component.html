@@ -11,7 +11,7 @@
       <!-- Họ tên -->
       <div class="sm:col-span-2">
         <label tuiLabel>Họ và tên <span class="text-red-500">*</span></label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield formControlName="fullName" placeholder="Nguyễn Văn A" />
         </tui-textfield>
         @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
@@ -22,7 +22,7 @@
       <!-- Email -->
       <div>
         <label tuiLabel>Email</label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield formControlName="email" placeholder="name@example.com" />
         </tui-textfield>
         @if (form.get('email')?.invalid && form.get('email')?.touched) {
@@ -33,7 +33,7 @@
       <!-- Phone -->
       <div>
         <label tuiLabel>Số điện thoại</label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield formControlName="phone" placeholder="0901 234 567" />
         </tui-textfield>
       </div>
@@ -52,7 +52,7 @@
       <!-- Username -->
       <div>
         <label tuiLabel>Tài khoản <span class="text-red-500">*</span></label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input
             tuiTextfield
             formControlName="username"
@@ -76,7 +76,7 @@
             <span class="text-xs font-normal text-gray-400">(để trống = không đổi)</span>
           }
         </label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield type="password" formControlName="password" placeholder="••••••••" />
         </tui-textfield>
         @if (form.get('password')?.invalid && form.get('password')?.touched) {
@@ -88,7 +88,7 @@
       @if (isAdmin()) {
         <div>
           <label tuiLabel>Vai trò <span class="text-red-500">*</span></label>
-          <tui-textfield tuiChevron [stringify]="roleStringify">
+          <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="roleStringify">
             <input
               tuiComboBox
               formControlName="roleCode"
@@ -112,7 +112,7 @@
       @if (showSingleStoreField()) {
         <div>
           <label tuiLabel>Chi nhánh <span class="text-red-500">*</span></label>
-          <tui-textfield tuiChevron [stringify]="storeStringify">
+          <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="storeStringify">
             <input
               tuiComboBox
               formControlName="storeId"
@@ -143,7 +143,7 @@
       @if (showMultiStoreField()) {
         <div class="sm:col-span-2">
           <label tuiLabel>Chi nhánh phụ trách <span class="text-red-500">*</span></label>
-          <tui-textfield multi tuiChevron [stringify]="storeStringifyById">
+          <tui-textfield [tuiTextfieldSize]="'m'" multi tuiChevron [stringify]="storeStringifyById" style="--t-height: 2.15rem;">
             <input
               tuiInputChip
               tuiSelectLike

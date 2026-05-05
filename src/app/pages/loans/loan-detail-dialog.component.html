@@ -775,7 +775,7 @@
               <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
                   <label tuiLabel>Thu cho khoản gì?</label>
-                  <tui-textfield multi tuiChevron [stringify]="receiptPurposeStringify">
+                  <tui-textfield [tuiTextfieldSize]="'m'" multi tuiChevron [stringify]="receiptPurposeStringify" style="--t-height: 2.15rem;">
                     <input
                       tuiInputChip
                       tuiSelectLike
@@ -907,7 +907,7 @@
 
                 <div>
                   <label tuiLabel>Số tiền (VNĐ)</label>
-                  <tui-textfield>
+                  <tui-textfield [tuiTextfieldSize]="'m'">
                     <input
                       tuiInputNumber
                       [tuiNumberFormat]="numberFormat"
@@ -1283,7 +1283,7 @@
                   <label class="block mb-1 text-xs font-medium text-gray-600"
                     >Loại tài sản <span class="text-red-500">*</span></label
                   >
-                  <tui-textfield tuiChevron [stringify]="collateralTypeStringify">
+                  <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="collateralTypeStringify">
                     <input
                       tuiComboBox
                       formControlName="collateralType"
@@ -1303,7 +1303,7 @@
                   <label class="block mb-1 text-xs font-medium text-gray-600"
                     >Mô tả <span class="text-red-500">*</span></label
                   >
-                  <tui-textfield>
+                  <tui-textfield [tuiTextfieldSize]="'m'">
                     <input
                       tuiTextfield
                       formControlName="description"
@@ -1315,7 +1315,7 @@
                   <label class="block mb-1 text-xs font-medium text-gray-600">{{
                     getSerialNumberLabel(collateralForm.value.collateralType!)
                   }}</label>
-                  <tui-textfield>
+                  <tui-textfield [tuiTextfieldSize]="'m'">
                     <input
                       tuiTextfield
                       formControlName="serialNumber"
@@ -1329,7 +1329,7 @@
                   <label class="block mb-1 text-xs font-medium text-gray-600"
                     >Giá trị ước tính (VNĐ)</label
                   >
-                  <tui-textfield>
+                  <tui-textfield [tuiTextfieldSize]="'m'">
                     <input
                       tuiTextfield
                       type="number"
@@ -1342,13 +1342,13 @@
                   <label class="block mb-1 text-xs font-medium text-gray-600"
                     >Chi tiết (BKS, địa chỉ…)</label
                   >
-                  <tui-textfield>
+                  <tui-textfield [tuiTextfieldSize]="'m'">
                     <input tuiTextfield formControlName="detail" placeholder="Thông tin bổ sung…" />
                   </tui-textfield>
                 </div>
                 <div class="md:col-span-2">
                   <label class="block mb-1 text-xs font-medium text-gray-600">Ghi chú</label>
-                  <tui-textfield>
+                  <tui-textfield [tuiTextfieldSize]="'m'">
                     <input tuiTextfield formControlName="note" placeholder="Ghi chú thêm…" />
                   </tui-textfield>
                 </div>

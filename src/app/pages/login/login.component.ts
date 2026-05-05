@@ -26,6 +26,7 @@ export class LoginComponent {
   rememberMe = signal(false);
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
+  showPassword = signal(false);
 
   // Return URL
   private returnUrl: string = '/dashboard';

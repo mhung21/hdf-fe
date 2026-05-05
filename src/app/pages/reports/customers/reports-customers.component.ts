@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TuiButton, TuiDataList, TuiIcon, TuiTextfield } from '@taiga-ui/core';
-import { TuiChevron, TuiComboBox, TuiInputDateRange, TuiInputMonth } from '@taiga-ui/kit';
+import { TuiChevron, TuiSelect, TuiInputDateRange, TuiInputMonth } from '@taiga-ui/kit';
 import { TuiDay, TuiDayRange, TuiMonth, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { map } from 'rxjs';
 
@@ -91,7 +91,7 @@ const GROUP_BY_OPTIONS = [
     TuiDataList,
     TuiIcon,
     TuiChevron,
-    TuiComboBox,
+    TuiSelect,
     TuiTextfield,
     TuiInputDateRange,
     TuiInputMonth,
@@ -119,8 +119,8 @@ export class ReportsCustomersComponent implements OnInit {
   readonly storeControl = new FormControl<string | null>(null);
 
   readonly storeStringify: TuiStringHandler<string | null> = (id) => {
-    if (!id) return '';
-    return this.stores().find(s => s.storeId === id)?.storeName ?? id;
+    if (!id) return 'Tất cả chi nhánh';
+    return this.stores().find((s) => s.storeId === id)?.storeName ?? id;
   };
 
   protected readonly matcherStore: TuiStringMatcher<string | null> = (id, query) => {

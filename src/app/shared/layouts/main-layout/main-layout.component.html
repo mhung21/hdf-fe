@@ -1,25 +1,27 @@
 <!-- Main Layout Container -->
 <div class="flex overflow-hidden h-screen bg-gray-50">
   <!-- Desktop Sidebar -->
-  <div class="hidden h-full lg:block">
+  <div class="hidden h-full lg:block transition-[width] duration-300 ease-in-out"
+       [style.width]="isSidebarCollapsed() ? '5.5rem' : '17.5rem'">
     <app-sidebar [isCollapsed]="isSidebarCollapsed()"></app-sidebar>
   </div>
 
-  <!-- Mobile Drawer -->
-  <div class="drawer lg:hidden">
-    <input
-      id="mobile-menu-drawer"
-      type="checkbox"
-      class="drawer-toggle"
-      [checked]="isMobileMenuOpen()"
-      (change)="toggleMobileMenu()"
-    />
+  <!-- Mobile Drawer Overlay & Sidebar -->
+  <div class="lg:hidden" [class.hidden]="!isMobileMenuOpen()">
+    <!-- Overlay -->
+    <div
+      class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity z-[200]"
+      (click)="closeMobileMenu()"
+      aria-hidden="true"
+    ></div>
 
-    <div class="z-50 drawer-side">
-      <label for="mobile-menu-drawer" class="drawer-overlay" (click)="closeMobileMenu()"></label>
-      <div class="w-64 h-full">
-        <app-sidebar [isCollapsed]="false"></app-sidebar>
-      </div>
+    <!-- Sidebar Container -->
+    <div
+      class="fixed inset-y-0 left-0 w-[17.5rem] bg-white shadow-xl z-[300] transform transition-transform duration-300 ease-in-out"
+      [class.translate-x-0]="isMobileMenuOpen()"
+      [class.-translate-x-full]="!isMobileMenuOpen()"
+    >
+      <app-sidebar [isCollapsed]="false"></app-sidebar>
     </div>
   </div>
 
@@ -39,12 +41,13 @@
 
       <!-- Desktop Sidebar Toggle -->
       <button
-        class="hidden transition-colors btn btn-ghost btn-sm btn-circle lg:flex hover:bg-green-50"
+        class="hidden transition-all duration-300 btn btn-ghost btn-sm btn-circle lg:flex hover:bg-green-50"
         (click)="toggleSidebar()"
       >
         <tui-icon
-          [icon]="isSidebarCollapsed() ? '@tui.chevrons-right' : '@tui.chevrons-left'"
-          class="text-zinc-500"
+          icon="@tui.chevrons-left"
+          class="text-zinc-500 transition-transform duration-300"
+          [class.-rotate-180]="isSidebarCollapsed()"
         ></tui-icon>
       </button>
 

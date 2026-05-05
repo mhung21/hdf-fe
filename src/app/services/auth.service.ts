@@ -99,7 +99,7 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<CurrentUser> {
-    return this.http.get<CurrentUser>(`${this.API_URL}/me`);
+    return this.http.get<CurrentUser>(`${this.AUTH_DEBUG_URL}/me`);
   }
 
   isLoggedIn(): boolean {

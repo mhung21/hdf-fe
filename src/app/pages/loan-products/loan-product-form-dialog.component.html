@@ -2,25 +2,25 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
       <label tuiLabel>Mã sản phẩm <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="productCode" placeholder="VD: SP_6T_3PERCENT" />
       </tui-textfield>
     </div>
     <div>
       <label tuiLabel>Tên sản phẩm <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="productName" placeholder="VD: 6 tháng lãi 3%" />
       </tui-textfield>
     </div>
     <div class="md:col-span-2">
       <label tuiLabel>Mô tả</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiTextfield formControlName="description" placeholder="Mô tả sản phẩm..." />
       </tui-textfield>
     </div>
     <div>
       <label tuiLabel>Lãi suất (%/tháng) <span class="text-red-500">*</span></label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -32,7 +32,7 @@
     </div>
     <div>
       <label tuiLabel>Phí QLKV (%/tháng)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -44,7 +44,7 @@
     </div>
     <div>
       <label tuiLabel>Phí QLTS (%/tháng)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -56,7 +56,7 @@
     </div>
     <div>
       <label tuiLabel>Phí cố định/tháng (VNĐ)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -68,7 +68,7 @@
     </div>
     <div>
       <label tuiLabel>Số tiền tối thiểu (VNĐ)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -80,7 +80,7 @@
     </div>
     <div>
       <label tuiLabel>Số tiền tối đa (VNĐ)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -92,19 +92,19 @@
     </div>
     <div>
       <label tuiLabel>Kỳ hạn tối thiểu (tháng)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiInputNumber formControlName="minTermMonths" placeholder="1" />
       </tui-textfield>
     </div>
     <div>
       <label tuiLabel>Kỳ hạn tối đa (tháng)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input tuiInputNumber formControlName="maxTermMonths" placeholder="36" />
       </tui-textfield>
     </div>
     <div>
       <label tuiLabel>Phí hồ sơ mặc định (% trên tổng tiền)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"
@@ -116,7 +116,7 @@
     </div>
     <div>
       <label tuiLabel>Tỷ lệ bảo hiểm mặc định (%)</label>
-      <tui-textfield>
+      <tui-textfield [tuiTextfieldSize]="'m'">
         <input
           tuiInputNumber
           [tuiNumberFormat]="numberFormat"

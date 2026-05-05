@@ -9,7 +9,7 @@
       <div>
         <label tuiLabel>CCCD / CMND <span class="text-red-500">*</span></label>
         @if (!editingCustomer()) {
-          <tui-textfield>
+          <tui-textfield [tuiTextfieldSize]="'m'">
             <input
               tuiTextfield
               formControlName="nationalId"
@@ -34,7 +34,7 @@
             </button>
           </tui-textfield>
         } @else {
-          <tui-textfield>
+          <tui-textfield [tuiTextfieldSize]="'m'">
             <input
               tuiTextfield
               formControlName="nationalId"
@@ -72,7 +72,7 @@
       <!-- Họ tên -->
       <div>
         <label tuiLabel>Họ và tên <span class="text-red-500">*</span></label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield formControlName="fullName" placeholder="Nguyễn Văn A" />
         </tui-textfield>
         @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
@@ -83,7 +83,7 @@
       <!-- Ngày sinh -->
       <div>
         <label tuiLabel>Ngày sinh</label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiInputDate formControlName="dateOfBirth" placeholder="dd/mm/yyyy" />
           <tui-calendar *tuiTextfieldDropdown />
         </tui-textfield>
@@ -92,7 +92,7 @@
       <!-- Giới tính -->
       <div>
         <label tuiLabel>Giới tính</label>
-        <tui-textfield tuiChevron [stringify]="stringifyGender">
+        <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="stringifyGender">
           <input tuiComboBox formControlName="gender" placeholder="Chọn giới tính" />
           <tui-data-list *tuiTextfieldDropdown>
             @for (id of genderIds; track id) {
@@ -107,7 +107,7 @@
       <!-- SĐT -->
       <div>
         <label tuiLabel>Số điện thoại <span class="text-red-500">*</span></label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield formControlName="phone" placeholder="0901 234 567" maxlength="12" />
         </tui-textfield>
       </div>
@@ -115,7 +115,7 @@
       <!-- Địa chỉ -->
       <div>
         <label tuiLabel>Địa chỉ</label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'">
           <input tuiTextfield formControlName="address" placeholder="123 Nguyễn Huệ..." />
         </tui-textfield>
       </div>
@@ -124,7 +124,7 @@
       @if (canPickStore()) {
         <div>
           <label tuiLabel>Chi nhánh tiếp nhận</label>
-          <tui-textfield tuiChevron [tuiTextfieldCleaner]="true" [stringify]="stringifyStore">
+          <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [tuiTextfieldCleaner]="true" [stringify]="stringifyStore">
             <input
               tuiComboBox
               formControlName="firstStoreId"
@@ -167,7 +167,7 @@
         @if (form.get('hasBadHistory')?.value) {
           <div class="sm:col-span-2">
             <label tuiLabel>Ghi chú nợ xấu</label>
-            <tui-textfield>
+            <tui-textfield [tuiTextfieldSize]="'m'">
               <input tuiTextfield formControlName="badHistoryNote" placeholder="Mô tả lịch sử..." />
             </tui-textfield>
           </div>

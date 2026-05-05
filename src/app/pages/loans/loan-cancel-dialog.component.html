@@ -8,7 +8,7 @@
   }
   <div>
     <label tuiLabel>Lý do hủy <span class="text-red-500">*</span></label>
-    <tui-textfield>
+    <tui-textfield [tuiTextfieldSize]="'m'">
       <input tuiTextfield formControlName="note" placeholder="Nhập lý do hủy..." />
     </tui-textfield>
     @if (form.get('note')?.invalid && form.get('note')?.touched) {

@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TuiButton, TuiDataList, TuiIcon, TuiTextfield } from '@taiga-ui/core';
-import { TuiChevron, TuiComboBox, TuiInputDateRange, TuiSkeleton } from '@taiga-ui/kit';
+import { TuiChevron, TuiSelect, TuiInputDateRange, TuiSkeleton } from '@taiga-ui/kit';
 import { TuiDay, TuiDayRange, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { map } from 'rxjs';
 
@@ -63,7 +63,7 @@ interface StoreItem { storeId: string; storeName: string; }
     TuiDataList,
     TuiIcon,
     TuiChevron,
-    TuiComboBox,
+    TuiSelect,
     TuiTextfield,
     TuiInputDateRange,
     TuiSkeleton,
@@ -91,7 +91,7 @@ export class ReportsEmployeesComponent implements OnInit {
 
   readonly storeStringify: TuiStringHandler<string | null> = (id) => {
     if (!id) return 'Tất cả chi nhánh';
-    return this.stores().find(s => s.storeId === id)?.storeName ?? id;
+    return this.stores().find((s) => s.storeId === id)?.storeName ?? id;
   };
 
   protected readonly matcherStore: TuiStringMatcher<string | null> = (id, query) => {

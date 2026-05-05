@@ -22,9 +22,16 @@
     <!-- Extra toolbar: Add button -->
     <ng-container tableToolbar>
       @if (canCreate()) {
-        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+        <button
+          tuiButton
+          appearance="primary"
+          size="m"
+          (click)="openCreateDialog()"
+          class="rounded-xl shadow-lg shadow-primary/20 shrink-0"
+        >
           <tui-icon icon="@tui.plus" class="mr-1" />
-          Thêm Người Dùng
+          <span class="hidden sm:inline">Thêm Người Dùng</span>
+          <span class="sm:hidden">Thêm</span>
         </button>
       }
     </ng-container>

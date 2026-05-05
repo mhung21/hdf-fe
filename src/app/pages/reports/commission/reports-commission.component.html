@@ -6,7 +6,7 @@
       <!-- Khoảng ngày giải ngân -->
       <div class="min-w-[220px]">
         <label tuiLabel>Ngày giải ngân</label>
-        <tui-textfield>
+        <tui-textfield [tuiTextfieldSize]="'m'" [tuiTextfieldCleaner]="true">
           <input tuiInputDateRange formControlName="dateRange" placeholder="Từ ngày — Đến ngày" />
           <tui-calendar-range *tuiTextfieldDropdown />
         </tui-textfield>
@@ -16,7 +16,7 @@
       @if (isAdmin()) {
         <div class="min-w-[180px]">
           <label tuiLabel>Chi nhánh</label>
-          <tui-textfield tuiChevron [stringify]="stringifyStore">
+          <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="stringifyStore">
             <input tuiSelect formControlName="storeId" placeholder="Tất cả chi nhánh" />
             <tui-data-list *tuiTextfieldDropdown new>
               <button new tuiOption type="button" [value]="null">Tất cả chi nhánh</button>

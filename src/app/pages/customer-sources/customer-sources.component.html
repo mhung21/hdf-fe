@@ -27,7 +27,7 @@
           <label class="text-xs text-gray-500 mb-1 block"
             >Tên luồng khách <span class="text-red-500">*</span></label
           >
-          <tui-textfield>
+          <tui-textfield [tuiTextfieldSize]="'m'">
             <input
               tuiTextfield
               formControlName="sourceName"
@@ -39,7 +39,7 @@
         <!-- Thứ tự -->
         <div class="w-28">
           <label class="text-xs text-gray-500 mb-1 block">Thứ tự</label>
-          <tui-textfield>
+          <tui-textfield [tuiTextfieldSize]="'m'">
             <input tuiTextfield type="number" formControlName="sortOrder" placeholder="0" />
           </tui-textfield>
         </div>

@@ -27,7 +27,7 @@
   <!-- Chọn nhân viên -->
   <div>
     <label tuiLabel class="mb-1">Nhân viên tiếp nhận <span class="text-red-500">*</span></label>
-    <tui-textfield tuiChevron [stringify]="userStringify">
+    <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="userStringify">
       <input
         tuiComboBox
         formControlName="targetUserId"

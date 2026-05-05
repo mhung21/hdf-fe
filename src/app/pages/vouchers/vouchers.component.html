@@ -1,11 +1,14 @@
 <div class="p-4 space-y-3 md:p-6">
   <!-- Filter Chips -->
-  <div class="flex flex-wrap gap-2 items-center">
+  <div
+    class="flex flex-nowrap overflow-x-auto scrollbar-hide snap-x snap-mandatory gap-2 items-center px-3 py-2.5 bg-white rounded-xl border border-gray-200 shadow-sm"
+  >
     <button
       tuiButton
       [appearance]="filterType() === null ? 'primary' : 'outline'"
       size="s"
       (click)="setFilter(null)"
+      class="shrink-0 snap-start"
     >
       Tất cả
     </button>
@@ -14,6 +17,7 @@
       [appearance]="filterType() === 'RECEIPT' ? 'primary' : 'outline'"
       size="s"
       (click)="setFilter('RECEIPT')"
+      class="shrink-0 snap-start"
     >
       <tui-icon icon="@tui.arrow-down-circle" class="mr-1 text-green-500" />Phiếu Thu
     </button>
@@ -22,6 +26,7 @@
       [appearance]="filterType() === 'PAYMENT' ? 'primary' : 'outline'"
       size="s"
       (click)="setFilter('PAYMENT')"
+      class="shrink-0 snap-start"
     >
       <tui-icon icon="@tui.arrow-up-circle" class="mr-1 text-red-500" />Phiếu Chi
     </button>
@@ -44,28 +49,37 @@
   >
     <ng-container tableToolbar>
       @if (canPickStoreFilter()) {
-        <tui-textfield multi tuiChevron [stringify]="storeStringify" class="w-full md:w-60">
-          <input
-            tuiInputChip
-            tuiSelectLike
-            [ngModel]="selectedStoreIds()"
-            (ngModelChange)="selectedStoreIds.set($event)"
-            [ngModelOptions]="{ standalone: true }"
-            [placeholder]="selectedStoreIds().length ? '' : 'Chọn chi nhánh'"
-          />
-          <tui-data-list-wrapper
-            *tuiTextfieldDropdown
-            new
-            tuiMultiSelectGroup
-            [items]="storeIdsForFilter()"
-          />
-        </tui-textfield>
+        <div class="flex gap-2 items-center w-full md:w-auto">
+          <tui-textfield [tuiTextfieldSize]="'m'" multi tuiChevron [stringify]="storeStringify" class="w-full md:w-72" style="--t-height: 2.15rem;">
+            <input
+              tuiInputChip
+              tuiSelectLike
+              [ngModel]="selectedStoreIds()"
+              (ngModelChange)="selectedStoreIds.set($event)"
+              [ngModelOptions]="{ standalone: true }"
+              [placeholder]="selectedStoreIds().length ? '' : 'Chọn chi nhánh'"
+            />
+            <tui-data-list-wrapper
+              *tuiTextfieldDropdown
+              new
+              tuiMultiSelectGroup
+              [items]="storeIdsForFilter()"
+            />
+          </tui-textfield>
+        </div>
       }
 
       @if (canCreate()) {
-        <button tuiButton appearance="primary" size="m" (click)="openCreateDialog()">
+        <button
+          tuiButton
+          appearance="primary"
+          size="m"
+          (click)="openCreateDialog()"
+          class="rounded-xl shadow-lg shadow-primary/20 shrink-0"
+        >
           <tui-icon icon="@tui.plus" class="mr-1" />
-          Tạo Phiếu
+          <span class="hidden sm:inline">Tạo Phiếu</span>
+          <span class="sm:hidden">Tạo</span>
         </button>
       }
     </ng-container>
