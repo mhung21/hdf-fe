@@ -11,14 +11,14 @@ Không dùng Docker cho frontend.
 
 | Môi trường | Angular Config | Environment File | Deploy Path | URL |
 |---|---|---|---|---|
-| **Dev/Test** | `test` | `environment.test.ts` | `/var/www/hdf-fe-test` | `http://103.176.179.103:8080` |
+| **Dev/Test** | `test` | `environment.test.ts` | `/var/www/hdf-fe-test` | `https://quanly-dev.hdfinanceco.vn` |
 | **Production** | `production` | `environment.prod.ts` | `/var/www/hdf-fe` | `https://quanly.hdfinanceco.vn` |
 
 ### API Endpoints theo môi trường
 
 | Môi trường | apiUrl | authUrl |
 |---|---|---|
-| Dev/Test | `http://103.176.179.103:8883` | `http://103.176.179.103:8884` |
+| Dev/Test | `https://quanly-dev.hdfinanceco.vn` | `https://quanly-dev.hdfinanceco.vn` |
 | Production | `https://quanly.hdfinanceco.vn` | `https://quanly.hdfinanceco.vn` |
 
 ---
@@ -31,7 +31,7 @@ Không dùng Docker cho frontend.
 
 | Lựa chọn | `CONFIG` | `DEPLOY_PATH` | URL sau deploy |
 |---|---|---|---|
-| **dev** | `test` | `/var/www/hdf-fe-test` | `http://103.176.179.103:8080` |
+| **dev** | `test` | `/var/www/hdf-fe-test` | `https://quanly-dev.hdfinanceco.vn` |
 | **prod** | `production` | `/var/www/hdf-fe` | `https://quanly.hdfinanceco.vn` |
 
 Các bước bên dưới sử dụng `{CONFIG}` và `{DEPLOY_PATH}` tương ứng với lựa chọn ở trên.
