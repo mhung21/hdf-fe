@@ -40,6 +40,14 @@
         <p class="text-sm text-gray-900 mt-1">{{ v.contractCode || '-' }}</p>
       </div>
       <div class="md:col-span-2">
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Hình thức thanh toán</p>
+        @if (v.paymentMethod === 'COMPANY_ACCOUNT') {
+          <p class="text-sm text-gray-900 mt-1">Chuyển khoản ({{ v.bankName || '-' }} - {{ v.bankAccountNumber || '-' }})</p>
+        } @else {
+          <p class="text-sm text-gray-900 mt-1">Tiền mặt</p>
+        }
+      </div>
+      <div class="md:col-span-3">
         <p class="text-xs text-gray-400 uppercase tracking-wide">Diễn giải</p>
         <p class="text-sm text-gray-700 mt-1">{{ v.description || '-' }}</p>
       </div>

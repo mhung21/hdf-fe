@@ -19,6 +19,7 @@ import {
   TuiTextfield,
   TuiWithDropdownOpen,
   type TuiDialogContext,
+  TuiSelectLike,
 } from '@taiga-ui/core';
 import { TuiChevron, TuiComboBox, TuiFilterByInputPipe, TuiInputDate, TuiInputNumber } from '@taiga-ui/kit';
 import { TuiDay, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
@@ -95,6 +96,7 @@ const REASONS_BY_TYPE: Record<string, string[]> = {
     TuiInputNumber,
     TuiCurrencyPipe,
     TuiFilterByInputPipe,
+    TuiSelectLike,
   ],
   templateUrl: './voucher-create-dialog.component.html',
 })
@@ -141,6 +143,15 @@ export class VoucherCreateDialogComponent implements OnInit {
 
   readonly typeStringify: TuiStringHandler<string> = (v) => VOUCHER_TYPE_LABELS[v] ?? v;
   readonly reasonStringify: TuiStringHandler<string> = (v) => REASON_LABELS[v] ?? v;
+  
+  readonly paymentMethods = ['CASH', 'COMPANY_ACCOUNT'];
+  readonly paymentMethodStringify: TuiStringHandler<string> = (v) => v === 'COMPANY_ACCOUNT' ? 'Chuyển khoản / Tài khoản công ty' : 'Tiền mặt';
+  readonly paymentMethodMatcher: TuiStringMatcher<string> = (v, q) => {
+    if (!v || !q) return false;
+    const qn = this.normalizeVi(q);
+    return this.normalizeVi(this.paymentMethodStringify(v)) === qn || this.normalizeVi(v) === qn;
+  };
+
   readonly typeMatcher: TuiStringMatcher<string> = (v, q) => {
     if (!v || !q) return false;
     const qn = this.normalizeVi(q);
@@ -213,6 +224,9 @@ export class VoucherCreateDialogComponent implements OnInit {
     customerId: [null as string | null],
     loanContractId: [null as string | null],
     documentNo: [null as string | null],
+    paymentMethod: ['CASH' as string],
+    bankName: [null as string | null],
+    bankAccountNumber: [null as string | null],
   });
 
   onTypeChange(type: string): void {
@@ -241,6 +255,20 @@ export class VoucherCreateDialogComponent implements OnInit {
 
     this.form.controls.voucherType.valueChanges.subscribe((type) => {
       if (type) this.onTypeChange(type);
+    });
+
+    this.form.controls.paymentMethod.valueChanges.subscribe((method) => {
+      const isCompany = method === 'COMPANY_ACCOUNT';
+      if (isCompany) {
+        this.form.controls.bankName.setValidators([Validators.required]);
+        this.form.controls.bankAccountNumber.setValidators([Validators.required]);
+      } else {
+        this.form.controls.bankName.clearValidators();
+        this.form.controls.bankAccountNumber.clearValidators();
+        this.form.patchValue({ bankName: null, bankAccountNumber: null });
+      }
+      this.form.controls.bankName.updateValueAndValidity();
+      this.form.controls.bankAccountNumber.updateValueAndValidity();
     });
 
     // Logic default store removed as per user request.
@@ -291,6 +319,9 @@ export class VoucherCreateDialogComponent implements OnInit {
       customerId: v.customerId ?? null,
       loanContractId: v.loanContractId ?? null,
       documentNo: v.documentNo ?? null,
+      paymentMethod: v.paymentMethod ?? 'CASH',
+      bankName: v.bankName ?? null,
+      bankAccountNumber: v.bankAccountNumber ?? null,
     };
     this.saving.set(true);
     this.voucherProvider.apiCashVoucherSavePost({ cUCashVoucherModel: body }).subscribe({

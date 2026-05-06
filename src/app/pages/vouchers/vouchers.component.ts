@@ -68,6 +68,9 @@ interface VoucherItem {
   storeName?: string | null;
   storeId?: string | null;
   isAdjustment?: boolean | null;
+  paymentMethod?: string | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
 }
 
 interface DailyCollectionRow {

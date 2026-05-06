@@ -188,4 +188,61 @@ a.menu-link.active,
   margin: 0;
   overflow: hidden;
   opacity: 0;
+  display: none;
+}
+
+/* ── Floating Submenu overrides for Collapsed State ── */
+.sidebar-shell.collapsed {
+  overflow: visible;
+
+  .sidebar-nav {
+    overflow: visible;
+  }
+
+  .menu-group {
+    position: relative;
+
+    & > .submenu-container {
+      /* Override the inline styles and native <details> hiding */
+      display: block !important;
+      position: absolute !important;
+      left: calc(100% + 12px);
+      top: 0;
+      width: max-content;
+      min-width: 200px;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border: 1px solid rgb(22 163 74 / 0.15);
+      z-index: 200;
+      
+      opacity: 0 !important;
+      visibility: hidden;
+      transform: translateX(-10px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      max-height: none !important;
+      overflow: hidden !important;
+
+      .submenu-list {
+        margin: 0;
+        padding: 0.5rem;
+        border-left: none;
+      }
+      
+      .submenu-link {
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    &:hover > .submenu-container {
+      opacity: 1 !important;
+      visibility: visible;
+      transform: translateX(0);
+    }
+  }
 }

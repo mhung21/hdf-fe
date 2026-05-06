@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard, roleGuard } from './guards/auth.guard';
 import { RoleCode } from './models/role.model';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const routes: Routes = [
   // Default route - redirect to dashboard
@@ -25,7 +26,8 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        providers: [provideCharts(withDefaultRegisterables())]
       },
       {
         path: 'change-password',

@@ -16,6 +16,9 @@ export interface VoucherViewData {
   customerName?: string | null;
   storeName?: string | null;
   isAdjustment?: boolean | null;
+  paymentMethod?: string | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
 }
 
 const VOUCHER_TYPE_LABELS: Record<string, string> = {

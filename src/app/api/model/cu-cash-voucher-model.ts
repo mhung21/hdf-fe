@@ -25,5 +25,8 @@ export interface CUCashVoucherModel {
     amount: number;
     description: string;
     isAdjustment?: boolean;
+    paymentMethod?: string | null;
+    bankName?: string | null;
+    bankAccountNumber?: string | null;
 }
 

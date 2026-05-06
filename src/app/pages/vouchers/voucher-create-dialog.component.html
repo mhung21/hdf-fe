@@ -158,6 +158,45 @@
         }
       </tui-textfield>
     </div>
+
+    <!-- Payment Method -->
+    <div>
+      <label tuiLabel>Hình thức thanh toán <span class="text-red-500">*</span></label>
+      <tui-textfield [tuiTextfieldSize]="'m'" tuiChevron [stringify]="paymentMethodStringify">
+        <input
+          tuiComboBox
+          formControlName="paymentMethod"
+          placeholder="Chọn hình thức thanh toán"
+          [matcher]="paymentMethodMatcher"
+        />
+        @if (paymentMethods | tuiFilterByInput; as methods) {
+          <tui-data-list *tuiTextfieldDropdown>
+            @for (m of methods; track m) {
+              <button new tuiOption type="button" [value]="m">{{ paymentMethodStringify(m) }}</button>
+            }
+          </tui-data-list>
+        }
+      </tui-textfield>
+    </div>
+
+    <!-- Bank Details (Conditional) -->
+    @if (form.controls.paymentMethod.value === 'COMPANY_ACCOUNT') {
+      <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+        <div>
+          <label tuiLabel>Ngân hàng <span class="text-red-500">*</span></label>
+          <tui-textfield [tuiTextfieldSize]="'m'">
+            <input tuiTextfield formControlName="bankName" placeholder="VD: Vietcombank" />
+          </tui-textfield>
+        </div>
+        <div>
+          <label tuiLabel>Số tài khoản <span class="text-red-500">*</span></label>
+          <tui-textfield [tuiTextfieldSize]="'m'">
+            <input tuiTextfield formControlName="bankAccountNumber" placeholder="Nhập số tài khoản" />
+          </tui-textfield>
+        </div>
+      </div>
+    }
+
     <!-- Description -->
     <div class="md:col-span-2">
       <label tuiLabel>Diễn giải <span class="text-red-500">*</span></label>

@@ -12,7 +12,6 @@ import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { BASE_PATH } from './api/variables';
 import { environment } from '../environments/environment';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +23,5 @@ export const appConfig: ApplicationConfig = {
     { provide: BASE_PATH, useValue: environment.apiUrl },
     tuiDateFormatProvider({ mode: 'DMY', separator: '/' }),
     { provide: TUI_LANGUAGE, useValue: of(TUI_VIETNAMESE_LANGUAGE) },
-    provideCharts(withDefaultRegisterables()),
   ],
 };

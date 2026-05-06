@@ -35,6 +35,9 @@ export interface CULoanContractModel {
     latePaymentStartDaySnapshot?: number;
     badDebtStartDaySnapshot?: number;
     note?: string | null;
+    disbursementMethod?: string | null;
+    disbursementBankName?: string | null;
+    disbursementBankAccount?: string | null;
     customerSourceId?: string | null;
     initialStatus?: string | null;
     backdatedDisbursedDate?: string | null;
