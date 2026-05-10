@@ -74,12 +74,12 @@
         <div class="overflow-x-auto">
           <table class="w-full text-xs">
             <thead>
-              <tr class="bg-gray-50 border-b border-gray-100 text-gray-500">
-                <th class="px-4 py-2 text-left font-medium">Hợp đồng</th>
-                <th class="px-3 py-2 text-left font-medium">Khách hàng</th>
-                <th class="px-3 py-2 text-right font-medium">Ngày QH</th>
-                <th class="px-3 py-2 text-right font-medium">Tiền QH</th>
-                <th class="px-3 py-2 text-right font-medium">Tiền phạt</th>
+              <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 whitespace-nowrap">
+                <th class="px-4 py-2 text-left font-medium min-w-32">Hợp đồng</th>
+                <th class="px-3 py-2 text-left font-medium min-w-32">Khách hàng</th>
+                <th class="px-3 py-2 text-right font-medium min-w-32">Ngày QH</th>
+                <th class="px-3 py-2 text-right font-medium min-w-32">Tiền QH</th>
+                <th class="px-3 py-2 text-right font-medium min-w-32">Tiền phạt</th>
               </tr>
             </thead>
             <tbody>
@@ -132,15 +132,15 @@
             <div class="overflow-x-auto">
               <table class="w-full text-xs">
                 <thead>
-                  <tr class="bg-white/50 text-gray-500 border-b border-current/10">
-                    <th class="px-4 py-2 text-left font-medium">Hợp đồng</th>
-                    <th class="px-3 py-2 text-left font-medium">Khách hàng</th>
+                  <tr class="bg-white/50 text-gray-500 border-b border-current/10 whitespace-nowrap">
+                    <th class="px-4 py-2 text-left font-medium min-w-32">Hợp đồng</th>
+                    <th class="px-3 py-2 text-left font-medium min-w-32">Khách hàng</th>
                     @if (isAdmin()) {
-                      <th class="px-3 py-2 text-left font-medium">Chi nhánh</th>
+                      <th class="px-3 py-2 text-left font-medium min-w-32">Chi nhánh</th>
                     }
-                    <th class="px-3 py-2 text-right font-medium">Số ngày QH</th>
-                    <th class="px-3 py-2 text-right font-medium">Tiền quá hạn</th>
-                    <th class="px-3 py-2 text-right font-medium">Tiền phạt</th>
+                    <th class="px-3 py-2 text-right font-medium min-w-32">Số ngày QH</th>
+                    <th class="px-3 py-2 text-right font-medium min-w-32">Tiền quá hạn</th>
+                    <th class="px-3 py-2 text-right font-medium min-w-32">Tiền phạt</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,16 +195,16 @@
     <div class="overflow-x-auto">
       <table class="w-full text-xs">
         <thead>
-          <tr class="bg-gray-50 border-b border-gray-100 text-gray-500">
-            <th class="px-4 py-3 text-left font-medium">Tháng</th>
+          <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 whitespace-nowrap">
+            <th class="px-4 py-3 text-left font-medium min-w-32">Tháng</th>
             @if (isAdmin()) {
-              <th class="px-3 py-3 text-left font-medium">Chi nhánh</th>
+              <th class="px-3 py-3 text-left font-medium min-w-32">Chi nhánh</th>
             }
-            <th class="px-3 py-3 text-right font-medium">Phát sinh mới</th>
-            <th class="px-3 py-3 text-right font-medium">Số tiền mới</th>
-            <th class="px-3 py-3 text-right font-medium text-green-700">Thu hồi T.này</th>
-            <th class="px-3 py-3 text-right font-medium text-blue-600">Thu hồi T.trước</th>
-            <th class="px-3 py-3 text-right font-medium text-red-600">Còn tồn</th>
+            <th class="px-3 py-3 text-right font-medium min-w-32">Phát sinh mới</th>
+            <th class="px-3 py-3 text-right font-medium min-w-32">Số tiền mới</th>
+            <th class="px-3 py-3 text-right font-medium text-green-700 min-w-32">Thu hồi T.này</th>
+            <th class="px-3 py-3 text-right font-medium text-blue-600 min-w-32">Thu hồi T.trước</th>
+            <th class="px-3 py-3 text-right font-medium text-red-600 min-w-32">Còn tồn</th>
           </tr>
         </thead>
         <tbody>

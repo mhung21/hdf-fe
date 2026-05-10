@@ -140,14 +140,14 @@ export class CustomersComponent {
   }
 
   readonly tableColumns: ColumnDef[] = [
-    { key: 'code', label: 'Mã KH', sortKey: 'customerCode' },
-    { key: 'name', label: 'Họ tên & CCCD', sortKey: 'fullName' },
-    { key: 'phone', label: 'Số điện thoại', sortKey: 'phone' },
-    { key: 'address', label: 'Địa chỉ' },
-    { key: 'loanStatus', label: 'HĐ vay', align: 'center' },
-    { key: 'badHistory', label: 'Nợ xấu', align: 'center' },
-    { key: 'createdAt', label: 'Ngày tạo', sortKey: 'createdAt' },
-    { key: 'createdBy', label: 'Người tạo' },
+    { key: 'code', label: 'Mã KH', sortKey: 'customerCode', class: 'min-w-32' },
+    { key: 'name', label: 'Họ tên & CCCD', sortKey: 'fullName', class: 'min-w-56' },
+    { key: 'phone', label: 'Số điện thoại', sortKey: 'phone', class: 'min-w-36' },
+    { key: 'address', label: 'Địa chỉ', class: 'min-w-48' },
+    { key: 'loanStatus', label: 'HĐ vay', align: 'center', class: 'min-w-32' },
+    { key: 'badHistory', label: 'Nợ xấu', align: 'center', class: 'min-w-32' },
+    { key: 'createdAt', label: 'Ngày tạo', sortKey: 'createdAt', class: 'min-w-36' },
+    { key: 'createdBy', label: 'Người tạo', class: 'min-w-36' },
   ];
 
   canCreate = computed(() =>

@@ -191,24 +191,24 @@
     <table class="w-full text-sm border-collapse loans-table">
       <thead>
         <tr
-          class="text-xs tracking-wide text-gray-500 uppercase bg-gray-50 border-b border-gray-200"
+          class="text-xs tracking-wide text-gray-500 uppercase bg-gray-50 border-b border-gray-200 whitespace-nowrap"
         >
-          <th class="px-3 py-3 w-36 font-semibold text-left">Mã HĐ</th>
-          <th class="px-3 py-3 w-64 font-semibold text-left max-w-64">Khách hàng</th>
+          <th class="px-3 py-3 min-w-36 font-semibold text-left">Mã HĐ</th>
+          <th class="px-3 py-3 min-w-48 font-semibold text-left">Khách hàng</th>
           @if (canPickStoreFilter()) {
-            <th class="px-3 py-3 w-36 font-semibold text-left">Chi nhánh</th>
+            <th class="px-3 py-3 min-w-32 font-semibold text-left">Chi nhánh</th>
           }
-          <th class="px-3 py-3 w-36 font-semibold text-right">Gốc</th>
-          <th class="px-3 py-3 w-28 font-semibold text-right">Bảo hiểm</th>
-          <th class="px-3 py-3 w-28 font-semibold text-center">Loại HĐ</th>
-          <th class="px-3 py-3 w-28 font-semibold text-center">Ngày tạo</th>
-          <th class="px-3 py-3 w-28 font-semibold text-center">Ngày GN</th>
-          <th class="px-3 py-3 w-28 font-semibold text-center">Trạng thái</th>
-          <th class="px-3 py-3 w-32 font-semibold text-center">Thao tác</th>
+          <th class="px-3 py-3 min-w-32 font-semibold text-right">Gốc</th>
+          <th class="px-3 py-3 min-w-28 font-semibold text-right">Bảo hiểm</th>
+          <th class="px-3 py-3 min-w-28 font-semibold text-center">Loại HĐ</th>
+          <th class="px-3 py-3 min-w-28 font-semibold text-center">Ngày tạo</th>
+          <th class="px-3 py-3 min-w-28 font-semibold text-center">Ngày GN</th>
+          <th class="px-3 py-3 min-w-28 font-semibold text-center">Trạng thái</th>
+          <th class="px-3 py-3 min-w-32 font-semibold text-center">Thao tác</th>
         </tr>
         <!-- Dòng tổng đầu bảng -->
         @if (showTotals() && !loading() && filteredTotal() > 0) {
-          <tr class="text-xs border-b border-green-200 totals-row">
+          <tr class="text-xs border-b border-green-200 totals-row whitespace-nowrap">
             <td
               class="px-3 py-2 font-bold text-green-700"
               [attr.colspan]="canPickStoreFilter() ? 3 : 2"

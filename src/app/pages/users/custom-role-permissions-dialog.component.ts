@@ -29,6 +29,23 @@ interface PermissionGroupVm {
   permissions: (PermissionModel & { checked: boolean })[];
 }
 
+// Nhãn tiếng Việt cho resource group
+const RESOURCE_LABELS: Record<string, string> = {
+  customers: 'Khách hàng',
+  loan_contracts: 'Hợp đồng',
+  cash_vouchers: 'Phiếu thu chi',
+  reports: 'Báo cáo',
+  bad_debt_cases: 'Nợ xấu',
+  stores: 'Chi nhánh',
+  app_users: 'Người dùng',
+  store_day_locks: 'Khóa ngày',
+  audit_logs: 'Nhật ký hệ thống',
+  system: 'Cấu hình hệ thống',
+  loan_products: 'Sản phẩm',
+  policy_settings: 'Chính sách',
+  custom_roles: 'Vai trò tùy chỉnh',
+};
+
 @Component({
   selector: 'app-custom-role-permissions-dialog',
   standalone: true,
@@ -67,7 +84,7 @@ interface PermissionGroupVm {
             <div class="rounded-lg border bg-base-100 p-3">
               <div class="mb-2 flex items-center gap-2">
                 <span class="rounded bg-base-200 px-2.5 py-0.5 text-xs font-medium text-gray-700">
-                  {{ group.resource }}
+                  {{ resourceLabel(group.resource) }}
                 </span>
                 <span class="text-xs text-gray-400">
                   ({{ countChecked(group.permissions) }} / {{ group.permissions.length }})
@@ -182,6 +199,10 @@ export class CustomRolePermissionsDialogComponent implements OnInit {
 
   countChecked(perms: { checked: boolean }[]): number {
     return perms.filter(p => p.checked).length;
+  }
+
+  resourceLabel(resource: string): string {
+    return RESOURCE_LABELS[resource] ?? resource;
   }
 
   onSave(): void {

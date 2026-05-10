@@ -39,7 +39,37 @@
         <p class="text-xs text-gray-400 uppercase tracking-wide">Hợp đồng</p>
         <p class="text-sm text-gray-900 mt-1">{{ v.contractCode || '-' }}</p>
       </div>
-      <div class="md:col-span-2">
+      <div class="md:col-span-3">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Hình thức thanh toán</p>
+        @if (v.paymentMethod === 'COMPANY_ACCOUNT') {
+        <div class="flex items-start gap-3 bg-blue-50/70 border border-blue-200 rounded-xl px-4 py-3">
+          <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center mt-0.5">
+            <tui-icon icon="@tui.landmark" class="text-blue-600" style="font-size: 1.1rem" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-blue-800">Chuyển khoản / Tài khoản công ty</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-2">
+              <div>
+                <span class="text-[10px] uppercase tracking-wider text-blue-400 font-medium">Ngân hàng</span>
+                <p class="text-sm font-medium text-gray-900">{{ v.bankName || '—' }}</p>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase tracking-wider text-blue-400 font-medium">Số tài khoản</span>
+                <p class="text-sm font-mono font-semibold text-gray-900 tracking-wide">{{ v.bankAccountNumber || '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        } @else {
+        <div class="flex items-center gap-3 bg-emerald-50/70 border border-emerald-200 rounded-xl px-4 py-3">
+          <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center">
+            <tui-icon icon="@tui.banknote" class="text-emerald-600" style="font-size: 1.1rem" />
+          </div>
+          <p class="text-sm font-semibold text-emerald-800">Tiền mặt</p>
+        </div>
+        }
+      </div>
+      <div class="md:col-span-3">
         <p class="text-xs text-gray-400 uppercase tracking-wide">Diễn giải</p>
         <p class="text-sm text-gray-700 mt-1">{{ v.description || '-' }}</p>
       </div>

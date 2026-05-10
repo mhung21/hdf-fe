@@ -92,14 +92,14 @@ export class BadDebtsComponent implements OnInit {
   private readonly summaryPageSize = 1000;
 
   readonly tableColumns: ColumnDef[] = [
-    { key: 'customer', label: 'Khách hàng' },
-    { key: 'contract', label: 'Hợp đồng' },
-    { key: 'outstanding', label: 'Dư nợ', align: 'right' },
-    { key: 'recovered', label: 'Đã thu hồi', align: 'right' },
-    { key: 'status', label: 'Trạng thái', align: 'center' },
-    { key: 'transferDate', label: 'Ngày chuyển' },
-    { key: 'store', label: 'Chi nhánh' },
-    { key: 'transferredBy', label: 'Người thực hiện' },
+    { key: 'customer', label: 'Khách hàng', class: 'min-w-48' },
+    { key: 'contract', label: 'Hợp đồng', class: 'min-w-32' },
+    { key: 'outstanding', label: 'Dư nợ', align: 'right', class: 'min-w-36' },
+    { key: 'recovered', label: 'Đã thu hồi', align: 'right', class: 'min-w-32' },
+    { key: 'status', label: 'Trạng thái', align: 'center', class: 'min-w-32' },
+    { key: 'transferDate', label: 'Ngày chuyển', class: 'min-w-32' },
+    { key: 'store', label: 'Chi nhánh', class: 'min-w-32' },
+    { key: 'transferredBy', label: 'Người thực hiện', class: 'min-w-36' },
   ];
 
   canManage = computed(

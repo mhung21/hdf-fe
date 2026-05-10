@@ -1,10 +1,10 @@
-<div class="flex h-[min(90dvh,48rem)] max-h-[calc(100dvh-1.5rem)] min-h-0 flex-col">
+<div class="flex h-full md:h-[min(90dvh,48rem)] max-h-[100dvh] md:max-h-[calc(100dvh-1.5rem)] min-h-0 flex-col w-full md:min-w-[800px] lg:min-w-[1000px]">
   <!-- ╔══ TAB BAR ═══════════════════════════════════════════════════════╗ -->
   <nav
     tuiTabs
     [activeItemIndex]="activeItemIndex()"
     (activeItemIndexChange)="setActiveItemIndex($event)"
-    class="mb-3"
+    class="mb-3 shrink-0"
   >
     @for (tab of tabs; track tab.key) {
       <button tuiTab type="button">
@@ -607,15 +607,15 @@
                   Bảng minh họa cầm đồ
                 </div>
                 <div class="overflow-x-auto overflow-y-auto max-h-64">
-                  <table class="w-full text-xs">
+                  <table class="w-full text-xs whitespace-nowrap">
                     <thead class="sticky top-0 bg-gray-50">
-                      <tr>
-                        <th class="px-3 py-2 text-center text-gray-500">TT</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Số ngày</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Ngày đóng tiền</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Lãi</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Phí QLTS</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Tổng TT hàng kỳ</th>
+                      <tr class="whitespace-nowrap">
+                        <th class="px-3 py-2 text-center text-gray-500 min-w-32">TT</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Số ngày</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Ngày đóng tiền</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Lãi</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí QLTS</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Tổng TT hàng kỳ</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -666,23 +666,23 @@
                   Bảng minh họa lãi suất
                 </div>
                 <div class="overflow-x-auto overflow-y-auto max-h-64">
-                  <table class="w-full text-xs">
+                  <table class="w-full text-xs whitespace-nowrap">
                     <thead class="sticky top-0 bg-gray-50">
-                      <tr>
-                        <th class="px-3 py-2 text-center text-gray-500">TT</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Số ngày</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Ngày đóng tiền</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Tiền TT hàng kỳ</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Tiền gốc</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Tiền lãi</th>
-                        <th class="px-3 py-2 text-right text-emerald-700 bg-emerald-50">
+                      <tr class="whitespace-nowrap">
+                        <th class="px-3 py-2 text-center text-gray-500 min-w-32">TT</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Số ngày</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Ngày đóng tiền</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Tiền TT hàng kỳ</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Tiền gốc</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Tiền lãi</th>
+                        <th class="px-3 py-2 text-right text-emerald-700 bg-emerald-50 min-w-32">
                           Tổng cầm đồ
                         </th>
-                        <th class="px-3 py-2 text-right text-gray-500">Phí phần mềm</th>
-                        <!-- <th class="px-3 py-2 text-right text-gray-500">Phí cố định/tháng</th> -->
-                        <th class="px-3 py-2 text-right text-gray-500">Phí hao mòn</th>
-                        <th class="px-3 py-2 text-right text-cyan-700 bg-cyan-50">Tổng cho thuê</th>
-                        <th class="px-3 py-2 text-right text-gray-500">Nợ gốc còn lại</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí phần mềm</th>
+                        <!-- <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí cố định/tháng</th> -->
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí hao mòn</th>
+                        <th class="px-3 py-2 text-right text-cyan-700 bg-cyan-50 min-w-32">Tổng cho thuê</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Nợ gốc còn lại</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -999,18 +999,19 @@
   <!-- end tab content -->
 
   <!-- ╔══ FOOTER ════════════════════════════════════════════════════════╗ -->
-  <div class="flex justify-end gap-3 pt-4 mt-3 border-t border-gray-100">
+  <div class="flex flex-wrap sm:flex-nowrap justify-end gap-2 sm:gap-3 pt-4 mt-3 border-t border-gray-100">
     <button
       tuiButton
       type="button"
       appearance="outline"
       size="m"
+      class="flex-1 sm:flex-none !text-xs sm:!text-[15px] !px-2 sm:!px-4"
       (click)="context.$implicit.complete()"
     >
       Hủy
     </button>
     @if (activeTab() === 'info' && calculateResult()?.schedule?.length) {
-      <button tuiButton type="button" appearance="outline" size="m" (click)="printSchedule()">
+      <button tuiButton type="button" appearance="outline" size="m" class="flex-1 sm:flex-none w-full sm:w-auto !text-xs sm:!text-[15px] !px-2 sm:!px-4" (click)="printSchedule()">
         <tui-icon icon="@tui.printer" class="mr-1" />In Minh Họa
       </button>
     }
@@ -1021,6 +1022,7 @@
         type="button"
         appearance="primary"
         size="m"
+        class="flex-1 sm:flex-none w-full sm:w-auto !text-xs sm:!text-[15px] !px-2 sm:!px-4"
         [disabled]="saving() || !backdatedDisbursedDate()"
         (click)="save(LoanContractStatus.DISBURSED)"
       >
@@ -1035,6 +1037,7 @@
         type="button"
         appearance="outline"
         size="m"
+        class="flex-1 sm:flex-none !text-xs sm:!text-[15px] !px-2 sm:!px-4"
         [disabled]="saving()"
         (click)="save(LoanContractStatus.DRAFT)"
       >
@@ -1048,6 +1051,7 @@
         type="button"
         appearance="primary"
         size="m"
+        class="flex-1 sm:flex-none min-w-[120px] sm:min-w-0 !text-xs sm:!text-[15px] !px-2 sm:!px-4"
         [disabled]="saving()"
         (click)="save(LoanContractStatus.PENDING_APPROVAL)"
       >

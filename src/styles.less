@@ -50,3 +50,55 @@ tui-textfield input,
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+
+/* ── Standard Responsive Data Tables (CRM) ── */
+.overflow-x-auto table {
+  min-width: max-content;
+}
+
+.overflow-x-auto table th,
+.overflow-x-auto table td {
+  white-space: nowrap;
+}
+
+/* Ensure explicit utilities still work inside tables */
+.overflow-x-auto table .whitespace-normal {
+  white-space: normal !important;
+}
+
+.overflow-x-auto table .whitespace-pre-wrap {
+  white-space: pre-wrap !important;
+}
+
+.overflow-x-auto table .truncate {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* ── Standard Responsive Modals / Dialogs ── */
+@media screen and (max-width: 767px) {
+  /* Make all Taiga UI dialogs full-screen on mobile screens */
+  tui-dialog,
+  tui-prompt {
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Reset inner wrapper rounded corners to ensure full flat screen look */
+  tui-dialog .t-wrapper,
+  tui-dialog .t-content,
+  tui-prompt .t-wrapper,
+  tui-prompt .t-content {
+    border-radius: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+}
+

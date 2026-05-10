@@ -501,25 +501,14 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     let unpaidLatePenalty = 0;
 
     for (const row of schedule) {
-      if (row.statusCode === 'PAID') continue;
-
       const rowDueDate = row.dueDate ? new Date(row.dueDate + 'T00:00:00') : null;
       const rowFromDate = row.periodFromDate ? new Date(row.periodFromDate + 'T00:00:00') : null;
 
       if (rowDueDate && rowDueDate < today) {
-        // Kỳ đã qua hạn hoàn toàn → tính đủ phần còn nợ
-        accruedInterest += Math.max(
-          0,
-          (row.dueInterestAmount ?? 0) - (row.paidInterestAmount ?? 0),
-        );
-        accruedFee += Math.max(
-          0,
-          (row.duePeriodicFeeAmount ?? 0) - (row.paidPeriodicFeeAmount ?? 0),
-        );
-        unpaidLatePenalty += Math.max(
-          0,
-          (row.dueLatePenaltyAmount ?? 0) - (row.paidLatePenaltyAmount ?? 0),
-        );
+        // Kỳ đã qua hạn hoàn toàn → tính đủ phần còn nợ (hoặc trừ đi nếu khách đóng dư)
+        accruedInterest += (row.dueInterestAmount ?? 0) - (row.paidInterestAmount ?? 0);
+        accruedFee += (row.duePeriodicFeeAmount ?? 0) - (row.paidPeriodicFeeAmount ?? 0);
+        unpaidLatePenalty += (row.dueLatePenaltyAmount ?? 0) - (row.paidLatePenaltyAmount ?? 0);
       } else if (rowFromDate && rowFromDate <= today) {
         // Kỳ hiện tại đang chạy → tính theo ngày thực tế
         const daysElapsed = Math.max(
@@ -546,16 +535,18 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
           proratedFee = Math.round((row.duePeriodicFeeAmount ?? 0) * ratio);
         }
 
-        accruedInterest += Math.max(0, proratedInterest - (row.paidInterestAmount ?? 0));
-        accruedFee += Math.max(0, proratedFee - (row.paidPeriodicFeeAmount ?? 0));
+        // Nếu đã trả nhiều hơn số prorated, kết quả sẽ là số âm (hoàn trả)
+        accruedInterest += proratedInterest - (row.paidInterestAmount ?? 0);
+        accruedFee += proratedFee - (row.paidPeriodicFeeAmount ?? 0);
         
         // Late penalty kỳ hiện tại (nếu có, đã quá ngưỡng trễ nộp)
-        unpaidLatePenalty += Math.max(
-          0,
-          (row.dueLatePenaltyAmount ?? 0) - (row.paidLatePenaltyAmount ?? 0),
-        );
+        unpaidLatePenalty += (row.dueLatePenaltyAmount ?? 0) - (row.paidLatePenaltyAmount ?? 0);
+      } else {
+        // Kỳ tương lai: hoàn trả toàn bộ số tiền đã đóng trước (nếu có)
+        accruedInterest -= (row.paidInterestAmount ?? 0);
+        accruedFee -= (row.paidPeriodicFeeAmount ?? 0);
+        unpaidLatePenalty -= (row.paidLatePenaltyAmount ?? 0);
       }
-      // Kỳ tương lai: bỏ qua
     }
 
     accruedInterest = Math.round(accruedInterest);
@@ -620,7 +611,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
       }
 
       const hasRepayment = selectedCodes.some((code) =>
-        ['INTEREST', 'PERIODIC_FEE', 'PRINCIPAL'].includes(code),
+        ['INTEREST', 'QLKV_FEE', 'QLTS_FEE', 'PRINCIPAL'].includes(code),
       );
       const needsFs = selectedCodes.some((code) => ['FILE_FEE'].includes(code));
       const needsSched = hasRepayment; // LATE_PENALTY được inject sau khi schedule load xong
@@ -679,7 +670,8 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   readonly receiptPurposeOptions: ReceiptPurposeOption[] = [
     { code: 'FILE_FEE', label: 'Phí hợp đồng' },
     { code: 'INTEREST', label: 'Lãi' },
-    { code: 'PERIODIC_FEE', label: 'Phí định kỳ' },
+    { code: 'QLKV_FEE', label: 'Phí phần mềm' },
+    { code: 'QLTS_FEE', label: 'Phí hao mòn' },
     { code: 'PRINCIPAL', label: 'Gốc' },
     { code: 'LATE_PENALTY', label: 'Phạt chậm nộp' },
     { code: 'EARLY_SETTLEMENT', label: 'Tất toán sớm' },
@@ -699,7 +691,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   };
 
   getReceiptPurposeBadgeClass(code: string): string {
-    if (['INTEREST', 'PERIODIC_FEE', 'PRINCIPAL', 'LATE_PENALTY'].includes(code)) {
+    if (['INTEREST', 'QLKV_FEE', 'QLTS_FEE', 'PRINCIPAL', 'LATE_PENALTY'].includes(code)) {
       return 'bg-blue-50 text-blue-700 border border-blue-200';
     }
 
@@ -799,18 +791,26 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
 
     let dueInterest = 0;
     let duePeriodicFee = 0;
+    let dueQlkv = 0;
+    let dueQlts = 0;
     let duePrincipal = 0;
     let paidInterest = 0;
     let paidPeriodicFee = 0;
+    let paidQlkv = 0;
+    let paidQlts = 0;
     let paidPrincipal = 0;
 
     if (nextPeriod) {
       // Ưu tiên 1: lấy từ schedule row đã lưu trong DB (chính xác nhất)
       dueInterest = Number(nextPeriod.dueInterestAmount ?? 0);
       duePeriodicFee = Number(nextPeriod.duePeriodicFeeAmount ?? 0);
+      dueQlkv = Number(nextPeriod.dueQlkvAmount ?? 0);
+      dueQlts = Number(nextPeriod.dueQltsAmount ?? 0);
       duePrincipal = Number(nextPeriod.duePrincipalAmount ?? 0);
       paidInterest = Number(nextPeriod.paidInterestAmount ?? 0);
       paidPeriodicFee = Number(nextPeriod.paidPeriodicFeeAmount ?? 0);
+      paidQlkv = Number(nextPeriod.paidQlkvAmount ?? 0);
+      paidQlts = Number(nextPeriod.paidQltsAmount ?? 0);
       paidPrincipal = Number(nextPeriod.paidPrincipalAmount ?? 0);
     }
 
@@ -837,6 +837,8 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
 
       dueInterest = Math.round(openingPrincipal * ri * days);
       duePeriodicFee = Math.round(openingPrincipal * rf * days + fixedFee);
+      dueQlkv = Math.round(openingPrincipal * qlkvRate / 100 / 30 * days + fixedFee);
+      dueQlts = Math.round(openingPrincipal * qltsRate / 100 / 30 * days);
 
       // Tính PMT để suy ra principal
       const power = Math.pow(1 + rCombined * 30, remainingPeriods); // monthly compounding
@@ -858,6 +860,16 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
         : null;
     const remainFee = hasRepaymentData
       ? Math.max(0, duePeriodicFee - paidPeriodicFee)
+      : schedule.length > 0
+        ? 0
+        : null;
+    const remainQlkv = hasRepaymentData
+      ? Math.max(0, dueQlkv - paidQlkv)
+      : schedule.length > 0
+        ? 0
+        : null;
+    const remainQlts = hasRepaymentData
+      ? Math.max(0, dueQlts - paidQlts)
       : schedule.length > 0
         ? 0
         : null;
@@ -914,10 +926,17 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
           })()
         : null;
 
+    // Fallback cho hợp đồng cũ: Nếu có phí định kỳ nhưng chưa tách QLKV/QLTS
+    let finalRemainQlkv = remainQlkv;
+    if (remainFee != null && remainFee > 0 && remainQlkv === 0 && remainQlts === 0) {
+      finalRemainQlkv = remainFee;
+    }
+
     return {
       FILE_FEE: remainFileFee,
       INTEREST: remainInterest,
-      PERIODIC_FEE: remainFee,
+      QLKV_FEE: finalRemainQlkv,
+      QLTS_FEE: remainQlts,
       PRINCIPAL: remainPrincipal,
       LATE_PENALTY: remainLatePenalty,
       OTHER: null,
@@ -939,7 +958,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     const isDisbursed =
       status === LoanContractStatus.DISBURSED || status === LoanContractStatus.BAD_DEBT;
     const isPendingDisbursement = status === LoanContractStatus.PENDING_DISBURSEMENT;
-    const repaymentCodes = new Set(['INTEREST', 'PERIODIC_FEE', 'PRINCIPAL', 'LATE_PENALTY']);
+    const repaymentCodes = new Set(['INTEREST', 'QLKV_FEE', 'QLTS_FEE', 'PRINCIPAL', 'LATE_PENALTY']);
     const upfrontFeeCodes = new Set(['FILE_FEE']);
 
     // Nếu còn phí hồ sơ chưa nộp → ẩn các khoản trả nợ + tất toán
@@ -1028,7 +1047,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   readonly hasSelectedRepaymentPurpose = computed(() => {
     const selected = this.selectedReceiptPurposes();
     return selected.some((code) =>
-      ['INTEREST', 'PERIODIC_FEE', 'PRINCIPAL', 'LATE_PENALTY'].includes(code),
+      ['INTEREST', 'QLKV_FEE', 'QLTS_FEE', 'PRINCIPAL', 'LATE_PENALTY'].includes(code),
     );
   });
 
@@ -1047,8 +1066,11 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     const interest = selectedSet.has('INTEREST')
       ? Math.max(0, Math.round(amounts['INTEREST'] ?? 0))
       : 0;
-    const fee = selectedSet.has('PERIODIC_FEE')
-      ? Math.max(0, Math.round(amounts['PERIODIC_FEE'] ?? 0))
+    const qlkvFee = selectedSet.has('QLKV_FEE')
+      ? Math.max(0, Math.round(amounts['QLKV_FEE'] ?? 0))
+      : 0;
+    const qltsFee = selectedSet.has('QLTS_FEE')
+      ? Math.max(0, Math.round(amounts['QLTS_FEE'] ?? 0))
       : 0;
     const latePenalty = selectedSet.has('LATE_PENALTY')
       ? Math.max(0, Math.round(amounts['LATE_PENALTY'] ?? 0))
@@ -1059,7 +1081,8 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
 
     const lines: InstallmentAllocationItem[] = [
       { code: 'INTEREST', label: this.getAllocLabel('INTEREST'), due: interest, allocated: 0 },
-      { code: 'PERIODIC_FEE', label: this.getAllocLabel('PERIODIC_FEE'), due: fee, allocated: 0 },
+      { code: 'QLKV_FEE', label: this.getAllocLabel('QLKV_FEE'), due: qlkvFee, allocated: 0 },
+      { code: 'QLTS_FEE', label: this.getAllocLabel('QLTS_FEE'), due: qltsFee, allocated: 0 },
       {
         code: 'LATE_PENALTY',
         label: this.getAllocLabel('LATE_PENALTY'),
@@ -1517,7 +1540,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   payPeriodFromSchedule(row: RepaymentScheduleRow): void {
     // LATE_PENALTY sẽ được auto-inject bởi effect nếu kỳ có phạt
     this.waiveLatePenalty.set(false); // reset waive khi chọn kỳ mới từ lịch
-    this.selectedReceiptPurposes.set(['INTEREST', 'PERIODIC_FEE', 'PRINCIPAL']);
+    this.selectedReceiptPurposes.set(['INTEREST', 'QLKV_FEE', 'QLTS_FEE', 'PRINCIPAL']);
     this.selectedPeriodNo.set(row.periodNo ?? null);
     this.pendingAutoFill.set(true);
     this.switchTab('payments');
@@ -1921,7 +1944,8 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       PRINCIPAL: 'Gốc',
       INTEREST: 'Lãi',
-      PERIODIC_FEE: 'Phí định kỳ',
+      QLKV_FEE: 'Phí phần mềm',
+      QLTS_FEE: 'Phí hao mòn',
       FILE_FEE: 'Phí hồ sơ',
       INSURANCE: 'Bảo hiểm',
       LATE_PENALTY: 'Phạt chậm nộp',

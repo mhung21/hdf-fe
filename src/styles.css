@@ -38,7 +38,7 @@ body {
 
 /* Dialog rộng tuỳ chỉnh ~70% màn hình */
 tui-dialog[data-appearance='dialog-wide'] {
-  width: 80vw !important;
-  max-width: 80vw !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
   min-width: unset !important;
 }

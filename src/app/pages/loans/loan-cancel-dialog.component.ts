@@ -59,7 +59,7 @@ export class LoanCancelDialogComponent {
           this.alertService.open('Đã hủy hợp đồng', { appearance: 'positive' }).subscribe();
           this.context.completeWith();
         } else {
-          this.alertService.open('Có lỗi xảy ra', { appearance: 'negative' }).subscribe();
+          this.alertService.open(r.message || 'Có lỗi xảy ra', { appearance: 'negative' }).subscribe();
         }
       },
       error: () => {

@@ -152,6 +152,19 @@ export class VoucherCreateDialogComponent implements OnInit {
     return this.normalizeVi(this.reasonStringify(v)) === qn || this.normalizeVi(v) === qn;
   };
 
+  readonly paymentMethods = ['CASH', 'COMPANY_ACCOUNT'];
+  readonly paymentMethodLabels: Record<string, string> = {
+    CASH: 'Tiền mặt',
+    COMPANY_ACCOUNT: 'Chuyển khoản ngân hàng',
+  };
+  readonly paymentMethodStringify: TuiStringHandler<string> = (v) => this.paymentMethodLabels[v] ?? v;
+  readonly paymentMethodMatcher: TuiStringMatcher<string> = (v, q) => {
+    if (!v || !q) return false;
+    const qn = this.normalizeVi(q);
+    return this.normalizeVi(this.paymentMethodStringify(v)) === qn || this.normalizeVi(v) === qn;
+  };
+
+
   readonly customerStringify: TuiStringHandler<CustomerOption | string> = (item) => {
     if (!item) return '';
     if (typeof item === 'string') {
@@ -213,6 +226,9 @@ export class VoucherCreateDialogComponent implements OnInit {
     customerId: [null as string | null],
     loanContractId: [null as string | null],
     documentNo: [null as string | null],
+    paymentMethod: ['CASH' as string | null],
+    bankName: [null as string | null],
+    bankAccountNumber: [null as string | null],
   });
 
   onTypeChange(type: string): void {

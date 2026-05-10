@@ -69,7 +69,9 @@ export class UserFormDialogComponent {
 
   readonly editingUser = computed(() => this.context.data.user);
   readonly availableRoles = computed(() => this.context.data.availableRoles);
-  readonly storeList = computed(() => this.context.data.storeList);
+  readonly storeList = computed(() =>
+    this.context.data.storeList.filter((s) => s.storeName !== 'Tổng công ty'),
+  );
   readonly isAdmin = computed(() => this.context.data.isAdmin);
   /** Hiển thị chọn 1 chi nhánh cho STORE_MANAGER / STAFF */
   readonly showSingleStoreField = computed(

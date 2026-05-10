@@ -48,3 +48,4 @@ export * from './search-policy-setting-request';
 export * from './search-store-request';
 export * from './store-day-lock-request';
 export * from './transfer-bad-debt-request';
+export * from './outstanding-loans-paged-request';

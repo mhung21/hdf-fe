@@ -16,6 +16,7 @@ import { CustomerStatsRequest } from '../model/models';
 import { MonthlyCashFlowRequest } from '../model/models';
 import { ReportDateRangeRequest } from '../model/models';
 import { ReportStoreRequest } from '../model/models';
+import { OutstandingLoansPagedRequest } from '../model/models';
 import { ResultAPI } from '../model/models';
 
 
@@ -60,6 +61,10 @@ export interface ApiReportMonthlyCashFlowPostRequestParams {
 
 export interface ApiReportOutstandingLoansPostRequestParams {
     reportStoreRequest?: ReportStoreRequest;
+}
+
+export interface ApiReportOutstandingLoansPagedPostRequestParams {
+    outstandingLoansPagedRequest?: OutstandingLoansPagedRequest;
 }
 
 export interface ApiReportOverdueSummaryPostRequestParams {
@@ -150,6 +155,14 @@ export interface ReportProviderInterface {
 * @param requestParameters
      */
     apiReportOutstandingLoansPost(requestParameters: ApiReportOutstandingLoansPostRequestParams, extraHttpRequestParams?: any): Observable<ResultAPI>;
+
+    /**
+     * 
+     * 
+     * @endpoint post /api/Report/OutstandingLoansPaged
+* @param requestParameters
+     */
+    apiReportOutstandingLoansPagedPost(requestParameters: ApiReportOutstandingLoansPagedPostRequestParams, extraHttpRequestParams?: any): Observable<ResultAPI>;
 
     /**
      * 

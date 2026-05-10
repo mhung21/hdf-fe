@@ -36,4 +36,30 @@ export class RolePermissionExtras {
       { context: options?.context },
     );
   }
+
+  /**
+   * Ghi đè toàn bộ quyền mặc định của một vai trò. Chỉ ADMIN.
+   */
+  saveRolePermissions(
+    roleCode: string,
+    permissionIds: string[],
+    options?: { context?: HttpContext },
+  ): Observable<ResultAPI> {
+    return this.http.post<ResultAPI>(
+      `${this.basePath}/api/RolePermission/SaveRolePermissions`,
+      { roleCode, permissionIds },
+      { context: options?.context },
+    );
+  }
+
+  /**
+   * Xóa toàn bộ cache phân quyền. Chỉ ADMIN.
+   */
+  clearPermissionCache(options?: { context?: HttpContext }): Observable<ResultAPI> {
+    return this.http.post<ResultAPI>(
+      `${this.basePath}/api/RolePermission/ClearPermissionCache`,
+      {},
+      { context: options?.context },
+    );
+  }
 }

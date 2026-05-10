@@ -184,14 +184,7 @@ export class LoansComponent {
   readonly canPickStoreFilter = computed(() =>
     this.authService.hasAnyRole([RoleCode.ADMIN, RoleCode.REGIONAL_MANAGER]),
   );
-  readonly canCreate = computed(() =>
-    this.authService.hasAnyRole([
-      RoleCode.ADMIN,
-      RoleCode.REGIONAL_MANAGER,
-      RoleCode.STORE_MANAGER,
-      RoleCode.STAFF,
-    ]),
-  );
+  readonly canCreate = computed(() => this.authService.hasPermission('LOAN_CREATE'));
   readonly canCancelLoan = computed(
     () =>
       this.authService.hasAnyRole([

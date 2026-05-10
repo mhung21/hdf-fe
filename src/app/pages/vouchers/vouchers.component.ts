@@ -163,13 +163,13 @@ export class VouchersComponent {
   };
 
   readonly tableColumns: ColumnDef[] = [
-    { key: 'code', label: 'Mã phiếu' },
-    { key: 'type', label: 'Loại', align: 'center' },
-    { key: 'reason', label: 'Lý do' },
-    { key: 'payer', label: 'Người nộp/nhận' },
-    { key: 'amount', label: 'Số tiền', align: 'right' },
-    { key: 'date', label: 'Ngày' },
-    { key: 'contract', label: 'Hợp đồng' },
+    { key: 'code', label: 'Mã phiếu', class: 'min-w-[120px]' },
+    { key: 'type', label: 'Loại', align: 'center', class: 'min-w-[130px]' },
+    { key: 'reason', label: 'Lý do', class: 'min-w-[160px]' },
+    { key: 'payer', label: 'Người nộp/nhận', class: 'min-w-[180px]' },
+    { key: 'amount', label: 'Số tiền', align: 'right', class: 'min-w-[140px]' },
+    { key: 'date', label: 'Ngày', class: 'min-w-[110px]' },
+    { key: 'contract', label: 'Hợp đồng', class: 'min-w-[130px]' },
   ];
 
   canCreate = computed(() =>
@@ -267,7 +267,7 @@ export class VouchersComponent {
       keyword: this.keyword() || null,
       pageIndex: this.page + 1,
       pageSize: this.size,
-      sortBy: 'BusinessDate',
+      sortBy: 'CreatedAt',
       sortDesc: true,
     };
     // Backend naming differs across endpoints; send both keys to be safe.

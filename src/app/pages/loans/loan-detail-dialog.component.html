@@ -1,8 +1,8 @@
 @if (loan(); as l) {
-  <div class="flex flex-col min-h-0" style="min-width: 680px">
+  <div class="flex flex-col min-h-0 w-full md:min-w-[800px] lg:min-w-[1000px] h-full max-h-[100dvh]">
     <!-- ╔══ HEADER ════════════════════════════════════════════════════════╗ -->
-    <div class="flex justify-between items-center px-1 pb-3 mb-1 border-b border-gray-100">
-      <div class="flex gap-3 items-center">
+    <div class="flex flex-wrap shrink-0 gap-3 justify-between sm:items-center px-1 pb-3 mb-1 border-b border-gray-100">
+      <div class="flex flex-wrap gap-2 sm:gap-3 items-center">
         <div>
           <p class="font-mono text-sm font-bold text-gray-900">{{ l.contractNo || '-' }}</p>
           <p class="text-xs text-gray-400">
@@ -50,11 +50,11 @@
     @if (availableStatusActions().length > 0) {
       @let banner = actionBanner();
       <div
-        class="overflow-hidden mb-3 rounded-lg border border-gray-200"
+        class="overflow-hidden mb-3 shrink-0 rounded-lg border border-gray-200"
         [class]="banner?.wrapperClass ?? 'border-l-4 border-gray-400 bg-gray-50'"
       >
         <!-- ── Banner header ── -->
-        <div class="flex gap-3 justify-between items-center px-4 py-3">
+        <div class="flex flex-col sm:flex-row gap-3 justify-between sm:items-center px-4 py-3">
           <div class="flex gap-3 items-center min-w-0">
             @if (banner) {
               <tui-icon [icon]="banner.icon" class="text-xl shrink-0" [class]="banner.iconClass" />
@@ -66,7 +66,7 @@
           </div>
 
           <!-- Primary action is size="m", secondary/destructive are size="s" -->
-          <div class="flex gap-2 items-center shrink-0">
+          <div class="flex flex-wrap gap-2 items-center shrink-0 mt-3 sm:mt-0">
             @for (action of availableStatusActions(); track action.toStatus) {
               <button
                 tuiButton
@@ -88,7 +88,7 @@
     }
 
     <!-- ╔══ TAB BAR ═══════════════════════════════════════════════════════╗ -->
-    <div class="overflow-x-auto pb-3 border-b border-gray-100">
+    <div class="overflow-x-auto pb-3 shrink-0 border-b border-gray-100">
       <tui-tabs
         class="min-w-max"
         [activeItemIndex]="activeItemIndex()"
@@ -105,7 +105,7 @@
       </tui-tabs>
     </div>
     <!-- ╔══ TAB CONTENT ════════════════════════════════════════════════════╗ -->
-    <div class="overflow-y-auto flex-1 pt-4 min-h-0" style="max-height: 520px">
+    <div class="overflow-y-auto flex-1 pt-4 min-h-0">
       <!-- ── Tab: Thông tin ─────────────────────────────────────────────── -->
       @if (activeTab() === 'info') {
         <div class="space-y-4">
@@ -516,19 +516,19 @@
             [class.blur-[0.5px]]="statusCode() === LoanContractStatus.SETTLED"
           >
             <div class="overflow-x-auto overflow-y-auto max-h-96">
-              <table class="w-full text-xs">
+              <table class="w-full text-xs whitespace-nowrap">
                 @if (isPawnContract()) {
                   <!-- ╔══ TABLE HEAD: PAWN ══════════════════════════════════════════════════╗ -->
                   <thead class="sticky top-0 bg-gray-50">
-                    <tr>
-                      <th class="px-2 py-2 text-center text-gray-500">TT</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Số ngày</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Ngày đóng tiền</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Lãi</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Phí QLTS</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Tổng TT hàng kỳ</th>
-                      <th class="px-2 py-2 text-left text-gray-500">Trạng thái</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Đã trả</th>
+                    <tr class="whitespace-nowrap">
+                      <th class="px-2 py-2 text-center text-gray-500 min-w-32">TT</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Số ngày</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Ngày đóng tiền</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Lãi</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Phí QLTS</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Tổng TT hàng kỳ</th>
+                      <th class="px-2 py-2 text-left text-gray-500 min-w-32">Trạng thái</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Đã trả</th>
                     </tr>
                   </thead>
                   <!-- ╔══ TABLE BODY: PAWN ══════════════════════════════════════════════════╗ -->
@@ -618,22 +618,22 @@
                 } @else {
                   <!-- ╔══ TABLE HEAD: INSTALLMENT ═══════════════════════════════════════════╗ -->
                   <thead class="sticky top-0 bg-gray-50">
-                    <tr>
-                      <th class="px-2 py-2 text-center text-gray-500">TT</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Số ngày</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Ngày đóng tiền</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Tiền TT hàng kỳ</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Tiền gốc</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Tiền lãi</th>
-                      <th class="px-2 py-2 text-right text-emerald-700 bg-emerald-50">
+                    <tr class="whitespace-nowrap">
+                      <th class="px-2 py-2 text-center text-gray-500 min-w-32">TT</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Số ngày</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Ngày đóng tiền</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Tiền TT hàng kỳ</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Tiền gốc</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Tiền lãi</th>
+                      <th class="px-2 py-2 text-right text-emerald-700 bg-emerald-50 min-w-32">
                         Tổng cầm đồ
                       </th>
-                      <th class="px-2 py-2 text-right text-gray-500">Phí phần mềm</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Phí hao mòn</th>
-                      <th class="px-2 py-2 text-right text-cyan-700 bg-cyan-50">Tổng cho thuê</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Nợ gốc còn lại</th>
-                      <th class="px-2 py-2 text-left text-gray-500">Trạng thái</th>
-                      <th class="px-2 py-2 text-right text-gray-500">Đã trả</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Phí phần mềm</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Phí hao mòn</th>
+                      <th class="px-2 py-2 text-right text-cyan-700 bg-cyan-50 min-w-32">Tổng cho thuê</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Nợ gốc còn lại</th>
+                      <th class="px-2 py-2 text-left text-gray-500 min-w-32">Trạng thái</th>
+                      <th class="px-2 py-2 text-right text-gray-500 min-w-32">Đã trả</th>
                     </tr>
                   </thead>
                   <!-- ╔══ TABLE BODY: INSTALLMENT ═══════════════════════════════════════════╗ -->
@@ -1688,7 +1688,7 @@
     <!-- end tab content -->
 
     <!-- ╔══ FOOTER ════════════════════════════════════════════════════════╗ -->
-    <div class="flex justify-end pt-4 mt-3 border-t border-gray-100">
+    <div class="flex shrink-0 justify-end pt-4 mt-3 border-t border-gray-100">
       <button tuiButton appearance="outline" size="m" (click)="context.$implicit.complete()">
         Đóng
       </button>

@@ -18,7 +18,7 @@
       <div class="w-80">
         <tui-textfield [tuiTextfieldCleaner]="false" [tuiTextfieldSize]="'m'">
           <input tuiInputDateRange [formControl]="dateRangeControl" />
-          <tui-calendar-range *tuiTextfieldDropdown />
+          <tui-calendar-range *tuiTextfieldDropdown [items]="periods"></tui-calendar-range>
         </tui-textfield>
       </div>
       <button tuiButton appearance="outline" size="m" (click)="loadAll()">
@@ -79,20 +79,20 @@
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-gray-50">
-          <tr>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+          <tr class="whitespace-nowrap">
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase min-w-32">
               Ngày
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Tổng thu
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Tổng chi
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Chênh lệch
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Số phiếu
             </th>
           </tr>
@@ -164,20 +164,20 @@
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-gray-50">
-          <tr>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+          <tr class="whitespace-nowrap">
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase min-w-32">
               Khách hàng
             </th>
-            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase min-w-32">
               Hợp đồng
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Số ngày quá hạn
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Số tiền quá hạn
             </th>
-            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase min-w-32">
               Phạt
             </th>
           </tr>
@@ -316,15 +316,15 @@
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
           <thead>
-            <tr class="text-gray-400">
-              <th class="py-2 text-left font-medium">Tháng</th>
-              <th class="py-2 text-right font-medium">Giải ngân</th>
-              <th class="py-2 text-right font-medium">HĐ mới</th>
-              <th class="py-2 text-right font-medium">Đã thu về</th>
-              <th class="py-2 text-right font-medium text-amber-600">Lãi thu</th>
-              <th class="py-2 text-right font-medium text-blue-600">Phí thu</th>
-              <th class="py-2 text-right font-medium text-red-500">Phạt</th>
-              <th class="py-2 text-right font-medium text-green-700">Thu nhập</th>
+            <tr class="text-gray-400 whitespace-nowrap">
+              <th class="py-2 text-left font-medium min-w-32">Tháng</th>
+              <th class="py-2 text-right font-medium min-w-32">Giải ngân</th>
+              <th class="py-2 text-right font-medium min-w-32">HĐ mới</th>
+              <th class="py-2 text-right font-medium min-w-32">Đã thu về</th>
+              <th class="py-2 text-right font-medium text-amber-600 min-w-32">Lãi thu</th>
+              <th class="py-2 text-right font-medium text-blue-600 min-w-32">Phí thu</th>
+              <th class="py-2 text-right font-medium text-red-500 min-w-32">Phạt</th>
+              <th class="py-2 text-right font-medium text-green-700 min-w-32">Thu nhập</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">

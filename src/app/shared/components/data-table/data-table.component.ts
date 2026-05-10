@@ -80,12 +80,12 @@ export type { ColumnDef };
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="border-b border-gray-100 bg-gray-50/60">
-              <tr>
+              <tr class="whitespace-nowrap">
               @for (col of columns(); track col.key) {
                   @if (!hiddenColumns().includes(col.key)) {
                     <th
                       class="px-4 py-3 text-sm font-semibold text-gray-600 select-none"
-                      [class]="colClass(col) + (col.sortKey ? ' cursor-pointer hover:text-gray-900 hover:bg-gray-100/60 transition-colors' : '')"
+                      [class]="colClass(col) + (col.class ? ' ' + col.class : '') + (col.sortKey ? ' cursor-pointer hover:text-gray-900 hover:bg-gray-100/60 transition-colors' : '')"
                       (click)="col.sortKey && onSortClick(col.sortKey)"
                     >
                       <span class="inline-flex items-center gap-1">

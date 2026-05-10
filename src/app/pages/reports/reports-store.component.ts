@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TuiButton, TuiDataList, TuiIcon, TuiTextfield } from '@taiga-ui/core';
-import { TuiChevron, TuiSelect, TuiInputDateRange, TuiInputDate } from '@taiga-ui/kit';
+import { TuiChevron, TuiSelect, TuiInputDateRange, TuiInputDate, TuiDayRangePeriod } from '@taiga-ui/kit';
 import { TuiDay, TuiDayRange, TuiStringHandler, TuiStringMatcher } from '@taiga-ui/cdk';
 import { map } from 'rxjs';
 import * as ExcelJS from 'exceljs';
@@ -147,6 +147,13 @@ export class ReportsStoreComponent implements OnInit {
 
   readonly today = TuiDay.currentLocal();
   readonly firstOfMonth = new TuiDay(this.today.year, this.today.month, 1);
+
+  readonly periods = [
+    new TuiDayRangePeriod(new TuiDayRange(this.today, this.today), 'Hôm nay'),
+    new TuiDayRangePeriod(new TuiDayRange(this.today.append({ day: -1 }), this.today.append({ day: -1 })), 'Hôm qua'),
+    new TuiDayRangePeriod(new TuiDayRange(this.today.append({ day: -6 }), this.today), '7 ngày gần nhất'),
+    new TuiDayRangePeriod(new TuiDayRange(this.today.append({ day: -29 }), this.today), '30 ngày gần nhất'),
+  ];
 
   /** FormControl cho date range picker — dùng reactive để tránh xung đột với TuiTextfield */
   readonly dateRangeControl = new FormControl<TuiDayRange | null>(

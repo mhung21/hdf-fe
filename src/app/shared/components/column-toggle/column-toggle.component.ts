@@ -18,6 +18,8 @@ export interface ColumnDef {
   align?: 'left' | 'center' | 'right';
   /** API field name for sorting. If set, the column header becomes clickable for sorting. */
   sortKey?: string;
+  /** Optional tailwind classes applied to the th element (e.g. min-w-48) */
+  class?: string;
 }
 
 @Component({

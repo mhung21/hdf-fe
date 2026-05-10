@@ -1038,6 +1038,7 @@ export class LoanCreateDialogComponent {
   // ─────────────────────────────────────────────────────────────────────────
 
   save(initialStatus: LoanContractStatus = LoanContractStatus.DRAFT): void {
+    if (this.saving()) return; // Guard chặn double-submit (signal async nên [disabled] trên nút có thể miss rapid clicks)
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.activeTab.set('info'); // hiện tab thông tin để user thấy lỗi
