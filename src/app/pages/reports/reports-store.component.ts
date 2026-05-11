@@ -164,7 +164,7 @@ export class ReportsStoreComponent implements OnInit {
   currentUser = computed(() => this.authService.currentUser());
 
   incomeCategories: Record<string, string> = {
-    LOAN_COLLECTION: 'Thu khoản cầm cố/thuê lại/cầm đồ',
+    LOAN_COLLECTION: 'Thu khoản Cầm cố/Thuê/Cầm đồ',
     FILE_FEE: 'Phí hồ sơ',
     INSURANCE: 'Bảo hiểm',
     LATE_PENALTY: 'Phạt chậm nộp',
@@ -193,7 +193,7 @@ export class ReportsStoreComponent implements OnInit {
         next: (r) => {
           if (r.status && Array.isArray(r.data)) this.stores.set(r.data as StoreItem[]);
         },
-        error: () => {},
+        error: () => { },
       });
       this.storeControl.valueChanges.subscribe((val) => {
         if (val === '') {
@@ -440,7 +440,7 @@ export class ReportsStoreComponent implements OnInit {
       )
       .subscribe({
         next: (r) => this.monthlyCashFlow.set(r),
-        error: () => {},
+        error: () => { },
       });
   }
 

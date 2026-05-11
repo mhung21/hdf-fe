@@ -94,6 +94,7 @@ interface LoanContractItem {
   termMonths?: number | null;
   statusCode?: string | null;
   applicationDate?: string | null;
+  updatedAt?: string | null;
   disbursedDate?: string | null;
   maturityDate?: string | null;
   interestRateMonthlySnapshot?: number | null;
@@ -278,8 +279,8 @@ export class LoansComponent {
     return filtered.slice().sort((a, b) => {
       const d = this.statusRank(a.statusCode) - this.statusRank(b.statusCode);
       if (d !== 0) return d;
-      const at = a.applicationDate ? new Date(a.applicationDate).getTime() : 0;
-      const bt = b.applicationDate ? new Date(b.applicationDate).getTime() : 0;
+      const at = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.applicationDate ? new Date(a.applicationDate).getTime() : 0);
+      const bt = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.applicationDate ? new Date(b.applicationDate).getTime() : 0);
       return bt - at;
     });
   });
@@ -528,7 +529,7 @@ export class LoansComponent {
       keyword: this.keyword() || null,
       pageIndex: 1,
       pageSize,
-      sortBy: 'ApplicationDate',
+      sortBy: 'UpdatedAt',
       sortDesc: true,
       // Status/store are filtered client-side (supports multi-select).
       statusCode: null,
@@ -673,7 +674,7 @@ export class LoansComponent {
           }
           this.overdueMap.set(map);
         },
-        error: () => {},
+        error: () => { },
       });
   }
 
@@ -853,7 +854,7 @@ export class LoansComponent {
           });
         }
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -918,7 +919,7 @@ export class LoansComponent {
     const type = this.normalizeContractType(value);
     if (!type) return '-';
     if (type === 'PAWN') return 'Cầm đồ';
-    if (type === 'INSTALLMENT') return 'Cầm cố/Thuê lại';
+    if (type === 'INSTALLMENT') return 'Cầm cố/Thuê';
     return type;
   }
 

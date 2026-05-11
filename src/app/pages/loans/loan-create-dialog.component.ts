@@ -183,6 +183,8 @@ export class LoanCreateDialogComponent {
   private readonly collateralSvc = inject(LoanCollateralService);
   protected readonly documentSvc = inject(LoanContractDocumentService);
 
+  readonly currentDate = TuiDay.currentLocal();
+
   /** ID hợp đồng đang chỉnh sửa (nếu là bản nháp), null nếu tạo mới */
   readonly editingId = signal<string | null>(null);
   readonly loadingExisting = signal(false);
@@ -848,7 +850,7 @@ export class LoanCreateDialogComponent {
       combinedRateMonth === 0
         ? totalPrincipal / N
         : (totalPrincipal * combinedRateMonth * pow) / (pow - 1);
-    const pmt = Math.round(pmtRaw);
+    const pmt = Math.round(pmtRaw + fixedMonthlyFeeAmount);
 
     // Kỳ n = ngày giải ngân + n tháng (không cộng dồn từ kỳ trước để tránh trôi ngày)
     const dueDates = Array.from({ length: N }, (_, i) => addMonths(base, i + 1));
@@ -874,24 +876,23 @@ export class LoanCreateDialogComponent {
       const dueDate = period?.toDate ?? addMonths(base, n);
 
       const interest = Math.round(remaining * interestRateMonth * dailyFactor * dayCount);
-      const qlkv =
-        Math.round(remaining * qlkvRateMonth * dailyFactor * dayCount) +
-        Math.round(fixedMonthlyFeeAmount * dailyFactor * dayCount);
+      const qlkv = Math.round(remaining * qlkvRateMonth * dailyFactor * dayCount);
       const qlts = Math.round(remaining * qltsRateMonth * dailyFactor * dayCount);
-      const fee = qlkv + qlts;
+      const fixedFee = Math.round(fixedMonthlyFeeAmount);
+      const fee = interest + qlkv + qlts + fixedFee;
 
       let principal: number;
       if (n === N) {
         principal = remaining;
       } else {
-        // Công thức: Tiền gốc = Tiền TT hàng kỳ - Tiền lãi - Phí QLKV - Phí QLTS
-        principal = Math.max(0, Math.round(pmt - interest - fee));
+        // Công thức: Tiền gốc = Tiền TT hàng kỳ - Tiền lãi - Phí QLKV - Phí QLTS - Phí cố định
+        principal = Math.max(0, Math.round(pmt - fee));
         if (principal > remaining) principal = remaining;
       }
-      const total = principal + interest + fee;
+      const total = n === N ? principal + fee : pmt;
       remaining = Math.max(0, remaining - principal);
       totalInterest += interest;
-      totalPeriodicFee += fee;
+      totalPeriodicFee += qlkv + qlts + fixedFee;
       totalPayment += total;
       schedule.push({
         periodNo: n,
@@ -901,9 +902,9 @@ export class LoanCreateDialogComponent {
         principalAmount: principal,
         interestAmount: interest,
         qlkvAmount: qlkv,
-        fixedMonthlyFeeAmount: 0,
+        fixedMonthlyFeeAmount: fixedFee,
         qltsAmount: qlts,
-        periodicFeeAmount: fee,
+        periodicFeeAmount: qlkv + qlts + fixedFee,
         totalPayment: total,
         remainingPrincipal: remaining,
       });

@@ -81,7 +81,7 @@ const VOUCHER_TYPE_LABELS: Record<string, string> = {
 };
 
 const REASON_LABELS: Record<string, string> = {
-  LOAN_COLLECTION: 'Thu khoản cầm cố/thuê lại/cầm đồ',
+  LOAN_COLLECTION: 'Thu khoản Cầm cố/Thuê/Cầm đồ',
   LOAN_DISBURSEMENT: 'Giải ngân',
   FILE_FEE: 'Phí hồ sơ',
   INSURANCE: 'Bảo hiểm',

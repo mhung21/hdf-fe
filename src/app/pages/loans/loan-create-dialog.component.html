@@ -311,8 +311,8 @@
             <div>
               <label tuiLabel>Ngày lập hồ sơ <span class="text-red-500">*</span></label>
               <tui-textfield [tuiTextfieldSize]="'m'">
-                <input tuiInputDate formControlName="applicationDate" placeholder="dd/mm/yyyy" />
-                <tui-calendar *tuiTextfieldDropdown />
+                <input tuiInputDate formControlName="applicationDate" placeholder="dd/mm/yyyy" [max]="currentDate" />
+                <tui-calendar *tuiTextfieldDropdown [max]="currentDate" />
               </tui-textfield>
               @if (
                 form.controls.applicationDate.invalid &&

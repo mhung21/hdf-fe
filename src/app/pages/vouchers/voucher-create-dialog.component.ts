@@ -52,7 +52,7 @@ const VOUCHER_TYPE_LABELS: Record<string, string> = {
 };
 
 const REASON_LABELS: Record<string, string> = {
-  LOAN_COLLECTION: 'Thu khoản cầm cố/thuê lại/cầm đồ',
+  LOAN_COLLECTION: 'Thu khoản Cầm cố/Thuê/Cầm đồ',
   LOAN_DISBURSEMENT: 'Giải ngân',
   FILE_FEE: 'Phí hồ sơ',
   LATE_PENALTY: 'Phạt chậm nộp',
@@ -270,7 +270,7 @@ export class VoucherCreateDialogComponent implements OnInit {
             this.customers.set(data.items ?? []);
           }
         },
-        error: () => {},
+        error: () => { },
       });
     this.loanProvider
       .apiLoanContractSearchPost({
@@ -283,7 +283,7 @@ export class VoucherCreateDialogComponent implements OnInit {
             this.loanContracts.set(data.items ?? []);
           }
         },
-        error: () => {},
+        error: () => { },
       });
   }
 

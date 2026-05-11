@@ -70,7 +70,7 @@ interface StoreItem {
 }
 
 const INCOME_LABELS: Record<string, string> = {
-  LOAN_COLLECTION: 'Thu khoản cầm cố/thuê lại/cầm đồ',
+  LOAN_COLLECTION: 'Thu khoản Cầm cố/Thuê/Cầm đồ',
   FILE_FEE: 'Phí hồ sơ',
   INSURANCE: 'Bảo hiểm',
   LATE_PENALTY: 'Phạt chậm nộp',
@@ -189,7 +189,7 @@ export class ReportsFinancialComponent implements OnInit {
             this.stores.set(r.data as StoreItem[]);
           }
         },
-        error: () => {},
+        error: () => { },
       });
       this.storeControl.valueChanges.subscribe((val) => { if (val === '') { this.storeControl.setValue(null, { emitEvent: false }); this.selectedStoreId.set(null); } else { this.selectedStoreId.set(val ?? null); } this.loadAll(); });
     }
@@ -352,7 +352,7 @@ export class ReportsFinancialComponent implements OnInit {
         next: (r) => {
           if (r) this.monthlyCashFlow.set(r);
         },
-        error: () => {},
+        error: () => { },
         complete: () => this.loadingCashFlow.set(false),
       });
   }

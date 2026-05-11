@@ -60,6 +60,21 @@ export interface ApiLoanContractGetStatusHistoryPostRequestParams {
     body?: string;
 }
 
+export interface AuditLogDto {
+    auditLogId: string;
+    tableName: string;
+    actionCode: string;
+    oldData?: string;
+    newData?: string;
+    changedAt: Date;
+    changedBy?: string;
+    changedByName?: string;
+}
+
+export interface ApiLoanContractGetAuditLogsPostRequestParams {
+    body?: string;
+}
+
 export interface ApiLoanContractSavePostRequestParams {
     cULoanContractModel?: CULoanContractModel;
 }
@@ -151,6 +166,14 @@ export interface LoanContractProviderInterface {
 * @param requestParameters
      */
     apiLoanContractGetStatusHistoryPost(requestParameters: ApiLoanContractGetStatusHistoryPostRequestParams, extraHttpRequestParams?: any): Observable<ResultAPI>;
+
+    /**
+     * 
+     * 
+     * @endpoint post /api/LoanContract/GetAuditLogs
+* @param requestParameters
+     */
+    apiLoanContractGetAuditLogsPost(requestParameters: ApiLoanContractGetAuditLogsPostRequestParams, extraHttpRequestParams?: any): Observable<ResultAPI>;
 
     /**
      * 

@@ -235,7 +235,7 @@ interface LoanStatusActionOption {
   hint?: string;
 }
 
-type TabKey = 'info' | 'schedule' | 'payments' | 'collateral' | 'docs';
+type TabKey = 'info' | 'schedule' | 'payments' | 'collateral' | 'docs' | 'audit_logs';
 
 @Component({
   selector: 'app-loan-detail-dialog',
@@ -325,22 +325,26 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   // ── Tabs ──────────────────────────────────────────────────────────────────
   activeTab = signal<TabKey>('info');
 
-  /** Index tab đang active — dùng để bind (activeItemIndex) cho tui-tabs. */
-  readonly activeItemIndex = computed(() => this.tabs.findIndex((t) => t.key === this.activeTab()));
-
-  /** Gọi khi tui-tabs thay đổi tab (bao gồm cả khi click bằng chuột). */
-  setActiveItemIndex(index: number): void {
-    const tab = this.tabs[index];
-    if (tab) this.switchTab(tab.key);
-  }
-
-  readonly tabs: { key: TabKey; label: string; icon: string }[] = [
+  readonly tabs: { key: TabKey; label: string; icon: string; hide?: boolean }[] = [
     { key: 'info', label: 'Thông tin', icon: '@tui.file-text' },
     { key: 'schedule', label: 'Lịch trả nợ', icon: '@tui.calendar' },
     { key: 'payments', label: 'Lịch sử thu', icon: '@tui.receipt' },
     { key: 'collateral', label: 'Tài sản đảm bảo', icon: '@tui.landmark' },
     { key: 'docs', label: 'Hồ sơ giấy tờ', icon: '@tui.folder-open' },
+    { key: 'audit_logs', label: 'Lịch sử thao tác', icon: '@tui.clock', hide: !this.authService.hasRole(RoleCode.ADMIN) },
   ];
+
+  // Lọc tab thực tế để hiển thị
+  readonly visibleTabs = computed(() => this.tabs.filter(t => !t.hide));
+
+  /** Index tab đang active — dùng để bind (activeItemIndex) cho tui-tabs. */
+  readonly activeItemIndex = computed(() => this.visibleTabs().findIndex((t) => t.key === this.activeTab()));
+
+  /** Gọi khi tui-tabs thay đổi tab (bao gồm cả khi click bằng chuột). */
+  setActiveItemIndex(index: number): void {
+    const tab = this.visibleTabs()[index];
+    if (tab) this.switchTab(tab.key);
+  }
 
   // ── Repayment schedule ─────────────────────────────────────────────────
   repaymentSchedule = signal<RepaymentScheduleRow[]>([]);
@@ -350,6 +354,11 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   financialSummary = signal<LoanFinancialSummary | null>(null);
   financialSummaryLoading = signal(false);
   financialSummaryLoaded = signal(false);
+
+  // ── Audit Logs ───────────────────────────────────────────────────
+  auditLogs = signal<any[]>([]);
+  auditLogsLoading = signal(false);
+  auditLogsLoaded = signal(false);
 
   // ── Computed: Sức khỏe khoản vay ────────────────────────────────────────────
   /** Danh sách kỳ quá hạn kèm số ngày tính từ hôm nay */
@@ -2273,6 +2282,12 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     return isNaN(d.getTime()) ? '-' : new Intl.DateTimeFormat('vi-VN').format(d);
   }
 
+  formatDateTime(iso?: string | null): string {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? '-' : new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(d);
+  }
+
   /** Format gọn số tiền (không kèm ký hiệu VNĐ) dùng trong dropdown option. */
   formatAmountShort(amount: number): string {
     return new Intl.NumberFormat('vi-VN').format(Math.round(amount));
@@ -2282,4 +2297,72 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   getDocumentTypeLabel = (t: string): string => DOCUMENT_TYPE_LABELS[t] ?? t;
   isImageContent = (contentType: string): boolean => contentType.startsWith('image/');
   formatFileSize = (bytes: number): string => this.documentSvc.formatFileSize(bytes);
+
+  // ──────────────────────────────────────────────────────────────────────────────
+  // Lịch sử thao tác (Audit Logs)
+  // ──────────────────────────────────────────────────────────────────────────────
+
+  private loadAuditLogs(): void {
+    const id = this.loanContractId();
+    if (!id || !this.authService.hasRole(RoleCode.ADMIN)) return;
+
+    this.auditLogsLoading.set(true);
+    this.loanProvider.apiLoanContractGetAuditLogsPost({ body: this.guidBody(id) }).subscribe({
+      next: (res) => {
+        if (res.status && res.data) {
+          const logs = res.data.map((log: any) => ({
+            ...log,
+            parsedChanges: this.parseAuditLogChanges(log.oldData, log.newData)
+          }));
+          this.auditLogs.set(logs);
+          this.auditLogsLoaded.set(true);
+        } else {
+          this.alert.open(res.message || 'Lỗi tải lịch sử thao tác.', { appearance: 'negative' }).subscribe();
+        }
+      },
+      error: (err) => {
+        this.alert.open(err.message || 'Lỗi tải lịch sử thao tác.', { appearance: 'negative' }).subscribe();
+      },
+      complete: () => {
+        this.auditLogsLoading.set(false);
+      }
+    });
+  }
+
+  private parseAuditLogChanges(oldDataStr: string | null, newDataStr: string | null): { field: string; oldVal: any; newVal: any }[] {
+    const changes: { field: string; oldVal: any; newVal: any }[] = [];
+    let oldObj: any = {};
+    let newObj: any = {};
+
+    try {
+      if (oldDataStr) oldObj = JSON.parse(oldDataStr);
+      if (newDataStr) newObj = JSON.parse(newDataStr);
+    } catch (e) {
+      console.error('Failed to parse audit log JSON', e);
+      return changes;
+    }
+
+    const allKeys = Array.from(new Set([...Object.keys(oldObj), ...Object.keys(newObj)]));
+
+    // Bỏ qua một số trường không quan trọng
+    const ignoreFields = ['LoanContractId', 'CreatedAt', 'UpdatedAt', 'CreatedBy'];
+
+    for (const key of allKeys) {
+      if (ignoreFields.includes(key)) continue;
+
+      const oldVal = oldObj[key];
+      const newVal = newObj[key];
+
+      // Chỉ lấy những trường có sự khác biệt
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        changes.push({
+          field: key,
+          oldVal: oldVal !== undefined && oldVal !== null ? oldVal : 'Trống',
+          newVal: newVal !== undefined && newVal !== null ? newVal : 'Trống'
+        });
+      }
+    }
+
+    return changes;
+  }
 }
