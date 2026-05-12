@@ -1486,7 +1486,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.statusChanging.set(false);
-          const message = err?.error?.message ?? 'Lỗi kết nối khi cập nhật trạng thái.';
+          const message = this.getErrorMessage(err, 'cập nhật trạng thái');
           this.alert.open(message, { appearance: 'negative' }).subscribe();
         },
       });
@@ -1770,7 +1770,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
             },
             error: (err: any) => {
               this.creatingReceipt.set(false);
-              const msg = err?.error?.message ?? 'Lỗi kết nối khi ghi nhận thu hồi nợ xấu.';
+              const msg = this.getErrorMessage(err, 'ghi nhận thu hồi nợ xấu');
               this.alert.open(msg, { appearance: 'negative' }).subscribe();
             },
           });
@@ -1830,7 +1830,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.creatingReceipt.set(false);
-          const msg = err?.error?.message ?? 'Lỗi kết nối khi tạo phiếu thu.';
+          const msg = this.getErrorMessage(err, 'tạo phiếu thu');
           this.alert.open(msg, { appearance: 'negative' }).subscribe();
         },
       });
@@ -2024,9 +2024,9 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
             this.alert.open(r.message ?? 'Lỗi khi lưu.', { appearance: 'negative' }).subscribe();
           }
         },
-        error: () => {
+        error: (err: any) => {
           this.savingCollateral.set(false);
-          this.alert.open('Lỗi kết nối.', { appearance: 'negative' }).subscribe();
+          this.alert.open(this.getErrorMessage(err), { appearance: 'negative' }).subscribe();
         },
       });
   }
@@ -2042,7 +2042,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
           this.alert.open(r.message ?? 'Không thể xóa.', { appearance: 'negative' }).subscribe();
         }
       },
-      error: () => this.alert.open('Lỗi kết nối.', { appearance: 'negative' }).subscribe(),
+      error: (err: any) => this.alert.open(this.getErrorMessage(err), { appearance: 'negative' }).subscribe(),
     });
   }
 
@@ -2105,9 +2105,9 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
               .subscribe();
           }
         },
-        error: () => {
+        error: (err: any) => {
           this.uploadingPdf.set(false);
-          this.alert.open('Lỗi kết nối.', { appearance: 'negative' }).subscribe();
+          this.alert.open(this.getErrorMessage(err), { appearance: 'negative' }).subscribe();
         },
       });
   }
@@ -2212,9 +2212,9 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
           this.alert.open(r.message ?? 'Upload thất bại.', { appearance: 'negative' }).subscribe();
         }
       },
-      error: () => {
+      error: (err: any) => {
         this.uploadingDoc.set(false);
-        this.alert.open('Lỗi kết nối.', { appearance: 'negative' }).subscribe();
+        this.alert.open(this.getErrorMessage(err), { appearance: 'negative' }).subscribe();
       },
     });
   }
@@ -2230,7 +2230,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
           this.alert.open(r.message ?? 'Không thể xóa.', { appearance: 'negative' }).subscribe();
         }
       },
-      error: () => this.alert.open('Lỗi kết nối.', { appearance: 'negative' }).subscribe(),
+      error: (err: any) => this.alert.open(this.getErrorMessage(err), { appearance: 'negative' }).subscribe(),
     });
   }
 
@@ -2364,5 +2364,17 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     }
 
     return changes;
+  }
+
+  /**
+   * Trích xuất message lỗi từ HTTP error response.
+   * - status === 0: mất kết nối thật (DNS fail, CORS block, mất mạng)
+   * - status >= 400: server trả lỗi — ưu tiên đọc err.error.message
+   */
+  private getErrorMessage(err: any, context?: string): string {
+    if (err?.error?.message) return err.error.message;
+    const action = context ? ` khi ${context}` : '';
+    if (err?.status === 0) return `Không thể kết nối đến máy chủ${action}. Vui lòng kiểm tra mạng.`;
+    return `Lỗi hệ thống${action}. Vui lòng thử lại.`;
   }
 }
