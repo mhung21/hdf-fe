@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import {
   Subject,
@@ -150,6 +151,7 @@ export class LoansComponent {
   private readonly referenceDataService = inject(ReferenceDataService);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
 
   searchInput = '';
@@ -162,7 +164,8 @@ export class LoansComponent {
   page = signal(0);
   size = signal(20);
   keyword = signal('');
-  contractGroup = signal<'ACTIVE' | 'SETTLED' | 'CANCELLED'>('ACTIVE');
+  contractGroup = signal<'ACTIVE' | 'SETTLED' | 'CANCELLED' | 'OVERDUE'>('ACTIVE');
+  overdueSubFilter = signal<'ALL' | 'UNDER_7' | 'OVER_7' | 'OVER_10' | 'OVER_30'>('ALL');
   statusFilter = signal<string | null>(null);
   dateFilterType = signal<'ApplicationDate' | 'DisbursedDate'>('ApplicationDate');
   readonly pageSizeItems = [20, 50, 100] as const;
@@ -247,6 +250,8 @@ export class LoansComponent {
     const group = this.contractGroup();
     const statusCodes = this.selectedStatusCodes();
     const storeIds = this.selectedFilterStoreIds();
+    const overdueMap = this.overdueMap();
+    const overdueSub = this.overdueSubFilter();
 
     // UI multi-select is OR-within-field (statusCodes / storeIds), AND across fields.
     const filtered = list.filter((loan) => {
@@ -255,15 +260,27 @@ export class LoansComponent {
       const storeId = loan.storeId ?? '';
 
       // 1. Group Filter
-      if (group === 'ACTIVE' && !isActive) return false;
-      if (group === 'SETTLED') {
+      if (group === 'OVERDUE') {
+        // Only show loans that exist in the overdueMap
+        const info = overdueMap.get(loan.loanContractId);
+        if (!info) return false;
+        // Sub-filter by overdue duration
+        const days = info.maxDaysOverdue;
+        if (overdueSub === 'UNDER_7' && days >= 7) return false;
+        if (overdueSub === 'OVER_7' && days < 7) return false;
+        if (overdueSub === 'OVER_10' && days < 10) return false;
+        if (overdueSub === 'OVER_30' && days < 30) return false;
+      } else if (group === 'ACTIVE' && !isActive) {
+        return false;
+      } else if (group === 'SETTLED') {
         const isSettledGroup =
           status === LoanContractStatus.SETTLED ||
           status === LoanContractStatus.CLOSED ||
           status === LoanContractStatus.BAD_DEBT_CLOSED;
         if (!isSettledGroup) return false;
+      } else if (group === 'CANCELLED' && status !== LoanContractStatus.CANCELLED) {
+        return false;
       }
-      if (group === 'CANCELLED' && status !== LoanContractStatus.CANCELLED) return false;
 
       // 2. Multi-select Status Filter (AND with group, OR within selected list)
       if (statusCodes.length > 0 && (!status || !statusCodes.includes(status))) return false;
@@ -274,6 +291,15 @@ export class LoansComponent {
 
       return true;
     });
+
+    // For OVERDUE group, sort by maxDaysOverdue descending (most overdue first).
+    if (group === 'OVERDUE') {
+      return filtered.slice().sort((a, b) => {
+        const aInfo = overdueMap.get(a.loanContractId);
+        const bInfo = overdueMap.get(b.loanContractId);
+        return (bInfo?.maxDaysOverdue ?? 0) - (aInfo?.maxDaysOverdue ?? 0);
+      });
+    }
 
     // Business order: Chờ duyệt -> Chờ GN -> Đang thu -> Nợ xấu -> ...; within same status newest first.
     return filtered.slice().sort((a, b) => {
@@ -319,6 +345,11 @@ export class LoansComponent {
           status === LoanContractStatus.BAD_DEBT_CLOSED
         );
       if (group === 'CANCELLED') return status === LoanContractStatus.CANCELLED;
+      if (group === 'OVERDUE')
+        return (
+          status === LoanContractStatus.DISBURSED ||
+          status === LoanContractStatus.BAD_DEBT
+        );
       return false;
     });
   });
@@ -458,6 +489,19 @@ export class LoansComponent {
       });
     });
 
+    // Read query param ?tab=OVERDUE|ACTIVE|SETTLED|CANCELLED to set initial tab
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam && ['ACTIVE', 'SETTLED', 'CANCELLED', 'OVERDUE'].includes(tabParam.toUpperCase())) {
+      this.contractGroup.set(tabParam.toUpperCase() as 'ACTIVE' | 'SETTLED' | 'CANCELLED' | 'OVERDUE');
+    }
+
+    // Read query param ?keyword= to auto-search
+    const keywordParam = this.route.snapshot.queryParamMap.get('keyword');
+    if (keywordParam) {
+      this.searchInput = keywordParam;
+      this.keyword.set(keywordParam);
+    }
+
     this.loadLoans();
     this.loadOverdueInfo();
   }
@@ -469,16 +513,24 @@ export class LoansComponent {
     this.loadLoans();
   }
 
-  setContractGroup(group: 'ACTIVE' | 'SETTLED' | 'CANCELLED'): void {
+  setContractGroup(group: 'ACTIVE' | 'SETTLED' | 'CANCELLED' | 'OVERDUE'): void {
     if (this.contractGroup() === group) return;
     this.contractGroup.set(group);
     this.selectedStatusCodes.set([]); // Clear sub-filters when group changes
+    this.overdueSubFilter.set('ALL'); // Reset overdue sub-filter
+    this.page.set(0);
+  }
+
+  setOverdueSubFilter(sub: 'ALL' | 'UNDER_7' | 'OVER_7' | 'OVER_10' | 'OVER_30'): void {
+    if (this.overdueSubFilter() === sub) return;
+    this.overdueSubFilter.set(sub);
     this.page.set(0);
   }
 
   clearFilters(): void {
     this.selectedStatusCodes.set([]);
     this.selectedFilterStoreIds.set([]);
+    this.overdueSubFilter.set('ALL');
     this.filterForm.patchValue(
       { dateRange: null, statusCodes: [], filterStoreIds: [] },
       { emitEvent: false },

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -29,6 +29,7 @@ export class DashboardComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly svc = inject(DashboardService);
   private readonly storeScope = inject(StoreScopeService);
+  private readonly router = inject(Router);
 
   currentUser = this.auth.currentUser;
   userRole = computed(() => (this.auth.currentUser()?.role as string) ?? 'STAFF');
@@ -48,7 +49,11 @@ export class DashboardComponent implements OnInit {
   disbursedCount    = computed(() => this.portfolio()?.disbursedCount ?? 0);
   pendingApprovalCount = computed(() => this.portfolio()?.pendingApprovalCount ?? 0);
   pendingDisbCount  = computed(() => this.portfolio()?.pendingDisbCount ?? 0);
-  overdueContractCount = computed(() => this.portfolio()?.overdueContractCount ?? 0);
+  overdueContractCount = computed(() => {
+    const riskDetail = (this.overdueSummary()?.riskDetail as any[]) ?? [];
+    const uniqueContracts = new Set(riskDetail.map((x: any) => x?.loanContractId ?? x?.contractNo).filter(Boolean));
+    return uniqueContracts.size || (this.portfolio()?.overdueContractCount ?? 0);
+  });
   badDebtCount      = computed(() => this.portfolio()?.badDebtCount ?? 0);
   remainingPrincipal = computed(() => this.portfolio()?.totalRemainingPrincipal ?? 0);
   totalActivePortfolio = computed(() => this.portfolio()?.totalActivePortfolio ?? 0);
@@ -387,4 +392,10 @@ export class DashboardComponent implements OnInit {
 
   formatCurrency = (n: number) => this.svc.formatCurrency(n);
   getRiskLabel    = (l: string) => this.svc.getRiskLabel(l);
+
+  navigateToOverdueContract(contractNo: string): void {
+    this.router.navigate(['/loans'], {
+      queryParams: { tab: 'OVERDUE', keyword: contractNo }
+    });
+  }
 }

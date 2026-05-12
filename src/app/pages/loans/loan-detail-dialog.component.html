@@ -1373,13 +1373,20 @@
         <div class="mb-8 last:mb-0">
           <div class="absolute -left-[9px] mt-1.5 w-4 h-4 bg-white rounded-full border-4"
                [class.border-green-500]="log.actionCode === 'INSERT'"
-               [class.border-blue-500]="log.actionCode !== 'INSERT'"></div>
+               [class.border-amber-500]="log.actionCode === 'STATUS_CHANGE'"
+               [class.border-blue-500]="log.actionCode === 'UPDATE'"></div>
           
           <div class="mb-1.5 text-sm text-gray-600">
             <span class="font-semibold text-gray-900">{{ log.changedByName || 'Hệ thống' }}</span>
-            đã {{ log.actionCode === 'INSERT' ? 'tạo mới' : 'cập nhật' }}
+            đã {{ log.actionCode === 'INSERT' ? 'tạo mới' : log.actionCode === 'STATUS_CHANGE' ? 'chuyển trạng thái' : 'cập nhật' }}
             <span class="text-gray-400 text-xs ml-1">· {{ formatDateTime(log.changedAt) }}</span>
           </div>
+
+          @if (log.note) {
+          <p class="mb-1.5 text-xs text-gray-500 italic">
+            <tui-icon icon="@tui.message-circle" class="text-[10px] mr-0.5" />{{ log.note }}
+          </p>
+          }
 
           @if (log.parsedChanges.length > 0) {
           <div class="p-3 text-sm bg-gray-50 rounded-lg border border-gray-100">
@@ -1388,7 +1395,7 @@
               <li class="grid grid-cols-12 gap-2 items-center">
                 <span class="col-span-12 sm:col-span-3 font-medium text-gray-600 truncate" [title]="change.field">{{ change.field }}</span>
                 <div class="col-span-12 sm:col-span-9 flex items-center gap-2 font-mono text-xs">
-                  @if (log.actionCode === 'UPDATE') {
+                  @if (log.actionCode !== 'INSERT') {
                   <span class="px-1.5 py-0.5 text-red-700 bg-red-100 rounded line-through truncate max-w-[45%]" [title]="change.oldVal">{{ change.oldVal }}</span>
                   <tui-icon icon="@tui.arrow-right" class="text-gray-400 shrink-0 text-sm" />
                   }

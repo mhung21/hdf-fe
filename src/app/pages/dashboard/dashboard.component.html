@@ -147,8 +147,9 @@
       @if (isAdmin() || isManager()) {
         <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 mb-5 pb-2 scrollbar-hide lg:grid lg:grid-cols-5">
           <!-- HĐ Đang Giải Ngân -->
-          <div
-            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-green-600 to-green-900 shadow-[0_8px_20px_-4px_rgba(22,163,74,.4)] hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,.5)] kpi-card-deco"
+          <a
+            routerLink="/loans"
+            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white no-underline cursor-pointer transition-all hover:-translate-y-1 bg-gradient-to-br from-green-600 to-green-900 shadow-[0_8px_20px_-4px_rgba(22,163,74,.4)] hover:shadow-[0_16px_32px_-8px_rgba(22,163,74,.5)] kpi-card-deco"
           >
             <div
               class="relative z-10 flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur mb-3.5"
@@ -169,11 +170,12 @@
             <div
               class="absolute right-4 bottom-4 w-2 h-2 rounded-full bg-white/60 kpi-pulse-ring"
             ></div>
-          </div>
+          </a>
 
           <!-- Dư Nợ Còn Lại -->
-          <div
-            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-teal-600 to-teal-900 shadow-[0_8px_20px_-4px_rgba(13,148,136,.4)] hover:shadow-[0_16px_32px_-8px_rgba(13,148,136,.5)] kpi-card-deco"
+          <a
+            routerLink="/reports/all"
+            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white no-underline cursor-pointer transition-all hover:-translate-y-1 bg-gradient-to-br from-teal-600 to-teal-900 shadow-[0_8px_20px_-4px_rgba(13,148,136,.4)] hover:shadow-[0_16px_32px_-8px_rgba(13,148,136,.5)] kpi-card-deco"
           >
             <div
               class="relative z-10 flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur mb-3.5"
@@ -191,11 +193,12 @@
             <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
               Portfolio: {{ formatCurrency(totalActivePortfolio()) }}
             </div>
-          </div>
+          </a>
 
           <!-- Tổng Thu Năm -->
-          <div
-            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-amber-500 to-amber-900 shadow-[0_8px_20px_-4px_rgba(245,158,11,.4)] hover:shadow-[0_16px_32px_-8px_rgba(245,158,11,.5)] kpi-card-deco"
+          <a
+            routerLink="/reports/financial"
+            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white no-underline cursor-pointer transition-all hover:-translate-y-1 bg-gradient-to-br from-amber-500 to-amber-900 shadow-[0_8px_20px_-4px_rgba(245,158,11,.4)] hover:shadow-[0_16px_32px_-8px_rgba(245,158,11,.5)] kpi-card-deco"
           >
             <div
               class="relative z-10 flex items-center justify-center w-[2.1rem] h-[2.1rem] rounded-[.65rem] bg-white/20 backdrop-blur mb-3.5"
@@ -213,11 +216,13 @@
             <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
               LN ròng: {{ formatCurrency(cashFlow()?.totalNetIncome ?? 0) }}
             </div>
-          </div>
+          </a>
 
           <!-- Quá Hạn / Nợ Xấu -->
-          <div
-            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-red-500 to-red-900 shadow-[0_8px_20px_-4px_rgba(239,68,68,.4)] hover:shadow-[0_16px_32px_-8px_rgba(239,68,68,.5)] kpi-card-deco"
+          <a
+            routerLink="/loans"
+            [queryParams]="{ tab: 'OVERDUE' }"
+            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white no-underline cursor-pointer transition-all hover:-translate-y-1 bg-gradient-to-br from-red-500 to-red-900 shadow-[0_8px_20px_-4px_rgba(239,68,68,.4)] hover:shadow-[0_16px_32px_-8px_rgba(239,68,68,.5)] kpi-card-deco"
           >
             <div class="relative z-10 flex items-start justify-between mb-3.5">
               <div
@@ -243,11 +248,12 @@
             <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
               {{ formatCurrency(overdueTotal()) }}
             </div>
-          </div>
+          </a>
 
           <!-- Tổng Nợ Xấu -->
-          <div
-            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white cursor-default transition-all hover:-translate-y-1 bg-gradient-to-br from-rose-500 to-rose-900 shadow-[0_8px_20px_-4px_rgba(244,63,94,.4)] hover:shadow-[0_16px_32px_-8px_rgba(244,63,94,.5)] kpi-card-deco"
+          <a
+            routerLink="/bad-debts"
+            class="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-auto relative overflow-hidden rounded-[1.125rem] p-5 text-white no-underline cursor-pointer transition-all hover:-translate-y-1 bg-gradient-to-br from-rose-500 to-rose-900 shadow-[0_8px_20px_-4px_rgba(244,63,94,.4)] hover:shadow-[0_16px_32px_-8px_rgba(244,63,94,.5)] kpi-card-deco"
           >
             <div class="relative z-10 flex items-start justify-between mb-3.5">
               <div
@@ -273,7 +279,7 @@
             <div class="relative z-10 text-[.65rem] text-white/45 mt-0.5">
               Theo {{ currentYear }}/{{ today.getMonth() + 1 }}
             </div>
-          </div>
+          </a>
         </div>
       } @else {
         <!-- Staff: 4 compact KPI tiles -->
@@ -550,7 +556,7 @@
                   </thead>
                   <tbody tuiTbody>
                     @for (loan of overdueList(); track loan.scheduleId) {
-                      <tr tuiTr>
+                      <tr tuiTr class="cursor-pointer hover:bg-gray-50 transition-colors" (click)="navigateToOverdueContract(loan.contractNo)">
                         <td *tuiCell="'contractNo'" tuiTd>
                           <span class="font-mono text-[.7rem] font-bold text-blue-600">{{
                             loan.contractNo

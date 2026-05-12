@@ -1540,6 +1540,9 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
       if (!this.attachmentLoaded()) this.loadAttachment();
       if (!this.documentLoaded()) this.loadDocuments();
     }
+    if (tab === 'audit_logs' && !this.auditLogsLoaded() && !this.auditLogsLoading()) {
+      this.loadAuditLogs();
+    }
   }
 
   /**
@@ -2350,11 +2353,17 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     for (const key of allKeys) {
       if (ignoreFields.includes(key)) continue;
 
-      const oldVal = oldObj[key];
-      const newVal = newObj[key];
+      let oldVal = oldObj[key];
+      let newVal = newObj[key];
 
       // Chỉ lấy những trường có sự khác biệt
       if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        // Chuyển StatusCode sang tiếng Việt
+        if (key === 'StatusCode') {
+          oldVal = oldVal ? (LOAN_CONTRACT_STATUS_LABELS[oldVal as LoanContractStatus] ?? oldVal) : oldVal;
+          newVal = newVal ? (LOAN_CONTRACT_STATUS_LABELS[newVal as LoanContractStatus] ?? newVal) : newVal;
+        }
+
         changes.push({
           field: key,
           oldVal: oldVal !== undefined && oldVal !== null ? oldVal : 'Trống',
