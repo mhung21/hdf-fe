@@ -35,6 +35,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/settings/interest': 'Cài Đặt Lãi Suất',
   '/loan-products': 'Sản Phẩm',
   '/policies': 'Chính Sách',
+  '/activity-logs': 'Nhật Ký Hoạt Động',
 };
 
 @Component({

@@ -279,7 +279,7 @@ export class LoanPrintService {
         <th>Tiền lãi</th>
         <th>Tổng cầm đồ</th>
         <th>Phí phần mềm</th>
-        <th>Phí hao mòn</th>
+        <th>Phí thuê</th>
         <th>Tổng cho thuê</th>
         <th>Nợ gốc còn lại</th>
       </tr>

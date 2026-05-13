@@ -49,6 +49,7 @@ import { injectContext } from '@taiga-ui/polymorpheus';
 import { LoanContractProvider } from '../../api/api/loan-contract.service';
 import { LoanContractAttachmentProvider } from '../../api/api/loan-contract-attachment.service';
 import { CashVoucherProvider } from '../../api/api/cash-voucher.service';
+import { LoanSettlementProvider } from '../../api/api/loan-settlement.service';
 import { AuthService } from '../../services/auth.service';
 import {
   BadDebtCaseOpsService,
@@ -269,6 +270,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   private readonly loanProvider = inject(LoanContractProvider);
   private readonly attachmentProvider = inject(LoanContractAttachmentProvider);
   private readonly cashVoucherProvider = inject(CashVoucherProvider);
+  private readonly loanSettlementProvider = inject(LoanSettlementProvider);
   private readonly badDebtCaseOps = inject(BadDebtCaseOpsService);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
@@ -455,6 +457,12 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
   // (search filtering handled natively by tuiSelectLike)
   /** Cở hiệu báo rằng user vừa đổi mục thu, cần auto-fill lại khi data sẵn sàng */
   private pendingAutoFill = signal(true);
+  /** Trạng thái gọi API tính tất toán để ưu tiên số liệu backend (chuẩn hạch toán). */
+  settlementCalcLoading = signal(false);
+  private settlementCalcApiResult = signal<SettlementCalculationResult | null>(null);
+  private settlementCalcInFlight = false;
+  private lastSettlementCalcRequestKey: string | null = null;
+
   // ── Settlement calculation (tính trực tiếp tại FE, không cần gọi API) ─────────────
   /**
    * Tính tất toán hoàn toàn tại FE dựa trên:
@@ -463,7 +471,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
    * - earlySettlementPenaltyRateSnapshot: tỷ lệ phạt lấy từ snapshot hợp đồng
    * Trả null khi dữ liệu chưa load xong hoặc không chọn EARLY_SETTLEMENT.
    */
-  readonly settlementCalc = computed<SettlementCalculationResult | null>(() => {
+  readonly settlementCalcLocal = computed<SettlementCalculationResult | null>(() => {
     if (!this.hasSelectedEarlySettlement()) return null;
     if (!this.scheduleLoaded() || !this.financialSummaryLoaded()) return null;
 
@@ -494,7 +502,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     );
     const elapsedDays = Math.max(0, Math.round((today.getTime() - disbursed.getTime()) / msPerDay));
     const completionRatio = Math.round((elapsedDays / contractDays) * 10000) / 100; // 2 decimal
-    
+
     // Đối với Cầm đồ, mặc định không phạt tất toán sớm trừ khi có quy định riêng
     const isEarly = !isPawn && completionRatio < 80;
 
@@ -547,7 +555,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
         // Nếu đã trả nhiều hơn số prorated, kết quả sẽ là số âm (hoàn trả)
         accruedInterest += proratedInterest - (row.paidInterestAmount ?? 0);
         accruedFee += proratedFee - (row.paidPeriodicFeeAmount ?? 0);
-        
+
         // Late penalty kỳ hiện tại (nếu có, đã quá ngưỡng trễ nộp)
         unpaidLatePenalty += (row.dueLatePenaltyAmount ?? 0) - (row.paidLatePenaltyAmount ?? 0);
       } else {
@@ -563,8 +571,8 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     unpaidLatePenalty = Math.round(unpaidLatePenalty);
 
     // Phạt tất toán sớm dùng đúng tỷ lệ snapshot của hợp đồng (Cầm đồ mặc định là 0 nếu không có)
-    const penaltyRate = isPawn 
-      ? (loan.earlySettlementPenaltyRateSnapshot ?? 0) 
+    const penaltyRate = isPawn
+      ? (loan.earlySettlementPenaltyRateSnapshot ?? 0)
       : (loan.earlySettlementPenaltyRateSnapshot ?? 5);
     const earlyPenalty = isEarly ? Math.round((remainPrincipal * penaltyRate) / 100) : 0;
 
@@ -599,7 +607,34 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
     };
   });
 
+  /** Ưu tiên kết quả API tính tất toán; fallback về công thức FE nếu API chưa có/lỗi. */
+  readonly settlementCalc = computed<SettlementCalculationResult | null>(
+    () => this.settlementCalcApiResult() ?? this.settlementCalcLocal(),
+  );
+
   constructor() {
+    // Ưu tiên gọi backend để có số tất toán chuẩn (bao gồm dư lãi/dư phí chính xác).
+    effect(() => {
+      const selectedEarly = this.hasSelectedEarlySettlement();
+      const loaded = this.scheduleLoaded() && this.financialSummaryLoaded();
+      const loanContractId = this.loanContractId();
+      const requestKey = `${loanContractId}|${this.todayIso()}`;
+
+      if (!selectedEarly || !loaded || !loanContractId) {
+        this.lastSettlementCalcRequestKey = null;
+        this.settlementCalcInFlight = false;
+        this.settlementCalcLoading.set(false);
+        this.settlementCalcApiResult.set(null);
+        return;
+      }
+
+      if (this.lastSettlementCalcRequestKey === requestKey || this.settlementCalcInFlight) {
+        return;
+      }
+
+      untracked(() => this.loadSettlementCalculationFromApi(requestKey));
+    });
+
     // Effect: re-fill số tiền gợi ý khi purpose thay đổi hoặc data vừa load xong
     // Đồng thời tự động inject LATE_PENALTY nếu kỳ đang chọn có phạt và chưa waive.
     effect(() => {
@@ -674,6 +709,60 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  private loadSettlementCalculationFromApi(requestKey: string): void {
+    const loanContractId = this.loanContractId();
+    if (!loanContractId || this.settlementCalcInFlight) return;
+
+    this.settlementCalcInFlight = true;
+    this.settlementCalcLoading.set(true);
+    this.loanSettlementProvider
+      .apiLoanSettlementCalculatePost({
+        calculateSettlementRequest: {
+          loanContractId,
+          settlementDate: this.todayIso(),
+        },
+      })
+      .subscribe({
+        next: (r: any) => {
+          this.settlementCalcInFlight = false;
+          this.settlementCalcLoading.set(false);
+          if (!r?.status || !r?.data) {
+            this.settlementCalcApiResult.set(null);
+            return;
+          }
+
+          const d: any = r.data;
+          this.lastSettlementCalcRequestKey = requestKey;
+          this.settlementCalcApiResult.set({
+            loanContractId: d.loanContractId ?? loanContractId,
+            contractNo: this.loan().contractNo ?? undefined,
+            settlementDate: d.settlementDate ?? this.todayIso(),
+            contractTotalDays: d.contractTotalDays ?? undefined,
+            actualElapsedDays: d.actualElapsedDays ?? undefined,
+            completionRatio: d.completionRatio ?? undefined,
+            isEarlySettlement:
+              typeof d.isEarlySettlement === 'boolean'
+                ? d.isEarlySettlement
+                : String(d.settlementType ?? '').toUpperCase() === 'EARLY',
+            remainingPrincipalAmount: Math.round(d.remainingPrincipalAmount ?? 0),
+            remainingFileFeeAmount: Math.round(d.remainingFileFeeAmount ?? 0),
+            remainingInsuranceAmount: 0,
+            accruedInterestAmount: Math.round(d.accruedInterestAmount ?? 0),
+            accruedPeriodicFeeAmount: Math.round(d.accruedPeriodicFeeAmount ?? 0),
+            unpaidLatePenaltyAmount: Math.round(d.unpaidLatePenaltyAmount ?? 0),
+            earlySettlementPenaltyAmount: Math.round(d.earlySettlementPenaltyAmount ?? 0),
+            totalSettlementAmount: Math.round(d.totalSettlementAmount ?? 0),
+            settlementType: d.settlementType ?? undefined,
+          });
+        },
+        error: () => {
+          this.settlementCalcInFlight = false;
+          this.settlementCalcLoading.set(false);
+          this.settlementCalcApiResult.set(null);
+        },
+      });
   }
 
   readonly receiptPurposeOptions: ReceiptPurposeOption[] = [
@@ -1957,7 +2046,7 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
       PRINCIPAL: 'Gốc',
       INTEREST: 'Lãi',
       QLKV_FEE: 'Phí phần mềm',
-      QLTS_FEE: 'Phí hao mòn',
+      QLTS_FEE: 'Phí Thuê',
       FILE_FEE: 'Phí hồ sơ',
       INSURANCE: 'Bảo hiểm',
       LATE_PENALTY: 'Phạt chậm nộp',

@@ -17,6 +17,13 @@ export const routes: Routes = [
     canActivate: [guestGuard]
   },
 
+  // Forced change password route (authenticated users, full-screen)
+  {
+    path: 'change-password',
+    loadComponent: () => import('./pages/auth/change-password.component').then(m => m.ChangePasswordComponent),
+    canActivate: [authGuard]
+  },
+
   // Protected routes with main layout (authenticated users only)
   {
     path: '',
@@ -28,8 +35,8 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
-        path: 'change-password',
-        loadComponent: () => import('./pages/auth/change-password.component').then(m => m.ChangePasswordComponent)
+        path: 'settings',
+        loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
       },
       {
         path: 'users',
@@ -129,6 +136,11 @@ export const routes: Routes = [
       {
         path: 'day-locks',
         loadComponent: () => import('./pages/day-locks/day-locks.component').then(m => m.DayLocksComponent),
+        canActivate: [roleGuard([RoleCode.ADMIN])]
+      },
+      {
+        path: 'activity-logs',
+        loadComponent: () => import('./pages/activity-logs/activity-logs.component').then(m => m.ActivityLogsComponent),
         canActivate: [roleGuard([RoleCode.ADMIN])]
       },
     ]

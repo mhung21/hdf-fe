@@ -160,6 +160,11 @@ export class SidebarComponent {
           route: '/customer-sources',
           roles: ['ADMIN', 'REGIONAL_MANAGER', 'STORE_MANAGER'],
         },
+        {
+          label: 'Nhật Ký Hoạt Động',
+          route: '/activity-logs',
+          roles: ['ADMIN'],
+        },
       ],
       roles: ['ADMIN'],
     },

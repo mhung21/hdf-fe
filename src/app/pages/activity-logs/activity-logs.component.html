@@ -1,0 +1,122 @@
+<div class="p-4 space-y-3 md:p-6">
+  <app-data-table
+    [columns]="tableColumns"
+    [rows]="logs()"
+    [loading]="loading()"
+    [totalCount]="totalCount()"
+    [page]="page"
+    [size]="size"
+    [showActionsColumn]="false"
+    searchPlaceholder="Tìm theo mô tả, module, action, endpoint..."
+    emptyIcon="@tui.activity"
+    emptyText="Chưa có nhật ký hoạt động"
+    (keywordChange)="onKeywordChange($event)"
+    (reload)="loadLogs()"
+    (pageChange)="onPaginationChange($event)"
+    (sortChange)="onSortChange($event)"
+  >
+    <ng-container leftToolbar>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          tuiButton
+          size="m"
+          [appearance]="!selectedModule() ? 'primary' : 'outline'"
+          (click)="setModule(null)"
+        >
+          Tất cả module
+        </button>
+        @for (moduleCode of moduleOptions; track moduleCode) {
+          <button
+            tuiButton
+            size="m"
+            [appearance]="selectedModule() === moduleCode ? 'primary' : 'outline'"
+            (click)="setModule(moduleCode)"
+          >
+            {{ moduleLabel(moduleCode) }}
+          </button>
+        }
+      </div>
+    </ng-container>
+
+    <ng-container tableToolbar>
+      <div class="flex items-center gap-2">
+        <select
+          class="px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-md"
+          [ngModel]="selectedAction()"
+          (ngModelChange)="setAction($event || null)"
+        >
+          <option [ngValue]="null">Tất cả hành động</option>
+          @for (actionCode of actionOptions; track actionCode) {
+            <option [ngValue]="actionCode">{{ actionLabel(actionCode) }}</option>
+          }
+        </select>
+
+        @if (hasFilter()) {
+          <button tuiButton appearance="outline" size="m" (click)="clearFilters()">
+            <tui-icon icon="@tui.x" class="mr-1" />
+            Xóa bộ lọc
+          </button>
+        }
+      </div>
+    </ng-container>
+
+    <ng-template #row let-item let-isHidden="isHidden">
+      @if (!isHidden('time')) {
+        <td class="px-4 py-3 text-sm whitespace-nowrap align-top text-gray-700">
+          {{ asLog(item).changedAtUtc | date: 'dd/MM/yyyy HH:mm:ss' }}
+        </td>
+      }
+
+      @if (!isHidden('module')) {
+        <td class="px-4 py-3 text-sm align-top">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+            {{ moduleLabel(asLog(item).moduleCode) }}
+          </span>
+        </td>
+      }
+
+      @if (!isHidden('action')) {
+        <td class="px-4 py-3 text-sm align-top">
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+            [ngClass]="actionBadgeClass(asLog(item).actionCode)"
+          >
+            {{ actionLabel(asLog(item).actionCode) }}
+          </span>
+        </td>
+      }
+
+      @if (!isHidden('actor')) {
+        <td class="px-4 py-3 text-sm align-top text-gray-700">
+          {{ asLog(item).changedByName || asLog(item).changedBy || '-' }}
+        </td>
+      }
+
+      @if (!isHidden('summary')) {
+        <td class="px-4 py-3 text-sm align-top">
+          <p class="font-medium text-gray-800">{{ asLog(item).summary || '-' }}</p>
+          @if (asLog(item).requestPath) {
+            <p class="mt-0.5 text-xs text-gray-500">{{ asLog(item).requestPath }}</p>
+          }
+        </td>
+      }
+
+      @if (!isHidden('target')) {
+        <td class="px-4 py-3 text-xs align-top text-gray-600">
+          @if (asLog(item).customerId) {
+            <div>KH: {{ asLog(item).customerId }}</div>
+          }
+          @if (asLog(item).loanContractId) {
+            <div>HĐ: {{ asLog(item).loanContractId }}</div>
+          }
+          @if (!asLog(item).customerId && !asLog(item).loanContractId && !asLog(item).entityId) {
+            <span>-</span>
+          }
+          @if (asLog(item).entityId) {
+            <div>ID: {{ asLog(item).entityId }}</div>
+          }
+        </td>
+      }
+    </ng-template>
+  </app-data-table>
+</div>

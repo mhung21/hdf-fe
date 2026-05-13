@@ -1,7 +1,6 @@
 <div class="flex h-full md:h-[min(90dvh,48rem)] max-h-[100dvh] md:max-h-[calc(100dvh-1.5rem)] min-h-0 flex-col w-full md:min-w-[800px] lg:min-w-[1000px]">
   <!-- ╔══ TAB BAR ═══════════════════════════════════════════════════════╗ -->
-  <nav
-    tuiTabs
+  <tui-tabs
     [activeItemIndex]="activeItemIndex()"
     (activeItemIndexChange)="setActiveItemIndex($event)"
     class="mb-3 shrink-0"
@@ -12,7 +11,7 @@
         {{ tab.label }}
       </button>
     }
-  </nav>
+  </tui-tabs>
 
   <!-- ╔══ TAB CONTENT ════════════════════════════════════════════════════╗ -->
   <div class="flex-1 min-h-0 pr-1 overflow-x-hidden overflow-y-auto">
@@ -344,7 +343,7 @@
                 }
               </div>
               <div>
-                <label tuiLabel>Phí QLTS (VNĐ/1tr/ngày) <span class="text-red-500">*</span></label>
+                <label tuiLabel>Phí Thuê (VNĐ/1tr/ngày) <span class="text-red-500">*</span></label>
                 <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
@@ -359,7 +358,7 @@
                   (form.controls.pawnFeeAmountPerMillionPerDaySnapshot.dirty ||
                     form.controls.pawnFeeAmountPerMillionPerDaySnapshot.touched)
                 ) {
-                  <p class="mt-0.5 text-[11px] text-red-500">⚠ Vui lòng nhập phí QLTS</p>
+                  <p class="mt-0.5 text-[11px] text-red-500">⚠ Vui lòng nhập phí Thuê</p>
                 }
               </div>
               <div>
@@ -414,7 +413,7 @@
                 </tui-textfield>
               </div>
               <div>
-                <label tuiLabel>Phí hao mòn (%/tháng)</label>
+                <label tuiLabel>Phí Thuê (%/tháng)</label>
                 <tui-textfield [tuiTextfieldSize]="'m'">
                   <input
                     tuiInputNumber
@@ -564,7 +563,7 @@
                   <p class="text-xs text-amber-600">
                     {{
                       selectedContractType() === 'PAWN'
-                        ? 'Trả mỗi kỳ (lãi + phí QLTS)'
+                        ? 'Trả mỗi kỳ (lãi + phí Thuê)'
                         : 'Trả hàng tháng (gốc + lãi + phí)'
                     }}
                   </p>
@@ -582,8 +581,8 @@
                   <p class="text-xs text-amber-600">
                     {{
                       selectedContractType() === 'PAWN'
-                        ? 'Tổng phí QLTS'
-                        : 'Tổng phí (Phần mềm, hao mòn, định kỳ,...)'
+                        ? 'Tổng phí Thuê'
+                        : 'Tổng phí (Phần mềm, định kỳ,...)'
                     }}
                   </p>
                   <p class="font-semibold text-blue-700">
@@ -614,7 +613,7 @@
                         <th class="px-3 py-2 text-right text-gray-500 min-w-32">Số ngày</th>
                         <th class="px-3 py-2 text-right text-gray-500 min-w-32">Ngày đóng tiền</th>
                         <th class="px-3 py-2 text-right text-gray-500 min-w-32">Lãi</th>
-                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí QLTS</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí Thuê</th>
                         <th class="px-3 py-2 text-right text-gray-500 min-w-32">Tổng TT hàng kỳ</th>
                       </tr>
                     </thead>
@@ -680,7 +679,7 @@
                         </th>
                         <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí phần mềm</th>
                         <!-- <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí cố định/tháng</th> -->
-                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí hao mòn</th>
+                        <th class="px-3 py-2 text-right text-gray-500 min-w-32">Phí Thuê</th>
                         <th class="px-3 py-2 text-right text-cyan-700 bg-cyan-50 min-w-32">Tổng cho thuê</th>
                         <th class="px-3 py-2 text-right text-gray-500 min-w-32">Nợ gốc còn lại</th>
                       </tr>

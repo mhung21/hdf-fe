@@ -130,7 +130,7 @@
           </p>
         </div>
         <div>
-          <p class="text-xs tracking-wide text-gray-400 uppercase">Phí QLTS</p>
+          <p class="text-xs tracking-wide text-gray-400 uppercase">Phí Thuê</p>
           <p class="mt-1 text-sm text-gray-900">
             {{ l.pawnFeeAmountPerMillionPerDaySnapshot ?? 0 }} VNĐ / 1tr / ngày
           </p>
@@ -161,13 +161,13 @@
           <p class="mt-1 text-sm text-gray-900">{{ l.interestRateMonthlySnapshot }}%/tháng</p>
         </div>
         <div>
-          <p class="text-xs tracking-wide text-gray-400 uppercase">QLKV</p>
+          <p class="text-xs tracking-wide text-gray-400 uppercase">Phí Phần mềm</p>
           <p class="mt-1 text-sm text-gray-900">
             {{ l.qlkvRateMonthlySnapshot ?? 0 }}%/tháng
           </p>
         </div>
         <div>
-          <p class="text-xs tracking-wide text-gray-400 uppercase">QLTS</p>
+          <p class="text-xs tracking-wide text-gray-400 uppercase">Phí Thuê</p>
           <p class="mt-1 text-sm text-gray-900">
             {{ l.qltsRateMonthlySnapshot ?? 0 }}%/tháng
           </p>
@@ -851,7 +851,7 @@
             }
 
             @if (hasSelectedEarlySettlement()) {
-            @if (!scheduleLoaded() || !financialSummaryLoaded()) {
+            @if (!scheduleLoaded() || !financialSummaryLoaded() || settlementCalcLoading()) {
             <div
               class="flex gap-2 items-center p-2.5 mt-2 text-sm text-orange-700 bg-orange-50 rounded-lg border border-orange-200">
               <tui-icon icon="@tui.loader-2" class="text-base animate-spin" />
@@ -902,6 +902,25 @@
                   <span>Lãi tích lũy</span>
                   <span class="font-medium">{{
                     formatCurrency(calc.accruedInterestAmount)
+                    }}</span>
+                </div>
+                }
+                @if (
+                calc.isEarlySettlement &&
+                ((calc.accruedInterestAmount ?? 0) < 0 || (calc.accruedPeriodicFeeAmount ?? 0) < 0)
+                ) {
+                <div class="flex justify-between items-center px-2 py-1 text-xs text-green-700 bg-green-50 rounded-md">
+                  <span class="inline-flex gap-1 items-center">
+                    <span>Dư lãi/phí (đã đóng dư)</span>
+                    <tui-icon icon="@tui.info" class="text-[9px] text-green-600 cursor-help"
+                      [tuiHint]="'Phần khách đã đóng trước cho lãi/phí các kỳ sau nhưng chưa phát sinh tới ngày tất toán. Khoản này hoàn lại cho khách.'"
+                      tuiHintDirection="top" />
+                  </span>
+                  <span class="font-medium">-{{
+                    formatCurrency(
+                    ((calc.accruedInterestAmount ?? 0) < 0 ? ((calc.accruedInterestAmount ?? 0) * -1) : 0) +
+                    ((calc.accruedPeriodicFeeAmount ?? 0) < 0 ? ((calc.accruedPeriodicFeeAmount ?? 0) * -1) : 0)
+                    )
                     }}</span>
                 </div>
                 }
@@ -1375,7 +1394,7 @@
                [class.border-green-500]="log.actionCode === 'INSERT'"
                [class.border-amber-500]="log.actionCode === 'STATUS_CHANGE'"
                [class.border-blue-500]="log.actionCode === 'UPDATE'"></div>
-          
+
           <div class="mb-1.5 text-sm text-gray-600">
             <span class="font-semibold text-gray-900">{{ log.changedByName || 'Hệ thống' }}</span>
             đã {{ log.actionCode === 'INSERT' ? 'tạo mới' : log.actionCode === 'STATUS_CHANGE' ? 'chuyển trạng thái' : 'cập nhật' }}

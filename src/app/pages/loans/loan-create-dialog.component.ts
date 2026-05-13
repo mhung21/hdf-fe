@@ -885,7 +885,7 @@ export class LoanCreateDialogComponent {
       if (n === N) {
         principal = remaining;
       } else {
-        // Công thức: Tiền gốc = Tiền TT hàng kỳ - Tiền lãi - Phí QLKV - Phí QLTS - Phí cố định
+        // Công thức: Tiền gốc = Tiền TT hàng kỳ - Tiền lãi - Phí Phần mềm - Phí Thuê - Phí cố định
         principal = Math.max(0, Math.round(pmt - fee));
         if (principal > remaining) principal = remaining;
       }
