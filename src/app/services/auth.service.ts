@@ -74,7 +74,7 @@ export class AuthService {
     return this.refreshTokenInFlight;
   }
 
-  logout(): void {
+  logout(reason?: 'session-expired'): void {
     // Gửi request logout để server revoke session và xóa HttpOnly cookie
     // Cookie được gửi tự động nhờ withCredentials: true
     this.http
@@ -82,7 +82,18 @@ export class AuthService {
       .subscribe({ error: () => {} }); // fire-and-forget, lỗi network bỏ qua
 
     this.clearAuth();
-    this.router.navigate(['/login']);
+    const currentUrl = this.router.url;
+    const returnUrl =
+      typeof currentUrl === 'string' && currentUrl.startsWith('/') && !currentUrl.startsWith('//')
+        ? currentUrl
+        : '/dashboard';
+
+    this.router.navigate(['/login'], {
+      queryParams:
+        reason === 'session-expired'
+          ? { reason: 'session-expired', returnUrl }
+          : undefined,
+    });
   }
 
   isTransientNetworkError(error: unknown): boolean {

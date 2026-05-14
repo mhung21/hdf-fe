@@ -15,12 +15,13 @@ function tryRefreshOrRedirect(
 ): Observable<boolean | ReturnType<Router['createUrlTree']>> {
   return authService.refreshToken().pipe(
     map(() => true as const),
-    catchError((error) => {
-      if (authService.isTransientNetworkError(error)) {
-        return of(true);
-      }
-      return of(router.createUrlTree(['/login'], { queryParams: { returnUrl } }));
-    })
+    catchError(() =>
+      of(
+        router.createUrlTree(['/login'], {
+          queryParams: { returnUrl, reason: 'session-expired' },
+        })
+      )
+    )
   );
 }
 
@@ -38,7 +39,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   return router.createUrlTree(['/login'], {
-    queryParams: { returnUrl: state.url }
+    queryParams: { returnUrl: state.url, reason: 'session-expired' }
   });
 };
 
@@ -84,7 +85,7 @@ export function permissionGuard(requiredPermissions: string[]): CanActivateFn {
     }
 
     return router.createUrlTree(['/login'], {
-      queryParams: { returnUrl: state.url }
+      queryParams: { returnUrl: state.url, reason: 'session-expired' }
     });
   };
 }
@@ -117,7 +118,7 @@ export function roleGuard(allowedRoles: readonly RoleCode[]): CanActivateFn {
     }
 
     return router.createUrlTree(['/login'], {
-      queryParams: { returnUrl: state.url }
+      queryParams: { returnUrl: state.url, reason: 'session-expired' }
     });
   };
 }

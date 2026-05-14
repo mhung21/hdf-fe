@@ -381,8 +381,8 @@ export class DashboardComponent implements OnInit {
         this.todayColList.set(Array.isArray(data.todayCol) ? data.todayCol : []);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+      error: (error) => {
+        this.error.set(this.svc.toDisplayError(error));
         this.loading.set(false);
       }
     });

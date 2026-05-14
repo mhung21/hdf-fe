@@ -6,8 +6,7 @@ import { catchError, switchMap, throwError } from 'rxjs';
 function isAuthEndpoint(url: string): boolean {
   return url.includes('/auth/login')
     || url.includes('/auth/refresh')
-    || url.includes('/auth/logout')
-    || url.includes('/auth/change-password');
+    || url.includes('/auth/logout');
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -29,6 +28,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // Don't try to refresh auth endpoints themselves, especially /auth/refresh.
       // Otherwise a missing refresh cookie can recurse into refresh -> 401 -> refresh.
+      if (error.status === 401 && req.url.includes('/auth/refresh')) {
+        // Refresh endpoint itself returned 401: session is no longer valid.
+        authService.logout('session-expired');
+        return throwError(() => error);
+      }
+
       if (error.status === 401 && !isAuthEndpoint(req.url)) {
         return authService.refreshToken().pipe(
           switchMap(() => {
@@ -43,11 +48,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             return next(retryReq);
           }),
           catchError(refreshError => {
-            // Chỉ logout khi refresh lỗi auth thật sự.
-            // Nếu là timeout / mất kết nối thì giữ session cục bộ để user không bị đá ra ngoài.
-            if (!authService.isTransientNetworkError(refreshError)) {
-              authService.logout();
-            }
+            // Request gốc đã 401, coi phiên hiện tại không còn hợp lệ -> buộc về login.
+            authService.logout('session-expired');
             return throwError(() => refreshError);
           })
         );

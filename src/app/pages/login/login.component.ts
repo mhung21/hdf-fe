@@ -39,6 +39,11 @@ export class LoginComponent {
     // Get return URL from query params — chỉ cho phép path nội bộ ("/..."), block open redirect
     const raw = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
     this.returnUrl = (typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//')) ? raw : '/dashboard';
+
+    const reason = this.route.snapshot.queryParams['reason'];
+    if (reason === 'session-expired') {
+      this.errorMessage.set('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    }
   }
 
   /**

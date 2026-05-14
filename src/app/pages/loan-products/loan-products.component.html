@@ -55,10 +55,10 @@
             >{{ asProduct(item).interestRateMonthly }}%/tháng</span
           >
           @if (asProduct(item).qlkvRateMonthly) {
-            <p class="text-xs text-gray-400">QLKV: {{ asProduct(item).qlkvRateMonthly }}%</p>
+            <p class="text-xs text-gray-400">Phí Phần mềm: {{ asProduct(item).qlkvRateMonthly }}%</p>
           }
           @if (asProduct(item).qltsRateMonthly) {
-            <p class="text-xs text-gray-400">QLTS: {{ asProduct(item).qltsRateMonthly }}%</p>
+            <p class="text-xs text-gray-400">Phí Thuê: {{ asProduct(item).qltsRateMonthly }}%</p>
           }
           @if ((asProduct(item).fixedMonthlyFeeAmount ?? 0) > 0) {
             <p class="text-xs text-gray-400">
