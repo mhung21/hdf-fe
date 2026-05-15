@@ -1734,11 +1734,6 @@ export class LoanDetailDialogComponent implements OnInit, OnDestroy {
                 v.reasonCode === 'EARLY_SETTLEMENT',
             );
             if (hasSettle && this.statusCode() !== LoanContractStatus.SETTLED) {
-              this.statusCode.set(LoanContractStatus.SETTLED);
-              this.selectedReceiptPurposes.set([]);
-              this.selectedPeriodNo.set(null);
-              this.receiptAmountInput.set(null);
-
               if (this.canManageContractStatus() && !this.autoSettleAttempted()) {
                 this.autoSettleAttempted.set(true);
                 this.loanProvider
